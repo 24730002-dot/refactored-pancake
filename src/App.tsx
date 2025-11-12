@@ -137,6 +137,14 @@ export default function App() {
       }
     );
 
+    // ✅ 여기 추가!
+  fetch(`${import.meta.env.VITE_API_URL}/test`)
+    .then((res) => res.json())
+    .then((data) => console.log("🟢 백엔드 응답:", data))
+    .catch((err) => console.error("🔴 연결 실패:", err));
+
+    
+
     return () => subscription.unsubscribe();
   }, []);
 
