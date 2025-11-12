@@ -4,7 +4,6 @@ import cors from "cors";
 import dotenv from "dotenv";
 
 // 몽고DB 모델 설정
-import mongoose from "mongoose";
 
 const postSchema = new mongoose.Schema({
   title: String,
