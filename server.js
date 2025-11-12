@@ -18,5 +18,11 @@ app.get("/", (req, res) => {
   res.send("PetFriendly backend running 🐾");
 });
 
+// 테스트용 경로
+app.get("/test", (req, res) => {
+  res.json({ message: "✅ Server & MongoDB both alive!" });
+});
+
+
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => console.log(`🚀 Server running on port ${PORT}`));
