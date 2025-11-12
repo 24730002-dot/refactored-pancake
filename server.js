@@ -3,6 +3,41 @@ import mongoose from "mongoose";
 import cors from "cors";
 import dotenv from "dotenv";
 
+// 몽고DB 모델 설정
+import mongoose from "mongoose";
+
+const postSchema = new mongoose.Schema({
+  title: String,
+  content: String,
+  createdAt: { type: Date, default: Date.now },
+});
+
+const Post = mongoose.model("Post", postSchema);
+
+// 게시글 저장용 API
+app.post("/post", async (req, res) => {
+  try {
+    const { title, content } = req.body;
+    const newPost = new Post({ title, content });
+    await newPost.save();
+    res.json({ message: "✅ Post saved successfully!", data: newPost });
+  } catch (error) {
+    console.error("❌ Error saving post:", error);
+    res.status(500).json({ message: "Error saving post", error });
+  }
+});
+
+// 저장된 게시글 불러오기 API
+app.get("/posts", async (req, res) => {
+  try {
+    const posts = await Post.find().sort({ createdAt: -1 });
+    res.json(posts);
+  } catch (error) {
+    res.status(500).json({ message: "Error fetching posts", error });
+  }
+});
+
+
 dotenv.config();
 const app = express();
 app.use(cors());
