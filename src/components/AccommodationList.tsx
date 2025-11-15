@@ -373,7 +373,11 @@ export function AccommodationList({ onViewDetail, onReserve, userId, isAuthentic
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredAccommodations.length > 0 ? (
             filteredAccommodations.map((accommodation) => (
-            <Card key={accommodation.id} className="overflow-hidden hover:shadow-lg transition-shadow">
+<Card
+  key={accommodation.id}
+  className="overflow-hidden hover:shadow-lg transition-shadow flex flex-col h-[650px]"
+>
+
               {/* Image Section */}
               <div className="relative h-64 overflow-hidden">
                 <ImageWithFallback
@@ -452,7 +456,7 @@ export function AccommodationList({ onViewDetail, onReserve, userId, isAuthentic
                 </div>
               </CardHeader>
 
-              <CardContent className="space-y-4">
+              <CardContent className="space-y-4 flex flex-col flex-1">
                 {/* Description */}
                 <p className="text-sm text-muted-foreground leading-relaxed">
                   {accommodation.description}
@@ -484,7 +488,7 @@ export function AccommodationList({ onViewDetail, onReserve, userId, isAuthentic
                 </div>
 
                 {/* Action Buttons */}
-                <div className="flex gap-2 pt-2">
+                <div className="flex gap-2 pt-2 mt-auto">
                   <Button 
                     className="flex-1"
                     onClick={() => onReserve(accommodation)}
