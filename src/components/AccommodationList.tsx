@@ -443,7 +443,9 @@ if (filters.location !== 'all') {
     });
   };
 
-  return (
+ return (
+  <>
+    {/* 메인 콘텐츠 */}
     <div className="min-h-screen bg-background py-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
@@ -451,26 +453,19 @@ if (filters.location !== 'all') {
           <h1 className="text-foreground mb-6 text-center">Pet Friendly 숙소</h1>
 
           {/* 검색 + 필터 */}
-
-<SearchAndFilter
-  filters={filters}
-  onFilterChange={setFilters}
-  open={filtersOpen}
-  onOpenChange={setFiltersOpen}
-  onApply={() => {
-    setFiltersOpen(false);  
-    window.scrollTo({
-      top: 550,
-      behavior: "smooth",
-    });
-  }}
-/>
-
-
-
-
-
-
+          <SearchAndFilter
+            filters={filters}
+            onFilterChange={setFilters}
+            open={filtersOpen}
+            onOpenChange={setFiltersOpen}
+            onApply={() => {
+              setFiltersOpen(false);
+              window.scrollTo({
+                top: 550,
+                behavior: "smooth",
+              });
+            }}
+          />
 
           <p className="text-muted-foreground max-w-2xl mx-auto text-center mt-6">
             반려동물과 함께하는 특별한 여행을 위한 최고의 숙소를 찾아보세요.
@@ -480,17 +475,17 @@ if (filters.location !== 'all') {
 
         {/* 결과 개수 */}
         {(filters.searchQuery ||
-          filters.location !== 'all' ||
+          filters.location !== "all" ||
           filters.minPrice > 0 ||
           filters.maxPrice < 500000 ||
           filters.minRating > 0 ||
-          filters.petSize !== 'all') && (
+          filters.petSize !== "all") && (
           <div className="mb-4 text-center text-sm text-muted-foreground">
             {filteredAccommodations.length}개의 숙소를 찾았습니다
           </div>
         )}
 
-        {/* 리스트 */}
+        {/* 숙소 리스트 */}
         <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
           {filteredAccommodations.length > 0 ? (
             filteredAccommodations.map((accommodation) => (
@@ -527,8 +522,8 @@ if (filters.location !== 'all') {
                           location: accommodation.location,
                           rating: accommodation.rating,
                           price:
-                            accommodation.pricePerNight.toLocaleString('ko-KR') +
-                            '원',
+                            accommodation.pricePerNight.toLocaleString("ko-KR") +
+                            "원",
                           petFriendly: true,
                         }}
                       />
@@ -546,7 +541,9 @@ if (filters.location !== 'all') {
                 <CardHeader>
                   <div className="flex items-start justify-between">
                     <div className="flex-1">
-                      <CardTitle className="mb-2">{accommodation.name}</CardTitle>
+                      <CardTitle className="mb-2">
+                        {accommodation.name}
+                      </CardTitle>
                       <CardDescription className="flex items-center gap-1">
                         <MapPin className="h-4 w-4" />
                         {accommodation.location}
@@ -564,111 +561,165 @@ if (filters.location !== 'all') {
                   <div className="flex flex-wrap gap-2 mt-3">
                     {accommodation.petTypes.map((type, index) => {
                       const label =
-                        type === 'all'
-                          ? '모든 반려동물'
-                          : type === 'dog'
-                          ? '강아지'
-                          : type === 'cat'
-                          ? '고양이'
-                          : type === 'bird'
-                          ? '조류'
-                          : '소형 반려동물';
+                        type === "all"
+                          ? "모든 반려동물"
+                          : type === "dog"
+                          ? "강아지"
+                          : type === "cat"
+                          ? "고양이"
+                          : type === "bird"
+                          ? "조류"
+                          : "소형 반려동물";
 
-                    return (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-1">
-                        {getPetTypeIcon(type)}
-                        <span className="text-xs">{label}</span>
-                      </Badge>
-                    );
-                  })}
-                  <Badge variant="outline" className="text-xs">
-                    최대 {accommodation.maxPets}마리
-                  </Badge>
-                </div>
-              </CardHeader>
+                      return (
+                        <Badge
+                          key={index}
+                          variant="secondary"
+                          className="flex items-center gap-1"
+                        >
+                          {getPetTypeIcon(type)}
+                          <span className="text-xs">{label}</span>
+                        </Badge>
+                      );
+                    })}
 
-              <CardContent className="space-y-4 flex flex-col flex-1">
-                <p className="text-sm text-muted-foreground leading-relaxed">
-                  {accommodation.description}
-                </p>
-
-                <div>
-                  <h4 className="text-sm mb-2">편의시설</h4>
-                  <div className="flex flex-wrap gap-2">
-                    {accommodation.amenities.map((amenity, index) => (
-                      <Badge key={index} variant="outline" className="flex items-center gap-1">
-                        {getAmenityIcon(amenity)}
-                        <span className="text-xs">{amenity}</span>
-                      </Badge>
-                    ))}
+                    <Badge variant="outline" className="text-xs">
+                      최대 {accommodation.maxPets}마리
+                    </Badge>
                   </div>
-                </div>
+                </CardHeader>
 
-                <div className="pt-2 border-t space-y-2">
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Phone className="h-4 w-4" />
-                    {accommodation.phone}
+                <CardContent className="space-y-4 flex flex-col flex-1">
+                  <p className="text-sm text-muted-foreground leading-relaxed">
+                    {accommodation.description}
+                  </p>
+
+                  <div>
+                    <h4 className="text-sm mb-2">편의시설</h4>
+                    <div className="flex flex-wrap gap-2">
+                      {accommodation.amenities.map((amenity, index) => (
+                        <Badge
+                          key={index}
+                          variant="outline"
+                          className="flex items-center gap-1"
+                        >
+                          {getAmenityIcon(amenity)}
+                          <span className="text-xs">{amenity}</span>
+                        </Badge>
+                      ))}
+                    </div>
                   </div>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground">
-                    <Mail className="h-4 w-4" />
-                    {accommodation.email}
+
+                  <div className="pt-2 border-t space-y-2">
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Phone className="h-4 w-4" />
+                      {accommodation.phone}
+                    </div>
+                    <div className="flex items-center gap-2 text-sm text-muted-foreground">
+                      <Mail className="h-4 w-4" />
+                      {accommodation.email}
+                    </div>
                   </div>
-                </div>
 
-                <div className="flex gap-2 pt-2 mt-auto">
-                  <Button className="flex-1" onClick={() => onReserve(accommodation)}>
-                    예약하기
-                  </Button>
-                  <Button
-                    variant="outline"
-                    className="flex-1"
-                    onClick={() => onViewDetail(accommodation)}
-                  >
-                    상세보기
-                  </Button>
-                </div>
-              </CardContent>
-            </Card>
-          ))
-        ) : (
-          <div className="col-span-full text-center py-12">
-            <p className="text-muted-foreground">
-              검색 조건에 맞는 숙소가 없습니다.
-            </p>
-            <Button
-  variant="outline"
-  className="mt-4"
-  onClick={() =>
-    setFilters({
-      searchQuery: '',
-      location: 'all',
-      minPrice: 0,
-      maxPrice: 500000,
-      minRating: 0,
-      petSize: 'all',
-      sortBy: 'recommended',
-    })
-  }
->
-  필터 초기화
-</Button>
-
-          </div>
-        )}
-      </div>
-
-      {/* 안내 문구 */}
-      <div className="mt-12 text-center">
-        <p className="text-sm text-muted-foreground">
-          모든 숙소는 반려동물 동반 투숙이 가능하며, 사전 예약이 필요합니다.
-        </p>
+                  <div className="flex gap-2 pt-2 mt-auto">
+                    <Button
+                      className="flex-1"
+                      onClick={() => onReserve(accommodation)}
+                    >
+                      예약하기
+                    </Button>
+                    <Button
+                      variant="outline"
+                      className="flex-1"
+                      onClick={() => onViewDetail(accommodation)}
+                    >
+                      상세보기
+                    </Button>
+                  </div>
+                </CardContent>
+              </Card>
+            ))
+          ) : (
+            <div className="col-span-full text-center py-12">
+              <p className="text-muted-foreground">
+                검색 조건에 맞는 숙소가 없습니다.
+              </p>
+              <Button
+                variant="outline"
+                className="mt-4"
+                onClick={() =>
+                  setFilters({
+                    searchQuery: "",
+                    location: "all",
+                    minPrice: 0,
+                    maxPrice: 500000,
+                    minRating: 0,
+                    petSize: "all",
+                    sortBy: "recommended",
+                  })
+                }
+              >
+                필터 초기화
+              </Button>
+            </div>
+          )}
+        </div>
       </div>
     </div>
 
-    {/* Footer는 네가 쓰던 그대로 아래에 유지 */}
-    <footer className="bg-muted/30 border-t border-border mt-20">
-      {/* ... 생략: 기존 footer 코드 그대로 ... */}
+    {/* ==================== New Corporate Footer ==================== */}
+    <footer className="bg-[#111] text-gray-300 mt-20">
+      <div className="max-w-7xl mx-auto px-6 py-12">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
+
+          {/* 브랜드 소개 */}
+          <div>
+            <h3 className="text-xl font-semibold text-white mb-4">PetFriendly</h3>
+            <p className="text-gray-400 text-sm leading-relaxed">
+              반려동물과 함께하는 여행의 시작
+              
+            </p>
+          </div>
+
+          {/* 사이트맵 */}
+          <div>
+            <h4 className="text-lg font-semibold text-white mb-4">사이트</h4>
+            <ul className="space-y-2 text-sm">
+              <li><a href="#" className="hover:text-primary transition">홈</a></li>
+              <li><a href="#" className="hover:text-primary transition">숙소 목록</a></li>
+              <li><a href="#" className="hover:text-primary transition">커뮤니티</a></li>
+              <li><a href="#" className="hover:text-primary transition">마이페이지</a></li>
+            </ul>
+          </div>
+
+          {/* 고객센터 */}
+          <div>
+            <h4 className="text-lg font-semibold text-white mb-4">고객센터</h4>
+            <ul className="space-y-2 text-sm text-gray-400">
+              <li>이메일: support@petfriendly.com</li>
+              <li>전화: 02-1234-5678</li>
+              <li>운영시간: 09:00 ~ 18:00</li>
+            </ul>
+          </div>
+
+          {/* SNS */}
+          <div>
+            <h4 className="text-lg font-semibold text-white mb-4">SNS</h4>
+            <div className="flex gap-4 text-gray-400">
+              <a href="#" className="hover:text-primary"><Facebook size={20} /></a>
+              <a href="#" className="hover:text-primary"><Twitter size={20} /></a>
+              <a href="#" className="hover:text-primary"><Instagram size={20} /></a>
+              <a href="#" className="hover:text-primary"><Youtube size={20} /></a>
+            </div>
+          </div>
+        </div>
+
+        <div className="text-center text-gray-500 text-sm border-t border-gray-700 pt-6 mt-10">
+          © 2025 PetFriendly. All rights reserved.
+        </div>
+      </div>
     </footer>
-  </div>
-  );
+  </>
+);
 }
+export default AccommodationList;
