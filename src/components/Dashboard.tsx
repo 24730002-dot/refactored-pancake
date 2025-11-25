@@ -10,6 +10,7 @@ import { Edit3, ChevronDown, Sun, Moon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner@2.0.3';
 import { useBackground } from '../lib/useBackground';
+import newbg from '../assets/1.jpg'; //추가
 import { useMusicContext } from '../lib/MusicContext';
 import { BackgroundSelection } from './BackgroundSelector';
 
@@ -61,57 +62,18 @@ export function Dashboard({ isAuthenticated, userId, onLogout, onShowAuth, locat
   // Music hook - now works for both authenticated and unauthenticated users
   const { currentTrack, isPlaying, availableTracks, changeTrack, togglePlayPause, previousTrack, nextTrack } = useMusicContext();
 
-  // Apply custom background to body
-  useEffect(() => {
-    const body = document.body;
-    
-    if (background) {
-      if (background.type === 'photo') {
-        // Set custom background image
-        body.style.setProperty('--custom-bg-url', `url(${background.url})`);
-        body.classList.add('custom-background');
-      } else if (background.type === 'video') {
-        // Handle video background
-        let existingVideo = document.querySelector('.background-video') as HTMLVideoElement;
-        
-        if (!existingVideo) {
-          existingVideo = document.createElement('video');
-          existingVideo.className = 'background-video';
-          existingVideo.autoplay = true;
-          existingVideo.muted = true;
-          existingVideo.loop = true;
-          existingVideo.playsInline = true;
-          document.body.appendChild(existingVideo);
-        }
-        
-        existingVideo.src = background.url;
-        body.classList.add('custom-background');
-      }
-    } else {
-      // Remove custom background
-      body.classList.remove('custom-background');
-      body.style.removeProperty('--custom-bg-url');
-      
-      // Remove video if it exists
-      const existingVideo = document.querySelector('.background-video');
-      if (existingVideo) {
-        existingVideo.remove();
-      }
-    }
+useEffect(() => {
+  const body = document.body;
 
-    // Cleanup function
-    return () => {
-      if (!background) {
-        body.classList.remove('custom-background');
-        body.style.removeProperty('--custom-bg-url');
-        
-        const existingVideo = document.querySelector('.background-video');
-        if (existingVideo) {
-          existingVideo.remove();
-        }
-      }
-    };
-  }, [background]);
+  // 네 사진 고정 배경
+  body.style.setProperty('--custom-bg-url', `url(${newbg})`);
+  body.classList.add('custom-background');
+
+
+
+}, []); // 한 번만 실행
+
+
 
   // Scroll to top on component mount (for mobile)
   useEffect(() => {

@@ -43,10 +43,12 @@ interface ProfileProps {
 }
 
 export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewAccommodation }: ProfileProps) {
-  const [activeTab, setActiveTab] = useState<'background' | 'music' | 'location' | 'profile' | 'community' | 'reservations'>('background');
+  const [activeTab, setActiveTab] = useState('profile');
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
+    const [petName, setPetName] = useState('');
+  const [petType, setPetType] = useState('');
   const [highlightReviewId, setHighlightReviewId] = useState<string | null>(null);
 
   const [showBackgroundSelector, setShowBackgroundSelector] = useState(false);
@@ -616,29 +618,8 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
 
           {/* Segmented Control */}
           <div className="px-6 py-4 border-b border-border">
-            <div className="grid grid-cols-6 gap-1 bg-muted rounded-lg p-1 w-full">
-              <button
-                onClick={() => setActiveTab('background')}
-                className={`px-2 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center whitespace-nowrap ${
-                  activeTab === 'background'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Image className="h-4 w-4 sm:mr-1" />
-                <span className="hidden lg:inline">배경</span>
-              </button>
-              <button
-                onClick={() => setActiveTab('music')}
-                className={`px-2 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center whitespace-nowrap ${
-                  activeTab === 'music'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
-              >
-                <Music className="h-4 w-4 sm:mr-1" />
-                <span className="hidden lg:inline">음악</span>
-              </button>
+            <div className="grid grid-cols-4 gap-1 bg-muted rounded-lg p-1 w-full">
+ 
               <button
                 onClick={() => setActiveTab('location')}
                 className={`px-2 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center whitespace-nowrap ${
@@ -1428,6 +1409,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                   const allReviews = [...MOCK_REVIEWS, ...userReviews];
                   const likedReviews = allReviews.filter(review => userLikes.includes(review.id));
 
+
                   if (!isAuthenticated) {
                     return (
                       <Card>
@@ -1544,108 +1526,138 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                 })()}
               </div>
             )}
+{activeTab === 'profile' && (
+  <div className="space-y-6">
+    {isAuthenticated ? (
+      <>
 
-            {activeTab === 'profile' && (
-              <div className="space-y-6">
-                {isAuthenticated ? (
-                  <>
-                    {/* Profile Photo Edit Section - Only show when editing */}
-                    {isEditing && profilePhotoPreview && (
-                      <Card>
-                        <CardHeader className="pb-3">
-                          <CardTitle className="text-base">새 프로필 사진</CardTitle>
-                          <CardDescription>
-                            새 프로필 사진 미리보기
-                          </CardDescription>
-                        </CardHeader>
-                        <CardContent>
-                          <div className="flex items-center gap-4">
-                            <Avatar className="h-16 w-16">
-                              <AvatarImage src={profilePhotoPreview} className="object-cover" />
-                              <AvatarFallback>
-                                {username?.charAt(0)?.toUpperCase() || userProfile?.email?.charAt(0)?.toUpperCase() || 'U'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                              <p className="text-sm font-medium">{profilePhoto?.name}</p>
-                              <p className="text-xs text-muted-foreground">
-                                {profilePhoto && `${(profilePhoto.size / 1024).toFixed(1)} KB`}
-                              </p>
-                            </div>
-                            <Button
-                              type="button"
-                              variant="ghost"
-                              size="sm"
-                              onClick={removeProfilePhoto}
-                              className="p-1 h-8 w-8"
-                            >
-                              <X className="h-4 w-4" />
-                            </Button>
-                          </div>
-                        </CardContent>
-                      </Card>
-                    )}
+        {/* 📌 프로필 사진 수정 카드 (editing 상태일 때만 표시) */}
+        {isEditing && profilePhotoPreview && (
+          <Card>
+            <CardHeader className="pb-3">
+              <CardTitle className="text-base">새 프로필 사진</CardTitle>
+              <CardDescription>새 프로필 사진 미리보기</CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="flex items-center gap-4">
+                <Avatar className="h-16 w-16">
+                  <AvatarImage src={profilePhotoPreview} className="object-cover" />
+                  <AvatarFallback>
+                    {username?.charAt(0)?.toUpperCase() ||
+                      userProfile?.email?.charAt(0)?.toUpperCase() || 'U'}
+                  </AvatarFallback>
+                </Avatar>
 
-                    {/* Profile Form */}
-                    <div className="space-y-4">
-                      <div className="space-y-2">
-                        <Label htmlFor="email">이메일</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          disabled={!isEditing}
-                          className="bg-background"
-                        />
-                      </div>
+                <div className="flex-1">
+                  <p className="text-sm font-medium">{profilePhoto?.name}</p>
+                  <p className="text-xs text-muted-foreground">
+                    {profilePhoto && `${(profilePhoto.size / 1024).toFixed(1)} KB`}
+                  </p>
+                </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="username">사용자명</Label>
-                        <Input
-                          id="username"
-                          type="text"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                          disabled={!isEditing}
-                          placeholder="사용자명 입력"
-                          className="bg-background"
-                        />
-                      </div>
+                <Button
+                  type="button"
+                  variant="ghost"
+                  size="sm"
+                  onClick={removeProfilePhoto}
+                  className="p-1 h-8 w-8"
+                >
+                  <X className="h-4 w-4" />
+                </Button>
+              </div>
+            </CardContent>
+          </Card>
+        )}
 
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">전화번호</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
-                          disabled={!isEditing}
-                          placeholder="전화번호 입력"
-                          className="bg-background"
-                        />
-                      </div>
-                    </div>
 
-                    {/* Action Buttons */}
-                    {isEditing && (
-                      <div className="flex gap-3">
-                        <Button 
-                          onClick={handleSaveProfile} 
-                          disabled={isLoading}
-                          className="flex-1"
-                        >
-                          {isLoading ? '저장 중...' : '변경사항 저장'}
-                        </Button>
-                        <Button 
-                          variant="outline" 
-                          onClick={handleCancelEdit}
-                          className="flex-1"
-                        >
-                          취소
-                        </Button>
-                      </div>
-                    )}
+        {/* 프로필 폼 */}
+        <div className="space-y-4">
+          <div className="space-y-2">
+            <Label htmlFor="email">이메일</Label>
+            <Input
+              id="email"
+              type="email"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              disabled={!isEditing}
+              className="bg-background"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="username">사용자명</Label>
+            <Input
+              id="username"
+              type="text"
+              value={username}
+              onChange={(e) => setUsername(e.target.value)}
+              disabled={!isEditing}
+              placeholder="사용자명 입력"
+              className="bg-background"
+            />
+          </div>
+
+          <div className="space-y-2">
+            <Label htmlFor="phone">전화번호</Label>
+            <Input
+              id="phone"
+              type="tel"
+              value={phoneNumber}
+              onChange={(e) => setPhoneNumber(e.target.value)}
+              disabled={!isEditing}
+              placeholder="전화번호 입력"
+              className="bg-background"
+            />
+          </div>
+
+          {/* 반려동물 정보 */}
+<div className="space-y-2">
+  <Label htmlFor="petName">반려동물 이름</Label>
+  <Input
+    id="petName"
+    type="text"
+    value={petName}
+    onChange={(e) => setPetName(e.target.value)}
+    disabled={!isEditing}
+    placeholder="반려동물 이름 입력"
+    className="bg-background"
+  />
+</div>
+
+<div className="space-y-2">
+  <Label htmlFor="petType">반려동물 종류, 나이</Label>
+  <Input
+    id="petType"
+    type="text"
+    value={petType}
+    onChange={(e) => setPetType(e.target.value)}
+    disabled={!isEditing}
+    placeholder="예: 강아지, 고양이..."
+    className="bg-background"
+  />
+</div>
+
+        </div>
+
+        {/* 저장/취소 버튼 */}
+        {isEditing && (
+          <div className="flex gap-3">
+            <Button 
+              onClick={handleSaveProfile} 
+              disabled={isLoading}
+              className="flex-1"
+            >
+              {isLoading ? '저장 중...' : '변경사항 저장'}
+            </Button>
+            <Button 
+              variant="outline" 
+              onClick={handleCancelEdit}
+              className="flex-1"
+            >
+              취소
+            </Button>
+          </div>
+        )}
 
                     {/* Favorite Accommodations */}
                     <Card>
