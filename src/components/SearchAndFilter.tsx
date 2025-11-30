@@ -44,9 +44,9 @@ const calcActiveFilterCount = (f: FilterOptions) => {
   return count;
 };
 
-export function SearchAndFilter({ 
-  filters, 
-  onFilterChange, 
+export function SearchAndFilter({
+  filters,
+  onFilterChange,
   onApply,
   open,
   onOpenChange
@@ -74,10 +74,10 @@ export function SearchAndFilter({
   const formatPrice = (price: number) => price.toLocaleString('ko-KR') + '원';
 
   const applySearch = () => {
-  updateFilters({ searchQuery: searchInput });
+    updateFilters({ searchQuery: searchInput });
 
-  if (onApply) onApply();  // ⭐ 적용 버튼 눌렀을 때 추가 동작 실행!
-};
+    if (onApply) onApply();  // ⭐ 적용 버튼 눌렀을 때 추가 동작 실행!
+  };
 
 
   const resetAll = () => {
@@ -105,8 +105,8 @@ export function SearchAndFilter({
             type="text"
             placeholder="숙소 이름, 위치, 리뷰 내용 검색..."
             value={searchInput}
-            onChange={(e) => setSearchInput(e.target.value)}
-            onKeyDown={(e) => {
+            onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchInput(e.target.value)}
+            onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => {
               if (e.key === 'Enter') applySearch();
             }}
             className="pl-10 pr-10"
@@ -160,7 +160,7 @@ export function SearchAndFilter({
                 <Label>정렬 기준</Label>
                 <Select
                   value={filters.sortBy}
-                  onValueChange={(value) => updateFilters({ sortBy: value })}
+                  onValueChange={(value: string) => updateFilters({ sortBy: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="정렬 선택" />
@@ -185,25 +185,25 @@ export function SearchAndFilter({
                 </Label>
                 <Select
                   value={filters.location}
-                  onValueChange={(value) => updateFilters({ location: value })}
+                  onValueChange={(value: string) => updateFilters({ location: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="지역 선택" />
                   </SelectTrigger>
                   <SelectContent>
                     <SelectItem value="all">전체</SelectItem>
-<SelectItem value="서울">서울</SelectItem>
-<SelectItem value="부산광역시">부산</SelectItem>
-<SelectItem value="제주도">제주</SelectItem>
-<SelectItem value="강원도">강원</SelectItem>
-<SelectItem value="경기도">경기</SelectItem>
-<SelectItem value="인천광역시">인천</SelectItem>
-<SelectItem value="대구광역시">대구</SelectItem>
-<SelectItem value="광주광역시">광주</SelectItem>
-<SelectItem value="전라남도">전남</SelectItem>
-<SelectItem value="전라북도">전북</SelectItem>
-<SelectItem value="충청남도">충남</SelectItem>
-<SelectItem value="충청북도">충북</SelectItem>
+                    <SelectItem value="서울">서울</SelectItem>
+                    <SelectItem value="부산광역시">부산</SelectItem>
+                    <SelectItem value="제주도">제주</SelectItem>
+                    <SelectItem value="강원도">강원</SelectItem>
+                    <SelectItem value="경기도">경기</SelectItem>
+                    <SelectItem value="인천광역시">인천</SelectItem>
+                    <SelectItem value="대구광역시">대구</SelectItem>
+                    <SelectItem value="광주광역시">광주</SelectItem>
+                    <SelectItem value="전라남도">전남</SelectItem>
+                    <SelectItem value="전라북도">전북</SelectItem>
+                    <SelectItem value="충청남도">충남</SelectItem>
+                    <SelectItem value="충청북도">충북</SelectItem>
 
                   </SelectContent>
                 </Select>
@@ -222,7 +222,7 @@ export function SearchAndFilter({
                   max={500000}
                   step={10000}
                   value={[filters.minPrice, filters.maxPrice]}
-                  onValueChange={(value) =>
+                  onValueChange={(value: number[]) =>
                     updateFilters({ minPrice: value[0], maxPrice: value[1] })
                   }
                   className="w-full"
@@ -244,7 +244,7 @@ export function SearchAndFilter({
                 </Label>
                 <Select
                   value={filters.minRating.toString()}
-                  onValueChange={(value) =>
+                  onValueChange={(value: string) =>
                     updateFilters({ minRating: parseFloat(value) })
                   }
                 >
@@ -268,7 +268,7 @@ export function SearchAndFilter({
                 <Label>반려동물 크기</Label>
                 <Select
                   value={filters.petSize}
-                  onValueChange={(value) => updateFilters({ petSize: value })}
+                  onValueChange={(value: string) => updateFilters({ petSize: value })}
                 >
                   <SelectTrigger>
                     <SelectValue placeholder="크기 선택" />
@@ -304,7 +304,7 @@ export function SearchAndFilter({
             <Badge variant="secondary" className="gap-1">
               검색: {filters.searchQuery}
               <X
-                className="h-3 w-3 cursor-pointer"
+                className="h-3 w-3 cursor-pointer pointer-events-auto"
                 onClick={() => {
                   updateFilters({ searchQuery: '' });
                   setSearchInput('');
@@ -318,7 +318,7 @@ export function SearchAndFilter({
             <Badge variant="secondary" className="gap-1">
               지역: {filters.location}
               <X
-                className="h-3 w-3 cursor-pointer"
+                className="h-3 w-3 cursor-pointer pointer-events-auto"
                 onClick={() => updateFilters({ location: 'all' })}
               />
             </Badge>
@@ -329,7 +329,7 @@ export function SearchAndFilter({
             <Badge variant="secondary" className="gap-1">
               가격: {formatPrice(filters.minPrice)} ~ {formatPrice(filters.maxPrice)}
               <X
-                className="h-3 w-3 cursor-pointer"
+                className="h-3 w-3 cursor-pointer pointer-events-auto"
                 onClick={() => updateFilters({ minPrice: 0, maxPrice: 500000 })}
               />
             </Badge>
@@ -340,7 +340,7 @@ export function SearchAndFilter({
             <Badge variant="secondary" className="gap-1">
               평점: {filters.minRating}+ ⭐
               <X
-                className="h-3 w-3 cursor-pointer"
+                className="h-3 w-3 cursor-pointer pointer-events-auto"
                 onClick={() => updateFilters({ minRating: 0 })}
               />
             </Badge>
@@ -353,10 +353,10 @@ export function SearchAndFilter({
               {filters.petSize === 'small'
                 ? '소형'
                 : filters.petSize === 'medium'
-                ? '중형'
-                : '대형'}
+                  ? '중형'
+                  : '대형'}
               <X
-                className="h-3 w-3 cursor-pointer"
+                className="h-3 w-3 cursor-pointer pointer-events-auto"
                 onClick={() => updateFilters({ petSize: 'all' })}
               />
             </Badge>

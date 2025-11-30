@@ -7,7 +7,7 @@ import { ScrollArea } from './ui/scroll-area';
 import { Dialog, DialogContent, DialogDescription, DialogHeader, DialogTitle } from './ui/dialog';
 import { Search, Image, Video, Play, Check, Loader2 } from 'lucide-react';
 import { pexelsService, PexelsPhoto, PexelsVideo } from '../lib/pexels';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 
 export interface BackgroundSelection {
   type: 'photo' | 'video';
@@ -28,21 +28,21 @@ interface BackgroundSelectorProps {
 // Function to instantly apply background without saving to database
 const applyBackgroundInstantly = (background: BackgroundSelection) => {
   const body = document.body;
-  
+
   if (background.type === 'photo') {
     // Remove any existing video
     const existingVideo = document.querySelector('.background-video');
     if (existingVideo) {
       existingVideo.remove();
     }
-    
+
     // Set custom background image
     body.style.setProperty('--custom-bg-url', `url(${background.url})`);
     body.classList.add('custom-background');
   } else if (background.type === 'video') {
     // Handle video background
     let existingVideo = document.querySelector('.background-video') as HTMLVideoElement;
-    
+
     if (!existingVideo) {
       existingVideo = document.createElement('video');
       existingVideo.className = 'background-video';
@@ -52,17 +52,17 @@ const applyBackgroundInstantly = (background: BackgroundSelection) => {
       existingVideo.playsInline = true;
       document.body.appendChild(existingVideo);
     }
-    
+
     existingVideo.src = background.url;
     body.classList.add('custom-background');
   }
 };
 
-export function BackgroundSelector({ 
-  isOpen, 
-  onClose, 
-  onSelect, 
-  currentBackground 
+export function BackgroundSelector({
+  isOpen,
+  onClose,
+  onSelect,
+  currentBackground
 }: BackgroundSelectorProps) {
   const [activeTab, setActiveTab] = useState<'photos' | 'videos'>('photos');
   const [searchQuery, setSearchQuery] = useState('');
@@ -90,7 +90,7 @@ export function BackgroundSelector({
         pexelsService.getCuratedPhotos(1, 20),
         pexelsService.getPopularVideos(1, 20)
       ]);
-      
+
       setPhotos(photosResponse.photos || []);
       setVideos(videosResponse.videos || []);
       setPage(1);
@@ -111,7 +111,7 @@ export function BackgroundSelector({
 
     setIsLoading(true);
     setSearchQuery(query);
-    
+
     try {
       if (activeTab === 'photos') {
         const response = await pexelsService.searchPhotos(query, 1, 20);
@@ -139,7 +139,7 @@ export function BackgroundSelector({
     try {
       let response;
       if (searchQuery) {
-        response = activeTab === 'photos' 
+        response = activeTab === 'photos'
           ? await pexelsService.searchPhotos(searchQuery, nextPage, 20)
           : await pexelsService.searchVideos(searchQuery, nextPage, 20);
       } else {
@@ -149,14 +149,14 @@ export function BackgroundSelector({
       }
 
       const newItems = activeTab === 'photos' ? response.photos || [] : response.videos || [];
-      
+
       if (newItems.length === 0) {
         setHasMore(false);
       } else {
         if (activeTab === 'photos') {
-          setPhotos(prev => [...prev, ...newItems as PexelsPhoto[]]);
+          setPhotos((prev: PexelsPhoto[]) => [...prev, ...newItems as PexelsPhoto[]]);
         } else {
-          setVideos(prev => [...prev, ...newItems as PexelsVideo[]]);
+          setVideos((prev: PexelsVideo[]) => [...prev, ...newItems as PexelsVideo[]]);
         }
         setPage(nextPage);
       }
@@ -177,11 +177,11 @@ export function BackgroundSelector({
       photographer: photo.photographer,
       alt: photo.alt
     };
-    
+
     // Instantly apply background for preview
     applyBackgroundInstantly(selection);
     setPreviewBackground(selection);
-    
+
     // Show preview feedback
     toast.success(`Previewing ${selection.photographer}'s photo`);
   };
@@ -195,27 +195,27 @@ export function BackgroundSelector({
       photographer: video.user.name,
       alt: `Video by ${video.user.name}`
     };
-    
+
     // Instantly apply background for preview
     applyBackgroundInstantly(selection);
     setPreviewBackground(selection);
-    
+
     // Show preview feedback
     toast.success(`Previewing ${selection.photographer}'s video`);
   };
 
   const handleApplyBackground = async () => {
     if (!previewBackground) return;
-    
+
     setIsApplying(true);
-    
+
     try {
       // Call onSelect to save to database
       onSelect(previewBackground);
-      
+
       // Show success feedback
       toast.success(`Background applied by ${previewBackground.photographer}`);
-      
+
       // Close the modal
       onClose();
     } catch (error) {
@@ -231,10 +231,10 @@ export function BackgroundSelector({
   };
 
   // Check if there's a new background being previewed
-  const hasNewPreview = previewBackground && 
-    (!currentBackground || 
-     previewBackground.id !== currentBackground.id || 
-     previewBackground.type !== currentBackground.type);
+  const hasNewPreview = previewBackground &&
+    (!currentBackground ||
+      previewBackground.id !== currentBackground.id ||
+      previewBackground.type !== currentBackground.type);
 
   return (
     <Dialog open={isOpen} onOpenChange={onClose}>
@@ -259,8 +259,8 @@ export function BackgroundSelector({
               <Input
                 placeholder={`Search ${activeTab}...`}
                 value={searchQuery}
-                onChange={(e) => setSearchQuery(e.target.value)}
-                onKeyDown={(e) => e.key === 'Enter' && handleSearch(searchQuery)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setSearchQuery(e.target.value)}
+                onKeyDown={(e: React.KeyboardEvent<HTMLInputElement>) => e.key === 'Enter' && handleSearch(searchQuery)}
                 className="pl-10"
               />
               <Button
@@ -278,22 +278,20 @@ export function BackgroundSelector({
             <div className="flex bg-muted rounded-lg p-1 w-full">
               <button
                 onClick={() => setActiveTab('photos')}
-                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${
-                  activeTab === 'photos'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${activeTab === 'photos'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+                  }`}
               >
                 <Image className="h-4 w-4" />
                 Photos
               </button>
               <button
                 onClick={() => setActiveTab('videos')}
-                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${
-                  activeTab === 'videos'
-                    ? 'bg-background text-foreground shadow-sm'
-                    : 'text-muted-foreground hover:text-foreground'
-                }`}
+                className={`flex-1 px-4 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center gap-2 ${activeTab === 'videos'
+                  ? 'bg-background text-foreground shadow-sm'
+                  : 'text-muted-foreground hover:text-foreground'
+                  }`}
               >
                 <Video className="h-4 w-4" />
                 Videos
@@ -309,9 +307,8 @@ export function BackgroundSelector({
                   {photos.map((photo) => (
                     <Card
                       key={photo.id}
-                      className={`cursor-pointer transition-all hover:ring-2 hover:ring-primary relative overflow-hidden ${
-                        isCurrentlySelected('photo', photo.id) ? 'ring-2 ring-primary' : ''
-                      }`}
+                      className={`cursor-pointer transition-all hover:ring-2 hover:ring-primary relative overflow-hidden ${isCurrentlySelected('photo', photo.id) ? 'ring-2 ring-primary' : ''
+                        }`}
                       onClick={() => handlePhotoSelect(photo)}
                     >
                       <div className="aspect-square relative w-full">
@@ -337,7 +334,7 @@ export function BackgroundSelector({
                     </Card>
                   ))}
                 </div>
-                
+
                 {hasMore && !isLoading && (
                   <div className="text-center py-4 pr-4 pb-20">
                     <Button variant="outline" onClick={loadMore} className="w-full">
@@ -354,9 +351,8 @@ export function BackgroundSelector({
                   {videos.map((video) => (
                     <Card
                       key={video.id}
-                      className={`cursor-pointer transition-all hover:ring-2 hover:ring-primary relative overflow-hidden ${
-                        isCurrentlySelected('video', video.id) ? 'ring-2 ring-primary' : ''
-                      }`}
+                      className={`cursor-pointer transition-all hover:ring-2 hover:ring-primary relative overflow-hidden ${isCurrentlySelected('video', video.id) ? 'ring-2 ring-primary' : ''
+                        }`}
                       onClick={() => handleVideoSelect(video)}
                     >
                       <div className="aspect-square relative w-full">
@@ -387,7 +383,7 @@ export function BackgroundSelector({
                     </Card>
                   ))}
                 </div>
-                
+
                 {hasMore && !isLoading && (
                   <div className="text-center py-4 pr-4 pb-20">
                     <Button variant="outline" onClick={loadMore} className="w-full">
@@ -413,7 +409,7 @@ export function BackgroundSelector({
         {/* Sticky Apply Button - Only show when there's a new preview */}
         {hasNewPreview && (
           <div className="absolute bottom-0 left-0 right-0 p-6 bg-gradient-to-t from-background via-background to-transparent">
-            <Button 
+            <Button
               onClick={handleApplyBackground}
               disabled={isApplying}
               className="w-full bg-white text-black hover:bg-gray-100 border border-gray-200 shadow-lg"

@@ -8,15 +8,13 @@ import { ReservationConfirmation } from './ReservationConfirmation';
 import { Notifications } from './Notifications';
 import { Edit3, ChevronDown, Sun, Moon } from 'lucide-react';
 import { supabase } from '../lib/supabase';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner';
 import { useBackground } from '../lib/useBackground';
 import newbg from '../assets/1.jpg'; //추가
 import { useMusicContext } from '../lib/MusicContext';
 import { BackgroundSelection } from './BackgroundSelector';
 
 import { MusicSelector } from './MusicSelector';
-import svgPaths from "../imports/svg-wixcs60w0b";
-import Frame11 from '../imports/Frame11';
 import framesvgPaths from '../imports/svg-wrlpobapsl';
 import playButtonPaths from '../imports/svg-4cizzkdugw';
 
@@ -470,7 +468,7 @@ export function Dashboard({ isAuthenticated, userId, onLogout, onShowAuth, locat
   return (
     <div className="relative">
       {/* Main Clock Section - Fixed Height */}
-      <div className="relative min-h-screen flex flex-col">
+      <div className="relative min-h-[85vh] flex flex-col">
         {/* Logo at top */}
         <div className="absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
           <Logo onClick={() => {
@@ -632,7 +630,7 @@ export function Dashboard({ isAuthenticated, userId, onLogout, onShowAuth, locat
         </div>
 
         {/* Bottom Music Controls */}
-        <div className="absolute bottom-32 sm:bottom-28 left-1/2 translate-x-[-50%]">
+        <div className="absolute bottom-24 sm:bottom-20 left-1/2 translate-x-[-50%]">
           {/* Music Controls */}
           <div className="bg-background/80 backdrop-blur-sm border border-border relative rounded-lg h-14 px-6 shadow-lg">
             <div className="flex flex-row gap-5 items-center justify-center h-full">
