@@ -47,7 +47,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
   const [userProfile, setUserProfile] = useState<any>(null);
   const [isEditing, setIsEditing] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
-    const [petName, setPetName] = useState('');
+  const [petName, setPetName] = useState('');
   const [petType, setPetType] = useState('');
   const [highlightReviewId, setHighlightReviewId] = useState<string | null>(null);
 
@@ -73,10 +73,10 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [location, setLocation] = useState('');
-  
+
   // Favorites refresh trigger
   const [favoritesRefresh, setFavoritesRefresh] = useState(0);
-  
+
   // Profile photo states
   const [profilePhoto, setProfilePhoto] = useState<File | null>(null);
   const [profilePhotoPreview, setProfilePhotoPreview] = useState<string>('');
@@ -93,8 +93,8 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
 
   // Check for dark mode preference on load
   useEffect(() => {
-    const isDark = document.documentElement.classList.contains('dark') || 
-                   localStorage.getItem('darkMode') === 'true';
+    const isDark = document.documentElement.classList.contains('dark') ||
+      localStorage.getItem('darkMode') === 'true';
     setIsDarkMode(isDark);
   }, []);
 
@@ -124,7 +124,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
       const fetchProfile = async () => {
         try {
           const { data: { user } } = await supabase.auth.getUser();
-          
+
           if (user) {
             // Try to get profile from profiles table
             const { data: profile } = await supabase
@@ -132,7 +132,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
               .select('*')
               .eq('id', user.id)
               .single();
-            
+
             setUserProfile(profile || { id: user.id, email: user.email });
             setEmail(user.email || '');
             setUsername(profile?.username || '');
@@ -178,13 +178,13 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
     }
 
     setIsSearching(true);
-    
+
     const searchTimeout = setTimeout(async () => {
       try {
         const response = await fetch(
           `https://api.weatherapi.com/v1/search.json?key=${WEATHER_API_KEY}&q=${encodeURIComponent(searchQuery)}`
         );
-        
+
         if (response.ok) {
           const data: WeatherAPICity[] = await response.json();
           setSearchResults(data.slice(0, 10)); // Limit to 10 results
@@ -205,7 +205,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
 
   const handleDarkModeToggle = async (checked: boolean) => {
     setIsDarkMode(checked);
-    
+
     if (checked) {
       document.documentElement.classList.add('dark');
       localStorage.setItem('darkMode', 'true');
@@ -259,7 +259,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
         toast.error('Please select a valid image file');
         return;
       }
-      
+
       // Validate file size (max 5MB)
       if (file.size > 5 * 1024 * 1024) {
         toast.error('Image must be less than 5MB');
@@ -267,7 +267,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
       }
 
       setProfilePhoto(file);
-      
+
       // Create preview
       const reader = new FileReader();
       reader.onload = (e) => {
@@ -301,16 +301,16 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
       async (position) => {
         try {
           const { latitude, longitude } = position.coords;
-          
+
           // Fetch city name from coordinates using WeatherAPI
           const response = await fetch(
             `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${latitude},${longitude}&aqi=no`
           );
-          
+
           if (response.ok) {
             const data = await response.json();
             const cityName = data.location.name;
-            
+
             setSearchQuery(cityName);
             setSelectedCity(cityName);
             setHasLocationChanged(true);
@@ -327,7 +327,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
       },
       (error) => {
         setIsGettingLocation(false);
-        
+
         switch (error.code) {
           case error.PERMISSION_DENIED:
             setLocationError('Location access denied. Please enable location permissions or search manually.');
@@ -354,10 +354,10 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
   const handleTemperatureUnitToggle = async (checked: boolean) => {
     setUseFahrenheit(checked);
     setHasTemperatureChanged(checked !== originalUseFahrenheit);
-    
+
     // Save to localStorage for all users
     localStorage.setItem('useFahrenheit', checked.toString());
-    
+
     // Dispatch event to notify other components
     window.dispatchEvent(new CustomEvent('temperatureUnitChanged', { detail: checked }));
   };
@@ -394,12 +394,12 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
           // Save to localStorage for guest users
           localStorage.setItem('guestLocation', selectedCity);
           setGuestLocation(selectedCity);
-          
+
           // Dispatch event to notify other components
           window.dispatchEvent(new CustomEvent('guestLocationUpdate', { detail: selectedCity }));
         }
       }
-      
+
       // Reset change flags
       setHasLocationChanged(false);
       setHasTemperatureChanged(false);
@@ -407,7 +407,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
       setSearchQuery('');
       setSearchResults([]);
       setLocationError('');
-      
+
       // Show appropriate success message
       if (hasLocationChanged && hasTemperatureChanged) {
         toast.success(`Location and temperature settings updated`);
@@ -436,7 +436,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
     try {
       const fileExt = profilePhoto.name.split('.').pop();
       const fileName = `${userId}.${fileExt}`;
-      
+
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, profilePhoto, {
@@ -458,9 +458,9 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
 
   const handleSaveProfile = async () => {
     if (!userProfile?.id) return;
-    
+
     setIsLoading(true);
-    
+
     try {
       let profilePhotoUrl = currentProfilePhotoUrl;
 
@@ -489,15 +489,15 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
 
       if (error) throw error;
 
-      setUserProfile({ 
-        ...userProfile, 
-        username, 
+      setUserProfile({
+        ...userProfile,
+        username,
         phone: phoneNumber,
-        email, 
+        email,
         location,
         profile_photo_url: profilePhotoUrl
       });
-      
+
       setCurrentProfilePhotoUrl(profilePhotoUrl || '');
       setProfilePhoto(null);
       setProfilePhotoPreview('');
@@ -528,7 +528,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
     try {
       await supabase.auth.signOut();
       toast.success('로그아웃되었습니다');
-      
+
       // Call parent logout handler
       if (onLogout) {
         onLogout();
@@ -543,8 +543,8 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
   const avatarImageSrc = profilePhotoPreview || currentProfilePhotoUrl;
 
   return (
-    <div className="min-h-screen p-4">
-      <div className="max-w-2xl mx-auto">
+    <div className="min-h-screen p-4" onClick={onBack}>
+      <div className="max-w-2xl mx-auto" onClick={(e) => e.stopPropagation()}>
         {/* Header */}
         <div className="bg-card border border-border rounded-xl mb-6 overflow-hidden">
           <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6">
@@ -557,25 +557,25 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
               >
                 <ArrowLeft className="h-5 w-5" />
               </Button>
-              
+
               <div className="flex items-center gap-4 flex-1">
                 <div className="relative">
                   <Avatar className="h-16 w-16 border-2 border-background">
                     <AvatarImage src={avatarImageSrc} className="object-cover" />
                     <AvatarFallback className="text-lg bg-primary text-primary-foreground">
                       {isAuthenticated ? (
-                        userProfile?.username?.charAt(0)?.toUpperCase() || 
+                        userProfile?.username?.charAt(0)?.toUpperCase() ||
                         userProfile?.email?.charAt(0)?.toUpperCase() || 'U'
                       ) : (
                         'G'
                       )}
                     </AvatarFallback>
                   </Avatar>
-                  
+
                   {/* Photo edit overlay when in editing mode */}
                   {isAuthenticated && isEditing && (
                     <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center cursor-pointer hover:bg-black/60 transition-colors"
-                         onClick={() => document.getElementById('profilePhotoEdit')?.click()}>
+                      onClick={() => document.getElementById('profilePhotoEdit')?.click()}>
                       <Camera className="h-6 w-6 text-white" />
                       <Input
                         id="profilePhotoEdit"
@@ -587,7 +587,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                     </div>
                   )}
                 </div>
-                
+
                 <div className="flex-1">
                   <h1 className="text-xl font-semibold text-foreground">
                     {isAuthenticated ? (
@@ -619,47 +619,43 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
           {/* Segmented Control */}
           <div className="px-6 py-4 border-b border-border">
             <div className="grid grid-cols-4 gap-1 bg-muted rounded-lg p-1 w-full">
- 
+
               <button
                 onClick={() => setActiveTab('location')}
-                className={`px-2 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center whitespace-nowrap ${
-                  activeTab === 'location'
+                className={`px-2 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center whitespace-nowrap ${activeTab === 'location'
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
-                }`}
+                  }`}
               >
                 <MapPin className="h-4 w-4 sm:mr-1" />
                 <span className="hidden lg:inline">위치</span>
               </button>
               <button
                 onClick={() => setActiveTab('reservations')}
-                className={`px-2 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center whitespace-nowrap ${
-                  activeTab === 'reservations'
+                className={`px-2 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center whitespace-nowrap ${activeTab === 'reservations'
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
-                }`}
+                  }`}
               >
                 <FileText className="h-4 w-4 sm:mr-1" />
                 <span className="hidden lg:inline">이용기록</span>
               </button>
               <button
                 onClick={() => setActiveTab('community')}
-                className={`px-2 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center whitespace-nowrap ${
-                  activeTab === 'community'
+                className={`px-2 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center whitespace-nowrap ${activeTab === 'community'
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
-                }`}
+                  }`}
               >
                 <MessageSquare className="h-4 w-4 sm:mr-1" />
                 <span className="hidden lg:inline">커뮤니티</span>
               </button>
               <button
                 onClick={() => setActiveTab('profile')}
-                className={`px-2 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center whitespace-nowrap ${
-                  activeTab === 'profile'
+                className={`px-2 py-2 text-sm font-medium rounded-md transition-all flex items-center justify-center whitespace-nowrap ${activeTab === 'profile'
                     ? 'bg-background text-foreground shadow-sm'
                     : 'text-muted-foreground hover:text-foreground'
-                }`}
+                  }`}
               >
                 <User className="h-4 w-4 sm:mr-1" />
                 <span className="hidden lg:inline">내 정보</span>
@@ -684,9 +680,9 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                     <CardContent className="pt-6">
                       <div className="flex items-center gap-4">
                         <div className="w-16 h-16 rounded-lg overflow-hidden bg-muted flex-shrink-0">
-                          <img 
-                            src={background.thumbnail} 
-                            alt={background.alt || 'Background'} 
+                          <img
+                            src={background.thumbnail}
+                            alt={background.alt || 'Background'}
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -704,7 +700,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                 )}
 
                 {/* Background Selection Button */}
-                <Button 
+                <Button
                   onClick={() => setShowBackgroundSelector(true)}
                   className="w-full"
                 >
@@ -895,7 +891,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                           </button>
                         </div>
                       </div>
-                      
+
                       {/* Volume Slider */}
                       <div className="bg-muted/50 border border-border relative rounded-[10px] shrink-0 w-full mt-6">
                         <div className="relative size-full">
@@ -952,7 +948,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                                   </g>
                                 </svg>
                               </div>
-                              
+
                               {/* Volume on icon */}
                               <div className="absolute right-0 size-4 top-1/2 translate-y-[-50%]">
                                 <svg
@@ -989,10 +985,10 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                                   </g>
                                 </svg>
                               </div>
-                              
+
                               {/* Volume slider */}
                               <div className="absolute box-border content-stretch flex flex-row items-center justify-center left-7 p-0 right-7 top-1/2 translate-y-[-50%]">
-                                <div 
+                                <div
                                   className="basis-0 bg-border grow h-4 min-h-px min-w-px overflow-clip relative rounded-[9999px] shrink-0 cursor-pointer"
                                   onClick={(e) => {
                                     const rect = e.currentTarget.getBoundingClientRect();
@@ -1000,7 +996,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                                     changeVolume(percent);
                                   }}
                                 >
-                                  <div 
+                                  <div
                                     className="absolute bg-primary bottom-0 left-0 top-0"
                                     style={{
                                       right: `${100 - (volume * 100)}%`
@@ -1018,7 +1014,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                                     const startVolume = volume;
                                     const slider = e.currentTarget.parentElement;
                                     const sliderRect = slider?.getBoundingClientRect();
-                                    
+
                                     const handleMouseMove = (e: MouseEvent) => {
                                       if (!sliderRect) return;
                                       const deltaX = e.clientX - startX;
@@ -1026,12 +1022,12 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                                       const newVolume = startVolume + deltaPercent;
                                       changeVolume(newVolume);
                                     };
-                                    
+
                                     const handleMouseUp = () => {
                                       document.removeEventListener('mousemove', handleMouseMove);
                                       document.removeEventListener('mouseup', handleMouseUp);
                                     };
-                                    
+
                                     document.addEventListener('mousemove', handleMouseMove);
                                     document.addEventListener('mouseup', handleMouseUp);
                                   }}
@@ -1047,7 +1043,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                 )}
 
                 {/* Music Selection Button */}
-                <Button 
+                <Button
                   onClick={() => setShowMusicSelector(true)}
                   className="w-full"
                 >
@@ -1158,9 +1154,8 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                           <button
                             key={city.id}
                             onClick={() => handleCitySelect(city.name)}
-                            className={`w-full p-3 text-left rounded-lg border transition-colors hover:bg-muted ${
-                              selectedCity === city.name ? 'bg-primary/10 border-primary' : 'border-border'
-                            }`}
+                            className={`w-full p-3 text-left rounded-lg border transition-colors hover:bg-muted ${selectedCity === city.name ? 'bg-primary/10 border-primary' : 'border-border'
+                              }`}
                           >
                             <div className="flex items-center justify-between">
                               <div>
@@ -1222,8 +1217,8 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
 
                 {/* Save Button */}
                 {(hasLocationChanged || hasTemperatureChanged) && (
-                  <Button 
-                    onClick={handleLocationSave} 
+                  <Button
+                    onClick={handleLocationSave}
                     className="w-full"
                   >
                     저장
@@ -1243,7 +1238,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
 
                 {(() => {
                   const reservations = JSON.parse(localStorage.getItem('petfriendly_reservations') || '[]');
-                  const sortedReservations = reservations.sort((a: any, b: any) => 
+                  const sortedReservations = reservations.sort((a: any, b: any) =>
                     new Date(b.reservationDate).getTime() - new Date(a.reservationDate).getTime()
                   );
 
@@ -1346,7 +1341,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
             )}
 
             {activeTab === 'community' && (
-              <Community 
+              <Community
                 isAuthenticated={isAuthenticated}
                 onShowAuth={onShowAuth}
               />
@@ -1369,7 +1364,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                   // Get all reviews (mock + user reviews)
                   const userReviewsJson = localStorage.getItem('petfriendly_reviews');
                   const userReviews = userReviewsJson ? JSON.parse(userReviewsJson) : [];
-                  
+
                   // Mock reviews from Community.tsx
                   const MOCK_REVIEWS = [
                     {
@@ -1465,11 +1460,10 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                                         {[...Array(5)].map((_, i) => (
                                           <Star
                                             key={i}
-                                            className={`h-3 w-3 ${
-                                              i < review.rating
+                                            className={`h-3 w-3 ${i < review.rating
                                                 ? 'fill-yellow-400 text-yellow-400'
                                                 : 'text-gray-300'
-                                            }`}
+                                              }`}
                                           />
                                         ))}
                                       </div>
@@ -1478,9 +1472,9 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                                   </div>
                                 </div>
                                 <Badge variant="secondary" className="flex-shrink-0">
-                                  {new Date(review.created_at).toLocaleDateString('ko-KR', { 
-                                    month: 'short', 
-                                    day: 'numeric' 
+                                  {new Date(review.created_at).toLocaleDateString('ko-KR', {
+                                    month: 'short',
+                                    day: 'numeric'
                                   })}
                                 </Badge>
                               </div>
@@ -1526,138 +1520,138 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                 })()}
               </div>
             )}
-{activeTab === 'profile' && (
-  <div className="space-y-6">
-    {isAuthenticated ? (
-      <>
+            {activeTab === 'profile' && (
+              <div className="space-y-6">
+                {isAuthenticated ? (
+                  <>
 
-        {/* 📌 프로필 사진 수정 카드 (editing 상태일 때만 표시) */}
-        {isEditing && profilePhotoPreview && (
-          <Card>
-            <CardHeader className="pb-3">
-              <CardTitle className="text-base">새 프로필 사진</CardTitle>
-              <CardDescription>새 프로필 사진 미리보기</CardDescription>
-            </CardHeader>
-            <CardContent>
-              <div className="flex items-center gap-4">
-                <Avatar className="h-16 w-16">
-                  <AvatarImage src={profilePhotoPreview} className="object-cover" />
-                  <AvatarFallback>
-                    {username?.charAt(0)?.toUpperCase() ||
-                      userProfile?.email?.charAt(0)?.toUpperCase() || 'U'}
-                  </AvatarFallback>
-                </Avatar>
+                    {/* 📌 프로필 사진 수정 카드 (editing 상태일 때만 표시) */}
+                    {isEditing && profilePhotoPreview && (
+                      <Card>
+                        <CardHeader className="pb-3">
+                          <CardTitle className="text-base">새 프로필 사진</CardTitle>
+                          <CardDescription>새 프로필 사진 미리보기</CardDescription>
+                        </CardHeader>
+                        <CardContent>
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-16 w-16">
+                              <AvatarImage src={profilePhotoPreview} className="object-cover" />
+                              <AvatarFallback>
+                                {username?.charAt(0)?.toUpperCase() ||
+                                  userProfile?.email?.charAt(0)?.toUpperCase() || 'U'}
+                              </AvatarFallback>
+                            </Avatar>
 
-                <div className="flex-1">
-                  <p className="text-sm font-medium">{profilePhoto?.name}</p>
-                  <p className="text-xs text-muted-foreground">
-                    {profilePhoto && `${(profilePhoto.size / 1024).toFixed(1)} KB`}
-                  </p>
-                </div>
+                            <div className="flex-1">
+                              <p className="text-sm font-medium">{profilePhoto?.name}</p>
+                              <p className="text-xs text-muted-foreground">
+                                {profilePhoto && `${(profilePhoto.size / 1024).toFixed(1)} KB`}
+                              </p>
+                            </div>
 
-                <Button
-                  type="button"
-                  variant="ghost"
-                  size="sm"
-                  onClick={removeProfilePhoto}
-                  className="p-1 h-8 w-8"
-                >
-                  <X className="h-4 w-4" />
-                </Button>
-              </div>
-            </CardContent>
-          </Card>
-        )}
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={removeProfilePhoto}
+                              className="p-1 h-8 w-8"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    )}
 
 
-        {/* 프로필 폼 */}
-        <div className="space-y-4">
-          <div className="space-y-2">
-            <Label htmlFor="email">이메일</Label>
-            <Input
-              id="email"
-              type="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              disabled={!isEditing}
-              className="bg-background"
-            />
-          </div>
+                    {/* 프로필 폼 */}
+                    <div className="space-y-4">
+                      <div className="space-y-2">
+                        <Label htmlFor="email">이메일</Label>
+                        <Input
+                          id="email"
+                          type="email"
+                          value={email}
+                          onChange={(e) => setEmail(e.target.value)}
+                          disabled={!isEditing}
+                          className="bg-background"
+                        />
+                      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="username">사용자명</Label>
-            <Input
-              id="username"
-              type="text"
-              value={username}
-              onChange={(e) => setUsername(e.target.value)}
-              disabled={!isEditing}
-              placeholder="사용자명 입력"
-              className="bg-background"
-            />
-          </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="username">사용자명</Label>
+                        <Input
+                          id="username"
+                          type="text"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          disabled={!isEditing}
+                          placeholder="사용자명 입력"
+                          className="bg-background"
+                        />
+                      </div>
 
-          <div className="space-y-2">
-            <Label htmlFor="phone">전화번호</Label>
-            <Input
-              id="phone"
-              type="tel"
-              value={phoneNumber}
-              onChange={(e) => setPhoneNumber(e.target.value)}
-              disabled={!isEditing}
-              placeholder="전화번호 입력"
-              className="bg-background"
-            />
-          </div>
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">전화번호</Label>
+                        <Input
+                          id="phone"
+                          type="tel"
+                          value={phoneNumber}
+                          onChange={(e) => setPhoneNumber(e.target.value)}
+                          disabled={!isEditing}
+                          placeholder="전화번호 입력"
+                          className="bg-background"
+                        />
+                      </div>
 
-          {/* 반려동물 정보 */}
-<div className="space-y-2">
-  <Label htmlFor="petName">반려동물 이름</Label>
-  <Input
-    id="petName"
-    type="text"
-    value={petName}
-    onChange={(e) => setPetName(e.target.value)}
-    disabled={!isEditing}
-    placeholder="반려동물 이름 입력"
-    className="bg-background"
-  />
-</div>
+                      {/* 반려동물 정보 */}
+                      <div className="space-y-2">
+                        <Label htmlFor="petName">반려동물 이름</Label>
+                        <Input
+                          id="petName"
+                          type="text"
+                          value={petName}
+                          onChange={(e) => setPetName(e.target.value)}
+                          disabled={!isEditing}
+                          placeholder="반려동물 이름 입력"
+                          className="bg-background"
+                        />
+                      </div>
 
-<div className="space-y-2">
-  <Label htmlFor="petType">반려동물 종류, 나이</Label>
-  <Input
-    id="petType"
-    type="text"
-    value={petType}
-    onChange={(e) => setPetType(e.target.value)}
-    disabled={!isEditing}
-    placeholder="예: 강아지, 고양이..."
-    className="bg-background"
-  />
-</div>
+                      <div className="space-y-2">
+                        <Label htmlFor="petType">반려동물 종류, 나이</Label>
+                        <Input
+                          id="petType"
+                          type="text"
+                          value={petType}
+                          onChange={(e) => setPetType(e.target.value)}
+                          disabled={!isEditing}
+                          placeholder="예: 강아지, 고양이..."
+                          className="bg-background"
+                        />
+                      </div>
 
-        </div>
+                    </div>
 
-        {/* 저장/취소 버튼 */}
-        {isEditing && (
-          <div className="flex gap-3">
-            <Button 
-              onClick={handleSaveProfile} 
-              disabled={isLoading}
-              className="flex-1"
-            >
-              {isLoading ? '저장 중...' : '변경사항 저장'}
-            </Button>
-            <Button 
-              variant="outline" 
-              onClick={handleCancelEdit}
-              className="flex-1"
-            >
-              취소
-            </Button>
-          </div>
-        )}
+                    {/* 저장/취소 버튼 */}
+                    {isEditing && (
+                      <div className="flex gap-3">
+                        <Button
+                          onClick={handleSaveProfile}
+                          disabled={isLoading}
+                          className="flex-1"
+                        >
+                          {isLoading ? '저장 중...' : '변경사항 저장'}
+                        </Button>
+                        <Button
+                          variant="outline"
+                          onClick={handleCancelEdit}
+                          className="flex-1"
+                        >
+                          취소
+                        </Button>
+                      </div>
+                    )}
 
                     {/* Favorite Accommodations */}
                     <Card>
@@ -1690,19 +1684,19 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
 
                           const handleRemoveFavorite = (e: React.MouseEvent, favoriteId: string) => {
                             e.stopPropagation();
-                            
+
                             // Remove from favorites
                             const updatedFavorites = favoritesData.filter((fav: any) => fav.id !== favoriteId);
                             localStorage.setItem('petfriendly_favorites_data', JSON.stringify(updatedFavorites));
-                            
+
                             // Also update the favorites list
                             const favoritesJson = localStorage.getItem('petfriendly_favorites');
                             const favorites: string[] = favoritesJson ? JSON.parse(favoritesJson) : [];
                             const updatedFavoritesList = favorites.filter(id => id !== favoriteId);
                             localStorage.setItem('petfriendly_favorites', JSON.stringify(updatedFavoritesList));
-                            
+
                             toast.success('좋아요를 취소했습니다');
-                            
+
                             // Force re-render by triggering a state update
                             window.dispatchEvent(new Event('storage'));
                           };
@@ -1720,8 +1714,8 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                               {favoritesData.map((favorite: any) => {
                                 const data = favorite.data || {};
                                 return (
-                                  <Card 
-                                    key={favorite.id} 
+                                  <Card
+                                    key={favorite.id}
                                     className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
                                     onClick={() => handleCardClick(favorite)}
                                   >
@@ -1733,7 +1727,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                                           className="w-full h-full object-cover"
                                         />
                                       )}
-                                      <button 
+                                      <button
                                         className="absolute top-2 right-2 bg-background/90 backdrop-blur-sm rounded-full p-2 hover:bg-background transition-colors"
                                         onClick={(e) => handleRemoveFavorite(e, favorite.id)}
                                         title="좋아요 취소"
@@ -1788,7 +1782,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                               {(() => {
                                 const reviews = JSON.parse(localStorage.getItem('petfriendly_reviews') || '[]');
                                 const userReviews = reviews.filter((r: any) => r.user_id === userProfile?.id);
-                                
+
                                 // Get all comments from localStorage (including comments on MOCK_REVIEWS)
                                 const allComments: any[] = [];
                                 // Check all localStorage keys for comments
@@ -1815,7 +1809,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                                       {userReviews.length > 0 ? (
                                         <div className="space-y-2">
                                           {userReviews.map((review: any) => (
-                                            <Card 
+                                            <Card
                                               key={review.id}
                                               className="cursor-pointer hover:bg-muted/50 transition-colors"
                                               onClick={() => setActiveTab('community')}
@@ -1850,7 +1844,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                                       {userComments.length > 0 ? (
                                         <div className="space-y-2">
                                           {userComments.map((comment: any, idx: number) => (
-                                            <Card 
+                                            <Card
                                               key={idx}
                                               className="cursor-pointer hover:bg-muted/50 transition-colors"
                                               onClick={() => setActiveTab('community')}
@@ -1887,7 +1881,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                             <div className="prose prose-sm max-w-none dark:prose-invert">
                               <h4>Pet Friendly 이용약관</h4>
                               <p className="text-sm text-muted-foreground">최종 업데이트: 2025년 11월 8일</p>
-                              
+
                               <h5 className="mt-4">제1조 (��적)</h5>
                               <p className="text-sm">
                                 본 약관은 Pet Friendly(이하 "서비스")가 제공하는 반려동물 동반 숙소 예약 및 정보 제공 서비스의 이용과 관련하여 ���사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
@@ -1945,7 +1939,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                             <div className="prose prose-sm max-w-none dark:prose-invert">
                               <h4>Pet Friendly 개인정보 취급방침</h4>
                               <p className="text-sm text-muted-foreground">최종 업데이트: 2025년 11월 8일</p>
-                              
+
                               <h5 className="mt-4">1. 개인정보의 수집 및 이용 목적</h5>
                               <p className="text-sm">
                                 Pet Friendly는 다음의 목적을 위하여 개인정보를 처리합니다:<br />
@@ -2027,8 +2021,8 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                     </Card>
 
                     {/* Sign Out Button - Secondary Treatment */}
-                    <Button 
-                      variant="secondary" 
+                    <Button
+                      variant="secondary"
                       onClick={handleLogout}
                       className="w-full"
                     >
@@ -2042,7 +2036,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                       <div className="mx-auto w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center">
                         <User className="h-8 w-8 text-primary" />
                       </div>
-                      
+
                       <div className="space-y-2">
                         <h3 className="text-lg font-semibold">계정 만들기</h3>
                         <p className="text-sm text-muted-foreground">
@@ -2051,7 +2045,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                       </div>
 
                       <div className="space-y-3">
-                        <Button 
+                        <Button
                           onClick={() => onShowAuth('signup')}
                           className="w-full"
                           size="lg"
@@ -2059,7 +2053,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                           <UserPlus className="h-4 w-4 mr-2" />
                           회원가입
                         </Button>
-                        <Button 
+                        <Button
                           onClick={() => onShowAuth('login')}
                           variant="outline"
                           className="w-full"
