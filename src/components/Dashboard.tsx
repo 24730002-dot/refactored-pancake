@@ -62,16 +62,16 @@ export function Dashboard({ isAuthenticated, userId, onLogout, onShowAuth, locat
   // Music hook - now works for both authenticated and unauthenticated users
   const { currentTrack, isPlaying, availableTracks, changeTrack, togglePlayPause, previousTrack, nextTrack } = useMusicContext();
 
-useEffect(() => {
-  const body = document.body;
+  useEffect(() => {
+    const body = document.body;
 
-  // 네 사진 고정 배경
-  body.style.setProperty('--custom-bg-url', `url(${newbg})`);
-  body.classList.add('custom-background');
+    // 네 사진 고정 배경
+    body.style.setProperty('--custom-bg-url', `url(${newbg})`);
+    body.classList.add('custom-background');
 
 
 
-}, []); // 한 번만 실행
+  }, []); // 한 번만 실행
 
 
 
@@ -86,7 +86,7 @@ useEffect(() => {
       setProfilePhotoUrl(''); // Clear profile photo for guests
       return;
     }
-    
+
     try {
       const { data: { user } } = await supabase.auth.getUser();
       if (user) {
@@ -95,7 +95,7 @@ useEffect(() => {
           .select('*')
           .eq('id', user.id)
           .single();
-        
+
         if (profile) {
           setUserProfile(profile);
           setCurrentLocation(profile.location || '');
@@ -123,7 +123,7 @@ useEffect(() => {
               .select('is_dark_mode')
               .eq('id', user.id)
               .single();
-            
+
             if (profile && profile.is_dark_mode !== undefined && profile.is_dark_mode !== null) {
               setIsDarkMode(profile.is_dark_mode);
             }
@@ -177,7 +177,7 @@ useEffect(() => {
   // Get guest location using geolocation or localStorage
   useEffect(() => {
     if (isAuthenticated) return; // Only for guests
-    
+
     const getGuestLocation = () => {
       // First check if guest has saved a location in localStorage
       const savedGuestLocation = localStorage.getItem('guestLocation');
@@ -196,12 +196,12 @@ useEffect(() => {
         async (position) => {
           try {
             const { latitude, longitude } = position.coords;
-            
+
             // Fetch city name from coordinates using WeatherAPI
             const response = await fetch(
               `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${latitude},${longitude}&aqi=no`
             );
-            
+
             if (response.ok) {
               const data = await response.json();
               setGuestLocation(data.location.name);
@@ -251,16 +251,16 @@ useEffect(() => {
   useEffect(() => {
     const fetchWeather = async () => {
       setWeatherLoading(true);
-      
+
       try {
         const locationToUse = isAuthenticated ? currentLocation : guestLocation;
-        
+
         if (locationToUse) {
           // Use real WeatherAPI for users with location (both auth and guest)
           const response = await fetch(
             `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${encodeURIComponent(locationToUse)}&aqi=no`
           );
-          
+
           if (response.ok) {
             const data = await response.json();
             setWeather({
@@ -277,7 +277,7 @@ useEffect(() => {
           // Mock weather fallback
           const temperatures = [72, 74, 76, 78, 80, 82];
           const conditions = ['Clear', 'Partly Cloudy', 'Sunny', 'Cloudy'];
-          
+
           setWeather({
             temp: temperatures[Math.floor(Math.random() * temperatures.length)],
             condition: conditions[Math.floor(Math.random() * conditions.length)]
@@ -288,7 +288,7 @@ useEffect(() => {
         // Fallback to mock weather
         const temperatures = [72, 74, 76, 78, 80, 82];
         const conditions = ['Clear', 'Partly Cloudy', 'Sunny', 'Cloudy'];
-        
+
         setWeather({
           temp: temperatures[Math.floor(Math.random() * temperatures.length)],
           condition: conditions[Math.floor(Math.random() * conditions.length)]
@@ -302,7 +302,7 @@ useEffect(() => {
     if (locationToUse || !isAuthenticated) {
       fetchWeather();
     }
-    
+
     // Update weather every 10 minutes
     const weatherTimer = setInterval(fetchWeather, 10 * 60 * 1000);
 
@@ -355,14 +355,14 @@ useEffect(() => {
 
         // Update local state
         setCurrentLocation(cityName);
-        
+
         // Refresh weather immediately with the new location
         setWeatherLoading(true);
         try {
           const response = await fetch(
             `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${encodeURIComponent(cityName)}&aqi=no`
           );
-          
+
           if (response.ok) {
             const data = await response.json();
             setWeather({
@@ -387,14 +387,14 @@ useEffect(() => {
       // Save to localStorage for guest users
       localStorage.setItem('guestLocation', cityName);
       setGuestLocation(cityName);
-      
+
       // Refresh weather immediately with the new location
       setWeatherLoading(true);
       try {
         const response = await fetch(
           `https://api.weatherapi.com/v1/current.json?key=${WEATHER_API_KEY}&q=${encodeURIComponent(cityName)}&aqi=no`
         );
-        
+
         if (response.ok) {
           const data = await response.json();
           setWeather({
@@ -410,16 +410,16 @@ useEffect(() => {
       } finally {
         setWeatherLoading(false);
       }
-      
+
       toast.success(`Location updated to ${cityName}`);
     }
   };
 
   if (showProfile) {
     return (
-      <Profile 
+      <Profile
         isAuthenticated={isAuthenticated}
-        onLogout={handleLogoutFromProfile} 
+        onLogout={handleLogoutFromProfile}
         onBack={handleCloseProfile}
         onShowAuth={onShowAuth}
       />
@@ -438,17 +438,17 @@ useEffect(() => {
   const toggleDarkMode = async () => {
     const newDarkMode = !isDarkMode;
     setIsDarkMode(newDarkMode);
-    
+
     // Update DOM
     if (newDarkMode) {
       document.documentElement.classList.add('dark');
     } else {
       document.documentElement.classList.remove('dark');
     }
-    
+
     // Save to localStorage
     localStorage.setItem('darkMode', String(newDarkMode));
-    
+
     // Save to database if authenticated
     if (isAuthenticated) {
       try {
@@ -458,7 +458,7 @@ useEffect(() => {
             .from('profiles')
             .update({ is_dark_mode: newDarkMode })
             .eq('id', user.id);
-          
+
           if (error) throw error;
         }
       } catch (error) {
@@ -494,14 +494,14 @@ useEffect(() => {
               <Moon className="h-5 w-5 text-foreground" />
             )}
           </button>
-          
+
           {/* Notifications */}
           <div className="bg-background/80 backdrop-blur-sm border border-border rounded-full hover:opacity-70 transition-opacity shadow-lg">
             <Notifications userId={userId} />
           </div>
-          
+
           {/* Profile Button */}
-          <button 
+          <button
             onClick={handleProfileClick}
             className="bg-background/80 backdrop-blur-sm border border-border rounded-full size-12 hover:opacity-70 transition-opacity shadow-lg flex items-center justify-center"
             title={isAuthenticated ? 'Profile' : 'Profile & Settings'}
@@ -545,102 +545,99 @@ useEffect(() => {
           </button>
         </div>
 
-      {/* Main Clock and Weather Display */}
-      <div 
-        className="absolute time-container translate-x-[-50%] translate-y-[-50%] w-[85vw] max-w-none"
-        style={{ top: "calc(50% + 0.5px)", left: "calc(50% + 0.5px)" }}
-      >
-        <div className="flex flex-row justify-center items-center">
-          <div 
-            className={`box-border content-stretch flex flex-col sm:flex-row font-['Roboto:Light',_sans-serif] font-light gap-4 sm:gap-6 md:gap-8 lg:gap-12 xl:gap-20 items-center justify-center leading-[0] p-[8px] relative text-[#ffffff] text-left text-nowrap tracking-[-0.25px] cursor-pointer transition-all duration-200`}
-            onClick={handleWidgetClick}
-            onMouseEnter={() => setIsHoveringWidget(true)}
-            onMouseLeave={() => setIsHoveringWidget(false)}
-            title="Click to customize location"
-          >
-            {/* Edit Icon - Now available for all users */}
-            <div 
-              className={`absolute -top-6 -right-6 z-10 transition-all duration-200 ${
-                isHoveringWidget ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
-              }`}
+        {/* Main Clock and Weather Display */}
+        <div
+          className="absolute time-container translate-x-[-50%] translate-y-[-50%] w-[85vw] max-w-none"
+          style={{ top: "calc(50% + 0.5px)", left: "calc(50% + 0.5px)" }}
+        >
+          <div className="flex flex-row justify-center items-center">
+            <div
+              className={`box-border content-stretch flex flex-col sm:flex-row font-['Roboto:Light',_sans-serif] font-light gap-4 sm:gap-6 md:gap-8 lg:gap-12 xl:gap-20 items-center justify-center leading-[0] p-[8px] relative text-[#ffffff] text-left text-nowrap tracking-[-0.25px] cursor-pointer transition-all duration-200`}
+              onClick={handleWidgetClick}
+              onMouseEnter={() => setIsHoveringWidget(true)}
+              onMouseLeave={() => setIsHoveringWidget(false)}
+              title="Click to customize location"
             >
-              <div className="bg-white/20 backdrop-blur-sm rounded-full p-2 border border-white/30 shadow-lg">
-                <Edit3 className="h-4 w-4 text-white" />
+              {/* Edit Icon - Now available for all users */}
+              <div
+                className={`absolute -top-6 -right-6 z-10 transition-all duration-200 ${isHoveringWidget ? 'opacity-100 scale-100' : 'opacity-0 scale-95'
+                  }`}
+              >
+                <div className="bg-white/20 backdrop-blur-sm rounded-full p-2 border border-white/30 shadow-lg">
+                  <Edit3 className="h-4 w-4 text-white" />
+                </div>
               </div>
-            </div>
 
-            {/* Time */}
-            <div 
-              style={{ fontVariationSettings: "'wdth' 100" }}
-              className={`flex flex-col justify-center items-center relative shrink-0 ${
-                isHoveringWidget ? 'scale-105' : ''
-              } transition-transform duration-200`}
-            >
-              <p className="block leading-[normal] text-nowrap whitespace-pre text-[14vw] sm:text-[12vw] md:text-[10vw] lg:text-[8vw] xl:text-[150px]" 
-                 style={{ 
-                   textShadow: '0px 0px 40px rgba(0, 0, 0, 0.5), 0px 0px 20px rgba(0, 0, 0, 0.4), 0px 0px 10px rgba(0, 0, 0, 0.3)',
-                   fontWeight: '300'
-                 }}>
-                {formatTime(currentTime)}
-              </p>
-              {/* Location display */}
-              {displayLocation && (
-                <p className="block leading-[normal] text-nowrap whitespace-pre text-[6vw] sm:text-[2.5vw] md:text-[2vw] lg:text-[1.5vw] xl:text-[24px] text-center mt-2 opacity-80" 
-                   style={{ 
-                     textShadow: '0px 0px 20px rgba(0, 0, 0, 0.5), 0px 0px 10px rgba(0, 0, 0, 0.4)'
-                   }}>
-                  {displayLocation}
+              {/* Time */}
+              <div
+                style={{ fontVariationSettings: "'wdth' 100" }}
+                className={`flex flex-col justify-center items-center relative shrink-0 ${isHoveringWidget ? 'scale-105' : ''
+                  } transition-transform duration-200`}
+              >
+                <p className="block leading-[normal] text-nowrap whitespace-pre text-[14vw] sm:text-[12vw] md:text-[10vw] lg:text-[8vw] xl:text-[150px]"
+                  style={{
+                    textShadow: '0px 0px 40px rgba(0, 0, 0, 0.5), 0px 0px 20px rgba(0, 0, 0, 0.4), 0px 0px 10px rgba(0, 0, 0, 0.3)',
+                    fontWeight: '300'
+                  }}>
+                  {formatTime(currentTime)}
                 </p>
-              )}
-            </div>
-            
-            {/* Dot Separator */}
-            <div 
-              style={{ fontVariationSettings: "'wdth' 100" }}
-              className="flex flex-col justify-center relative shrink-0"
-            >
-              <p className="block leading-[normal] text-nowrap whitespace-pre text-[8vw] sm:text-[7vw] md:text-[6vw] lg:text-[4.5vw] xl:text-[75px]"
-                 style={{ 
-                   textShadow: '0px 0px 40px rgba(0, 0, 0, 0.5), 0px 0px 20px rgba(0, 0, 0, 0.4), 0px 0px 10px rgba(0, 0, 0, 0.3)',
-                   fontWeight: '300'
-                 }}>
-                •
-              </p>
-            </div>
-            
-            {/* Temperature */}
-            <div 
-              style={{ fontVariationSettings: "'wdth' 100" }}
-              className={`flex flex-col justify-center items-center relative shrink-0 ${
-                isHoveringWidget ? 'scale-105' : ''
-              } transition-transform duration-200`}
-            >
-              <p className="block leading-[normal] text-nowrap whitespace-pre text-[14vw] sm:text-[12vw] md:text-[10vw] lg:text-[8vw] xl:text-[150px]"
-                 style={{ 
-                   textShadow: '0px 0px 40px rgba(0, 0, 0, 0.5), 0px 0px 20px rgba(0, 0, 0, 0.4), 0px 0px 10px rgba(0, 0, 0, 0.3)',
-                   fontWeight: '300'
-                 }}>
-                {weatherLoading ? '--' : weather.temp}°
-              </p>
-              <p className="block leading-[normal] text-nowrap whitespace-pre text-[6vw] sm:text-[2.5vw] md:text-[2vw] lg:text-[1.5vw] xl:text-[24px] text-center mt-2 opacity-80" 
-                 style={{ 
-                   textShadow: '0px 0px 20px rgba(0, 0, 0, 0.5), 0px 0px 10px rgba(0, 0, 0, 0.4)'
-                 }}>
-                {weatherLoading ? 'Loading...' : weather.condition}
-              </p>
-            </div>
+                {/* Location display */}
+                {displayLocation && (
+                  <p className="block leading-[normal] text-nowrap whitespace-pre text-[6vw] sm:text-[2.5vw] md:text-[2vw] lg:text-[1.5vw] xl:text-[24px] text-center mt-2 opacity-80"
+                    style={{
+                      textShadow: '0px 0px 20px rgba(0, 0, 0, 0.5), 0px 0px 10px rgba(0, 0, 0, 0.4)'
+                    }}>
+                    {displayLocation}
+                  </p>
+                )}
+              </div>
 
+              {/* Dot Separator */}
+              <div
+                style={{ fontVariationSettings: "'wdth' 100" }}
+                className="flex flex-col justify-center relative shrink-0"
+              >
+                <p className="block leading-[normal] text-nowrap whitespace-pre text-[8vw] sm:text-[7vw] md:text-[6vw] lg:text-[4.5vw] xl:text-[75px]"
+                  style={{
+                    textShadow: '0px 0px 40px rgba(0, 0, 0, 0.5), 0px 0px 20px rgba(0, 0, 0, 0.4), 0px 0px 10px rgba(0, 0, 0, 0.3)',
+                    fontWeight: '300'
+                  }}>
+                  •
+                </p>
+              </div>
+
+              {/* Temperature */}
+              <div
+                style={{ fontVariationSettings: "'wdth' 100" }}
+                className={`flex flex-col justify-center items-center relative shrink-0 ${isHoveringWidget ? 'scale-105' : ''
+                  } transition-transform duration-200`}
+              >
+                <p className="block leading-[normal] text-nowrap whitespace-pre text-[14vw] sm:text-[12vw] md:text-[10vw] lg:text-[8vw] xl:text-[150px]"
+                  style={{
+                    textShadow: '0px 0px 40px rgba(0, 0, 0, 0.5), 0px 0px 20px rgba(0, 0, 0, 0.4), 0px 0px 10px rgba(0, 0, 0, 0.3)',
+                    fontWeight: '300'
+                  }}>
+                  {weatherLoading ? '--' : weather.temp}°
+                </p>
+                <p className="block leading-[normal] text-nowrap whitespace-pre text-[6vw] sm:text-[2.5vw] md:text-[2vw] lg:text-[1.5vw] xl:text-[24px] text-center mt-2 opacity-80"
+                  style={{
+                    textShadow: '0px 0px 20px rgba(0, 0, 0, 0.5), 0px 0px 10px rgba(0, 0, 0, 0.4)'
+                  }}>
+                  {weatherLoading ? 'Loading...' : weather.condition}
+                </p>
+              </div>
+
+            </div>
           </div>
         </div>
-      </div>
 
-      {/* Bottom Music Controls */}
-      <div className="absolute bottom-32 sm:bottom-28 left-1/2 translate-x-[-50%]">
+        {/* Bottom Music Controls */}
+        <div className="absolute bottom-32 sm:bottom-28 left-1/2 translate-x-[-50%]">
           {/* Music Controls */}
           <div className="bg-background/80 backdrop-blur-sm border border-border relative rounded-lg h-14 px-6 shadow-lg">
             <div className="flex flex-row gap-5 items-center justify-center h-full">
               {/* Previous Button */}
-              <button 
+              <button
                 onClick={previousTrack}
                 className="relative shrink-0 size-7 hover:opacity-70 transition-opacity"
                 disabled={!currentTrack}
@@ -679,7 +676,7 @@ useEffect(() => {
               </button>
 
               {/* Play/Pause Button */}
-              <button 
+              <button
                 onClick={togglePlayPause}
                 className="relative shrink-0 size-7 hover:opacity-70 transition-opacity"
                 disabled={!currentTrack}
@@ -718,7 +715,7 @@ useEffect(() => {
               </button>
 
               {/* Next Button */}
-              <button 
+              <button
                 onClick={nextTrack}
                 className="relative shrink-0 size-7 hover:opacity-70 transition-opacity"
                 disabled={!currentTrack}
@@ -757,7 +754,7 @@ useEffect(() => {
               </button>
             </div>
           </div>
-      </div>
+        </div>
 
 
 
