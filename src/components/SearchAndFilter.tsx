@@ -303,13 +303,17 @@ export function SearchAndFilter({
           {filters.searchQuery && (
             <Badge variant="secondary" className="gap-1">
               검색: {filters.searchQuery}
-              <X
-                className="h-3 w-3 cursor-pointer pointer-events-auto"
-                onClick={() => {
+              <span
+                role="button"
+                className="cursor-pointer hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
                   updateFilters({ searchQuery: '' });
                   setSearchInput('');
                 }}
-              />
+              >
+                <X className="h-3 w-3" />
+              </span>
             </Badge>
           )}
 
@@ -317,10 +321,16 @@ export function SearchAndFilter({
           {filters.location !== 'all' && (
             <Badge variant="secondary" className="gap-1">
               지역: {filters.location}
-              <X
-                className="h-3 w-3 cursor-pointer pointer-events-auto"
-                onClick={() => updateFilters({ location: 'all' })}
-              />
+              <span
+                role="button"
+                className="cursor-pointer hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateFilters({ location: 'all' });
+                }}
+              >
+                <X className="h-3 w-3" />
+              </span>
             </Badge>
           )}
 
@@ -328,10 +338,16 @@ export function SearchAndFilter({
           {(filters.minPrice > 0 || filters.maxPrice < 500000) && (
             <Badge variant="secondary" className="gap-1">
               가격: {formatPrice(filters.minPrice)} ~ {formatPrice(filters.maxPrice)}
-              <X
-                className="h-3 w-3 cursor-pointer pointer-events-auto"
-                onClick={() => updateFilters({ minPrice: 0, maxPrice: 500000 })}
-              />
+              <span
+                role="button"
+                className="cursor-pointer hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateFilters({ minPrice: 0, maxPrice: 500000 });
+                }}
+              >
+                <X className="h-3 w-3" />
+              </span>
             </Badge>
           )}
 
@@ -339,10 +355,16 @@ export function SearchAndFilter({
           {filters.minRating > 0 && (
             <Badge variant="secondary" className="gap-1">
               평점: {filters.minRating}+ ⭐
-              <X
-                className="h-3 w-3 cursor-pointer pointer-events-auto"
-                onClick={() => updateFilters({ minRating: 0 })}
-              />
+              <span
+                role="button"
+                className="cursor-pointer hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateFilters({ minRating: 0 });
+                }}
+              >
+                <X className="h-3 w-3" />
+              </span>
             </Badge>
           )}
 
@@ -355,10 +377,16 @@ export function SearchAndFilter({
                 : filters.petSize === 'medium'
                   ? '중형'
                   : '대형'}
-              <X
-                className="h-3 w-3 cursor-pointer pointer-events-auto"
-                onClick={() => updateFilters({ petSize: 'all' })}
-              />
+              <span
+                role="button"
+                className="cursor-pointer hover:text-destructive"
+                onClick={(e) => {
+                  e.stopPropagation();
+                  updateFilters({ petSize: 'all' });
+                }}
+              >
+                <X className="h-3 w-3" />
+              </span>
             </Badge>
           )}
         </div>
