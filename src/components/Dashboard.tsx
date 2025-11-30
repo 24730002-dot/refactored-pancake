@@ -276,8 +276,13 @@ export function Dashboard({ isAuthenticated, userId, onLogout, onShowAuth, locat
           const temperatures = [72, 74, 76, 78, 80, 82];
           const conditions = ['Clear', 'Partly Cloudy', 'Sunny', 'Cloudy'];
 
+          let temp = temperatures[Math.floor(Math.random() * temperatures.length)];
+          if (!useFahrenheit) {
+            temp = Math.round((temp - 32) * 5 / 9);
+          }
+
           setWeather({
-            temp: temperatures[Math.floor(Math.random() * temperatures.length)],
+            temp,
             condition: conditions[Math.floor(Math.random() * conditions.length)]
           });
         }
@@ -287,8 +292,13 @@ export function Dashboard({ isAuthenticated, userId, onLogout, onShowAuth, locat
         const temperatures = [72, 74, 76, 78, 80, 82];
         const conditions = ['Clear', 'Partly Cloudy', 'Sunny', 'Cloudy'];
 
+        let temp = temperatures[Math.floor(Math.random() * temperatures.length)];
+        if (!useFahrenheit) {
+          temp = Math.round((temp - 32) * 5 / 9);
+        }
+
         setWeather({
-          temp: temperatures[Math.floor(Math.random() * temperatures.length)],
+          temp,
           condition: conditions[Math.floor(Math.random() * conditions.length)]
         });
       } finally {
