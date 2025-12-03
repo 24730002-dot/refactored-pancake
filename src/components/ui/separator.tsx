@@ -17,6 +17,7 @@ function Separator({
       decorative={decorative}
       orientation={orientation}
       className={cn(
+        // 부모 폭/높이에 맞춰지는 구조라 모바일·데스크톱 모두 대응
         "bg-border shrink-0 data-[orientation=horizontal]:h-px data-[orientation=horizontal]:w-full data-[orientation=vertical]:h-full data-[orientation=vertical]:w-px",
         className,
       )}

@@ -28,7 +28,8 @@ function ToggleGroup({
       data-variant={variant}
       data-size={size}
       className={cn(
-        "group/toggle-group flex w-fit items-center rounded-md data-[variant=outline]:shadow-xs",
+        // 모바일: w-full + flex-wrap, 데스크톱: w-fit 유지
+        "group/toggle-group flex w-full max-w-full flex-wrap items-center rounded-md data-[variant=outline]:shadow-xs sm:w-fit sm:flex-nowrap",
         className,
       )}
       {...props}
@@ -60,6 +61,8 @@ function ToggleGroupItem({
           variant: context.variant || variant,
           size: context.size || size,
         }),
+        // 모바일: flex-1 + min-w-0로 한 줄 가득, 여러 개면 줄바꿈
+        // 데스크톱: 기존 그룹 토글 스타일 유지
         "min-w-0 flex-1 shrink-0 rounded-none shadow-none first:rounded-l-md last:rounded-r-md focus:z-10 focus-visible:z-10 data-[variant=outline]:border-l-0 data-[variant=outline]:first:border-l",
         className,
       )}

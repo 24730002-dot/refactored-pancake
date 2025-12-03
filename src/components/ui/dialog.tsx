@@ -60,7 +60,8 @@ function DialogContent({
       <DialogPrimitive.Content
         data-slot="dialog-content"
         className={cn(
-          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-6 shadow-lg duration-200 sm:max-w-lg",
+          // 모바일: 패딩 축소 + 최대 높이/스크롤, 데스크톱: 기존 max-width 유지
+          "bg-background data-[state=open]:animate-in data-[state=closed]:animate-out data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 fixed top-[50%] left-[50%] z-50 grid w-full max-w-[calc(100%-2rem)] translate-x-[-50%] translate-y-[-50%] gap-4 rounded-lg border p-4 sm:p-6 shadow-lg duration-200 max-h-[90vh] overflow-y-auto sm:max-w-lg",
           className,
         )}
         {...props}
@@ -105,7 +106,11 @@ function DialogTitle({
   return (
     <DialogPrimitive.Title
       data-slot="dialog-title"
-      className={cn("text-lg leading-none font-semibold", className)}
+      className={cn(
+        // 모바일: text-base, 데스크톱: text-lg
+        "text-base sm:text-lg leading-none font-semibold",
+        className,
+      )}
       {...props}
     />
   );
@@ -118,7 +123,11 @@ function DialogDescription({
   return (
     <DialogPrimitive.Description
       data-slot="dialog-description"
-      className={cn("text-muted-foreground text-sm", className)}
+      className={cn(
+        // 모바일: text-xs, 데스크톱: text-sm
+        "text-muted-foreground text-xs sm:text-sm",
+        className,
+      )}
       {...props}
     />
   );

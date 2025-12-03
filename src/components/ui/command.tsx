@@ -21,7 +21,8 @@ function Command({
     <CommandPrimitive
       data-slot="command"
       className={cn(
-        "bg-popover text-popover-foreground flex h-full w-full flex-col overflow-hidden rounded-md",
+        // 모바일: 더 작은 폰트, w-full
+        "bg-popover text-popover-foreground flex h-full w-full flex-col overflow-hidden rounded-md text-xs sm:text-sm",
         className,
       )}
       {...props}
@@ -60,13 +61,14 @@ function CommandInput({
   return (
     <div
       data-slot="command-input-wrapper"
-      className="flex h-9 items-center gap-2 border-b px-3"
+      className="flex h-10 sm:h-9 items-center gap-2 border-b px-3"
     >
       <SearchIcon className="size-4 shrink-0 opacity-50" />
       <CommandPrimitive.Input
         data-slot="command-input"
         className={cn(
-          "placeholder:text-muted-foreground flex h-10 w-full rounded-md bg-transparent py-3 text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
+          // 모바일 폰트 살짝 축소
+          "placeholder:text-muted-foreground flex h-10 w-full rounded-md bg-transparent py-3 text-xs sm:text-sm outline-hidden disabled:cursor-not-allowed disabled:opacity-50",
           className,
         )}
         {...props}
@@ -83,7 +85,8 @@ function CommandList({
     <CommandPrimitive.List
       data-slot="command-list"
       className={cn(
-        "max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto",
+        // 모바일: 화면 높이 기준 스크롤, 데스크탑: 고정 max-height
+        "max-h-[60vh] sm:max-h-[300px] scroll-py-1 overflow-x-hidden overflow-y-auto",
         className,
       )}
       {...props}
@@ -97,7 +100,7 @@ function CommandEmpty({
   return (
     <CommandPrimitive.Empty
       data-slot="command-empty"
-      className="py-6 text-center text-sm"
+      className="py-6 text-center text-xs sm:text-sm"
       {...props}
     />
   );
@@ -140,7 +143,8 @@ function CommandItem({
     <CommandPrimitive.Item
       data-slot="command-item"
       className={cn(
-        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default items-center gap-2 rounded-sm px-2 py-1.5 text-sm outline-hidden select-none data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
+        // 모바일: 더 작은 폰트/간격, 터치 영역 확보
+        "data-[selected=true]:bg-accent data-[selected=true]:text-accent-foreground [&_svg:not([class*='text-'])]:text-muted-foreground relative flex cursor-default select-none items-center gap-1.5 sm:gap-2 rounded-sm px-2 py-2 sm:py-1.5 text-xs sm:text-sm outline-hidden data-[disabled=true]:pointer-events-none data-[disabled=true]:opacity-50 [&_svg]:pointer-events-none [&_svg]:shrink-0 [&_svg:not([class*='size-'])]:size-4",
         className,
       )}
       {...props}
@@ -156,7 +160,8 @@ function CommandShortcut({
     <span
       data-slot="command-shortcut"
       className={cn(
-        "text-muted-foreground ml-auto text-xs tracking-widest",
+        // 모바일: 더 작은 글씨
+        "text-muted-foreground ml-auto text-[10px] sm:text-xs tracking-widest",
         className,
       )}
       {...props}
