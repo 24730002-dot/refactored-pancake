@@ -13,7 +13,8 @@ function Avatar({
     <AvatarPrimitive.Root
       data-slot="avatar"
       className={cn(
-        "relative flex size-10 shrink-0 overflow-hidden rounded-full",
+        // 모바일 기준으로 작게, 화면 커질수록 점점 키움
+        "relative flex size-8 sm:size-10 md:size-12 shrink-0 overflow-hidden rounded-full",
         className,
       )}
       {...props}

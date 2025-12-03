@@ -687,33 +687,36 @@ export function Community({ isAuthenticated, onShowAuth, highlightReviewId }: Co
     );
   };
 
-  return (
-    <div className="space-y-6">
-      {/* Header */}
-      <div className="flex items-center justify-between">
-        <div>
-          <h2 className="text-2xl text-foreground flex items-center gap-2">
-            <PawPrint className="h-6 w-6 text-primary" />
-            커뮤니티 후기
-          </h2>
-          <p className="text-muted-foreground mt-1">
-            다른 반려동물 보호자들의 진솔한 후기를 확인하세요
-          </p>
-        </div>
-        <Dialog open={showNewReviewDialog} onOpenChange={setShowNewReviewDialog}>
-          <DialogTrigger asChild>
-            <Button className="gap-2">
-              <PawPrint className="h-4 w-4" />
-              후기 작성
-            </Button>
-          </DialogTrigger>
-          <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-            <DialogHeader>
-              <DialogTitle>후기 작성하기</DialogTitle>
-              <DialogDescription>
-                방문하신 숙소에 대한 솔직한 후기를 남겨주세요
-              </DialogDescription>
-            </DialogHeader>
+return (
+  <div className="space-y-6">
+    {/* Header */}
+    <div className="flex items-center justify-between gap-4 flex-wrap sm:flex-nowrap">
+      <div className="flex-1 min-w-0">
+        <h2 className="text-2xl text-foreground flex items-center gap-2">
+          <PawPrint className="h-6 w-6 text-primary" />
+          커뮤니티 후기
+        </h2>
+        <p className="text-muted-foreground mt-1">
+          다른 반려동물 보호자들의 진솔한 후기를 확인하세요
+        </p>
+      </div>
+
+      <Dialog open={showNewReviewDialog} onOpenChange={setShowNewReviewDialog}>
+        <DialogTrigger asChild>
+          <Button className="gap-2 flex-shrink-0 w-full sm:w-auto">
+            <PawPrint className="h-4 w-4" />
+            후기 작성
+          </Button>
+        </DialogTrigger>
+
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>후기 작성하기</DialogTitle>
+            <DialogDescription>
+              방문하신 숙소에 대한 솔직한 후기를 남겨주세요
+            </DialogDescription>
+          </DialogHeader>
+          
             <div className="space-y-4 py-4">
               {/* Accommodation Selection */}
               <div className="space-y-2">
@@ -843,39 +846,53 @@ export function Community({ isAuthenticated, onShowAuth, highlightReviewId }: Co
         </Dialog>
       </div>
 
-      {/* Filters and Sorting */}
-      <div className="flex flex-wrap gap-2 items-center justify-between">
-        <div className="flex gap-2 items-center flex-wrap">
-          <Filter className="h-4 w-4 text-muted-foreground" />
-          <div className="flex gap-1 flex-wrap">
+
+        {/* Filters and Sorting */}
+      <div className="mt-4 space-y-3">
+        {/* 별점 필터 */}
+        <div className="flex w-full flex-wrap gap-2">
+          <Button
+            variant={filterRating === null ? 'default' : 'outline'}
+            size="sm"
+            className="flex-1 min-w-[72px] h-9"
+            onClick={() => setFilterRating(null)}
+          >
+            전체
+          </Button>
+
+          {[5, 4, 3, 2, 1].map((rating) => (
             <Button
-              variant={filterRating === null ? 'default' : 'outline'}
+              key={rating}
+              variant={filterRating === rating ? 'default' : 'outline'}
               size="sm"
-              onClick={() => setFilterRating(null)}
+              onClick={() => setFilterRating(rating)}
+              className="flex-1 min-w-[72px] h-9 gap-1"
             >
-              전체
+              <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
+              {rating}
             </Button>
-            {[5, 4, 3, 2, 1].map((rating) => (
-              <Button
-                key={rating}
-                variant={filterRating === rating ? 'default' : 'outline'}
-                size="sm"
-                onClick={() => setFilterRating(rating)}
-                className="gap-1"
-              >
-                <Star className="h-3 w-3 fill-yellow-400 text-yellow-400" />
-                {rating}
-              </Button>
-            ))}
-          </div>
+          ))}
         </div>
-        <Tabs value={sortBy} onValueChange={(v) => setSortBy(v as 'recent' | 'popular')}>
-          <TabsList>
-            <TabsTrigger value="recent">최신순</TabsTrigger>
-            <TabsTrigger value="popular">인기순</TabsTrigger>
+
+        {/* 정렬 탭 */}
+        <Tabs
+          value={sortBy}
+          onValueChange={(v) => setSortBy(v as 'recent' | 'popular')}
+          className="w-full"
+        >
+          <TabsList className="grid h-9 w-full grid-cols-2 rounded-full px-1">
+            <TabsTrigger value="recent" className="text-xs px-3">
+              최신순
+            </TabsTrigger>
+            <TabsTrigger value="popular" className="text-xs px-3">
+              인기순
+            </TabsTrigger>
           </TabsList>
         </Tabs>
       </div>
+
+
+
 
       {/* Reviews List */}
       <div className="space-y-4">

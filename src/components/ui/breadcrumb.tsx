@@ -13,7 +13,8 @@ function BreadcrumbList({ className, ...props }: React.ComponentProps<"ol">) {
     <ol
       data-slot="breadcrumb-list"
       className={cn(
-        "text-muted-foreground flex flex-wrap items-center gap-1.5 text-sm break-words sm:gap-2.5",
+        // 모바일: 더 작은 폰트/간격, 줄바꿈 허용
+        "text-muted-foreground flex flex-wrap items-center gap-1 text-xs sm:gap-2.5 sm:text-sm break-words",
         className,
       )}
       {...props}
@@ -25,7 +26,11 @@ function BreadcrumbItem({ className, ...props }: React.ComponentProps<"li">) {
   return (
     <li
       data-slot="breadcrumb-item"
-      className={cn("inline-flex items-center gap-1.5", className)}
+      className={cn(
+        // 모바일: gap-1, 큰 화면에서 살짝 여유
+        "inline-flex items-center gap-1 sm:gap-1.5",
+        className,
+      )}
       {...props}
     />
   );
@@ -72,7 +77,11 @@ function BreadcrumbSeparator({
       data-slot="breadcrumb-separator"
       role="presentation"
       aria-hidden="true"
-      className={cn("[&>svg]:size-3.5", className)}
+      className={cn(
+        // 아이콘 크기 반응형
+        "[&>svg]:size-3 sm:[&>svg]:size-3.5",
+        className,
+      )}
       {...props}
     >
       {children ?? <ChevronRight />}
@@ -89,7 +98,11 @@ function BreadcrumbEllipsis({
       data-slot="breadcrumb-ellipsis"
       role="presentation"
       aria-hidden="true"
-      className={cn("flex size-9 items-center justify-center", className)}
+      className={cn(
+        // 터치 영역 확보
+        "flex size-7 items-center justify-center sm:size-9",
+        className,
+      )}
       {...props}
     >
       <MoreHorizontal className="size-4" />

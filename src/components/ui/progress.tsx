@@ -14,7 +14,8 @@ function Progress({
     <ProgressPrimitive.Root
       data-slot="progress"
       className={cn(
-        "bg-primary/20 relative h-2 w-full overflow-hidden rounded-full",
+        // 모바일: 더 얇게, sm 이상에서 살짝 두껍게
+        "bg-primary/20 relative h-1.5 sm:h-2 w-full overflow-hidden rounded-full",
         className,
       )}
       {...props}

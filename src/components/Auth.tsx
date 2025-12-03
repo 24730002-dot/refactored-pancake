@@ -57,21 +57,18 @@ export function Auth({ onAuthSuccess, onBack, initialMode = 'login' }: AuthProps
   const handleProfilePhotoChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      // Validate file type
       if (!file.type.startsWith('image/')) {
         setError('Please select a valid image file');
         return;
       }
-      
-      // Validate file size (max 5MB)
+
       if (file.size > 5 * 1024 * 1024) {
         setError('Image must be less than 5MB');
         return;
       }
 
       setProfilePhoto(file);
-      
-      // Create preview
+
       const reader = new FileReader();
       reader.onload = (e) => {
         setProfilePhotoPreview(e.target?.result as string);
@@ -92,30 +89,33 @@ export function Auth({ onAuthSuccess, onBack, initialMode = 'login' }: AuthProps
     try {
       const fileExt = profilePhoto.name.split('.').pop();
       const fileName = `${userId}.${fileExt}`;
-      
+
       const { error: uploadError } = await supabase.storage
         .from('avatars')
         .upload(fileName, profilePhoto, {
-          upsert: true
+          upsert: true,
         });
 
       if (uploadError) throw uploadError;
 
-      const { data } = supabase.storage
-        .from('avatars')
-        .getPublicUrl(fileName);
+      const { data } = supabase.storage.from('avatars').getPublicUrl(fileName);
 
       return data.publicUrl;
     } catch (error) {
       console.error('Error uploading profile photo:', error);
-      throw error; // Re-throw to handle in calling function
+      throw error;
     }
   };
 
-  const createUserProfile = async (userId: string, userEmail: string, profilePhotoUrl?: string | null) => {
+  const createUserProfile = async (
+    userId: string,
+    userEmail: string,
+    profilePhotoUrl?: string | null
+  ) => {
     try {
-      // Ensure we have a valid session before creating profile
-      const { data: { session } } = await supabase.auth.getSession();
+      const {
+        data: { session },
+      } = await supabase.auth.getSession();
       if (!session) {
         throw new Error('No active session found');
       }
@@ -129,9 +129,7 @@ export function Auth({ onAuthSuccess, onBack, initialMode = 'login' }: AuthProps
       if (phoneNumber) profileData.phone = phoneNumber;
       if (profilePhotoUrl) profileData.profile_photo_url = profilePhotoUrl;
 
-      const { error: profileError } = await supabase
-        .from('profiles')
-        .insert([profileData]);
+      const { error: profileError } = await supabase.from('profiles').insert([profileData]);
 
       if (profileError) throw profileError;
 
@@ -152,7 +150,6 @@ export function Auth({ onAuthSuccess, onBack, initialMode = 'login' }: AuthProps
 
     try {
       if (isLogin) {
-        // Sign in
         const { data, error } = await supabase.auth.signInWithPassword({
           email,
           password,
@@ -165,7 +162,6 @@ export function Auth({ onAuthSuccess, onBack, initialMode = 'login' }: AuthProps
           onAuthSuccess();
         }
       } else {
-        // Sign up
         const { data, error } = await supabase.auth.signUp({
           email,
           password,
@@ -175,41 +171,36 @@ export function Auth({ onAuthSuccess, onBack, initialMode = 'login' }: AuthProps
 
         if (data.user) {
           try {
-            // Wait a moment to ensure the session is fully established
-            await new Promise(resolve => setTimeout(resolve, 100));
+            await new Promise((resolve) => setTimeout(resolve, 100));
 
-            // Upload profile photo if provided
             let profilePhotoUrl: string | null = null;
             if (profilePhoto) {
               try {
                 profilePhotoUrl = await uploadProfilePhoto(data.user.id);
               } catch (uploadError) {
                 console.error('Profile photo upload failed, continuing without photo:', uploadError);
-                // Continue without photo rather than failing the entire signup
                 profilePhotoUrl = null;
               }
             }
 
-            // Create profile with or without photo
             await createUserProfile(data.user.id, data.user.email!, profilePhotoUrl);
 
             toast.success('Account created successfully!');
             onAuthSuccess();
           } catch (profileError) {
             console.error('Profile creation failed:', profileError);
-            // Even if profile creation fails, the user account was created
-            // so we should still redirect them and show a warning
-            toast.warning('Account created but profile setup incomplete. You can update your profile later.');
+            toast.warning(
+              'Account created but profile setup incomplete. You can update your profile later.'
+            );
             onAuthSuccess();
           }
         }
       }
     } catch (error: any) {
       console.error('Auth error:', error);
-      
-      // Provide user-friendly Korean error messages
+
       const errorMessage = error.message?.toLowerCase() || '';
-      
+
       if (errorMessage.includes('invalid login credentials') || errorMessage.includes('invalid credentials')) {
         setError('이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해주세요.');
       } else if (errorMessage.includes('email not confirmed')) {
@@ -225,11 +216,9 @@ export function Auth({ onAuthSuccess, onBack, initialMode = 'login' }: AuthProps
       } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
         setError('네트워크 연결을 확인해주세요.');
       } else {
-        // Default fallback message in Korean
         setError('인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
       }
-      
-      // Also show a toast for better visibility
+
       toast.error(isLogin ? '로그인 실패' : '회원가입 실패');
     } finally {
       setIsLoading(false);
@@ -253,6 +242,22 @@ export function Auth({ onAuthSuccess, onBack, initialMode = 'login' }: AuthProps
     setIsLogin(!isLogin);
     resetForm();
   };
+
+  // 전화번호 자동 하이픈 처리
+const formatPhoneNumber = (value: string) => {
+  const numbers = value.replace(/\D/g, ""); // 숫자만 남기기
+
+  if (numbers.length < 4) {
+    return numbers;
+  } else if (numbers.length < 7) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+  } else if (numbers.length <= 11) {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+  } else {
+    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+  }
+};
+
 
   return (
     <div className="relative min-h-screen grid lg:grid-cols-2">
@@ -312,20 +317,10 @@ export function Auth({ onAuthSuccess, onBack, initialMode = 'login' }: AuthProps
 
       {/* Right Side - Auth Form */}
       <div className="flex flex-col min-h-screen">
-        {/* Mobile Logo */}
-        <div className="lg:hidden absolute top-8 left-1/2 transform -translate-x-1/2 z-10">
-          <Logo />
-        </div>
-
         {/* Back Button */}
         {onBack && (
-          <div className="absolute top-8 left-8 z-10">
-            <Button
-              variant="ghost"
-              size="sm"
-              onClick={onBack}
-              className="gap-2"
-            >
+          <div className="absolute top-8 left-4 sm:left-8 z-10">
+            <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
               <span className="hidden sm:inline">뒤로가기</span>
             </Button>
@@ -333,240 +328,268 @@ export function Auth({ onAuthSuccess, onBack, initialMode = 'login' }: AuthProps
         )}
 
         {/* Form Container */}
-        <div className="flex-1 flex items-center justify-center p-4 pt-24 lg:pt-4">
-          <Card className="w-full max-w-md border-border/50 backdrop-blur-sm bg-background/95">
-          <CardHeader className="space-y-1 text-center pb-6">
-            <div className="flex justify-center mb-2">
-              <div className="bg-primary/10 rounded-full p-3">
-                <PawPrint className="h-6 w-6 text-primary" />
-              </div>
-            </div>
-            <CardTitle className="text-3xl">
-              {isLogin ? '로그인' : '회원가입'}
-            </CardTitle>
-            <CardDescription className="text-base">
-              {isLogin 
-                ? 'Pet Friendly 계정으로 로그인하세요' 
-                : '새로운 계정을 만들어 시작해보세요'
-              }
-            </CardDescription>
-          </CardHeader>
-          <CardContent>
-            <form onSubmit={handleSubmit} className="space-y-4">
-              {error && (
-                <Alert variant="destructive">
-                  <AlertDescription>{error}</AlertDescription>
-                </Alert>
-              )}
+        <div className="flex-1 flex flex-col items-center justify-center px-4 py-10 lg:py-4">
+          <div className="w-full max-w-md">
+            <Card className="w-full border-border/50 backdrop-blur-sm bg-background/95">
+              <CardHeader className="space-y-1 text-center pb-6">
+                <div className="flex justify-center mb-2">
+                  <div className="bg-primary/10 rounded-full p-3">
+                    <PawPrint className="h-6 w-6 text-primary" />
+                  </div>
+                </div>
+                <CardTitle className="text-3xl">
+                  {isLogin ? '로그인' : '회원가입'}
+                </CardTitle>
+                <CardDescription className="text-base">
+                  {isLogin
+                    ? 'Pet Friendly 계정으로 로그인하세요'
+                    : '새로운 계정을 만들어 시작해보세요'}
+                </CardDescription>
+              </CardHeader>
 
-              <div className="space-y-2">
-                <Label htmlFor="email">이메일</Label>
-                <Input
-                  id="email"
-                  type="email"
-                  placeholder="example@email.com"
-                  value={email}
-                  onChange={(e) => setEmail(e.target.value)}
-                  required
-                  className="h-11"
-                />
-              </div>
+              <CardContent>
+                <form onSubmit={handleSubmit} className="space-y-4">
+                  {error && (
+                    <Alert variant="destructive">
+                      <AlertDescription>{error}</AlertDescription>
+                    </Alert>
+                  )}
 
-              {!isLogin && (
-                <>
                   <div className="space-y-2">
-                    <Label htmlFor="username">사용자 이름 (선택)</Label>
+                    <Label htmlFor="email">이메일</Label>
                     <Input
-                      id="username"
-                      type="text"
-                      placeholder="사용자 이름을 입력하세요"
-                      value={username}
-                      onChange={(e) => setUsername(e.target.value)}
+                      id="email"
+                      type="email"
+                      placeholder="example@email.com"
+                      value={email}
+                      onChange={(e) => setEmail(e.target.value)}
+                      required
                       className="h-11"
                     />
                   </div>
 
+                  {!isLogin && (
+                    <>
+                      <div className="space-y-2">
+                        <Label htmlFor="username">사용자 이름 (선택)</Label>
+                        <Input
+                          id="username"
+                          type="text"
+                          placeholder="사용자 이름을 입력하세요"
+                          value={username}
+                          onChange={(e) => setUsername(e.target.value)}
+                          className="h-11"
+                        />
+                      </div>
+
+                      <div className="space-y-2">
+                        <Label htmlFor="phone">전화번호 (선택)</Label>
+<Input
+  id="phone"
+  type="tel"
+  placeholder="010-0000-0000"
+  value={phoneNumber}
+  onChange={(e) => setPhoneNumber(formatPhoneNumber(e.target.value))}
+  className="h-11"
+/>
+                      </div>
+
+                      {/* Profile Photo Upload */}
+                      <div className="space-y-2">
+                        <Label htmlFor="profilePhoto">프로필 사진 (선택)</Label>
+
+                        {profilePhotoPreview ? (
+                          <div className="flex items-center gap-4 p-3 border border-border rounded-lg bg-muted/30">
+                            <Avatar className="h-16 w-16 border-2 border-primary/20">
+                              <AvatarImage src={profilePhotoPreview} className="object-cover" />
+                              <AvatarFallback className="bg-primary/10">
+                                {username?.charAt(0)?.toUpperCase() ||
+                                  email?.charAt(0)?.toUpperCase() ||
+                                  'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1 min-w-0">
+                              <p
+                                className="text-sm font-medium truncate"
+                                title={profilePhoto?.name}
+                              >
+                                {profilePhoto?.name}
+                              </p>
+                              <p className="text-xs text-muted-foreground">
+                                {profilePhoto && `${(profilePhoto.size / 1024).toFixed(1)} KB`}
+                              </p>
+                            </div>
+                            <Button
+                              type="button"
+                              variant="ghost"
+                              size="sm"
+                              onClick={removeProfilePhoto}
+                              className="p-1 h-8 w-8 shrink-0 hover:bg-destructive/10 hover:text-destructive"
+                            >
+                              <X className="h-4 w-4" />
+                            </Button>
+                          </div>
+                        ) : (
+                          <div className="flex items-center gap-4">
+                            <Avatar className="h-16 w-16 border-2 border-dashed border-border">
+                              <AvatarFallback className="bg-muted">
+                                {username?.charAt(0)?.toUpperCase() ||
+                                  email?.charAt(0)?.toUpperCase() ||
+                                  'U'}
+                              </AvatarFallback>
+                            </Avatar>
+                            <div className="flex-1">
+                              <Input
+                                id="profilePhoto"
+                                type="file"
+                                accept="image/*"
+                                onChange={handleProfilePhotoChange}
+                                className="hidden"
+                              />
+                              <Button
+                                type="button"
+                                variant="outline"
+                                size="sm"
+                                onClick={() =>
+                                  document.getElementById('profilePhoto')?.click()
+                                }
+                                className="w-full h-11"
+                              >
+                                <Upload className="h-4 w-4 mr-2" />
+                                사진 업로드
+                              </Button>
+                              <p className="text-xs text-muted-foreground mt-1">
+                                JPG, PNG (최대 5MB)
+                              </p>
+                            </div>
+                          </div>
+                        )}
+                      </div>
+                    </>
+                  )}
+
                   <div className="space-y-2">
-                    <Label htmlFor="phone">전화번호 (선택)</Label>
-                    <Input
-                      id="phone"
-                      type="tel"
-                      placeholder="010-0000-0000"
-                      value={phoneNumber}
-                      onChange={(e) => setPhoneNumber(e.target.value)}
-                      className="h-11"
-                    />
+                    <Label htmlFor="password">비밀번호</Label>
+                    <div className="relative">
+                      <Input
+                        id="password"
+                        type={showPassword ? 'text' : 'password'}
+                        placeholder="비밀번호를 입력하세요"
+                        value={password}
+                        onChange={(e) => setPassword(e.target.value)}
+                        required
+                        className="h-11 pr-12"
+                      />
+                      <Button
+                        type="button"
+                        variant="ghost"
+                        size="icon"
+                        className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center hover:bg-transparent"
+                        onClick={() => setShowPassword(!showPassword)}
+                      >
+                        {showPassword ? (
+                          <EyeOff className="h-4 w-4 text-muted-foreground" />
+                        ) : (
+                          <Eye className="h-4 w-4 text-muted-foreground" />
+                        )}
+                      </Button>
+                    </div>
+                    {!isLogin && (
+                      <p className="text-xs text-muted-foreground">
+                        최소 6자 이상의 비밀번호를 입력하세요
+                      </p>
+                    )}
                   </div>
 
-                  {/* Profile Photo Upload */}
-                  <div className="space-y-2">
-                    <Label htmlFor="profilePhoto">프로필 사진 (선택)</Label>
-                    
-                    {profilePhotoPreview ? (
-                      <div className="flex items-center gap-4 p-3 border border-border rounded-lg bg-muted/30">
-                        <Avatar className="h-16 w-16 border-2 border-primary/20">
-                          <AvatarImage src={profilePhotoPreview} className="object-cover" />
-                          <AvatarFallback className="bg-primary/10">
-                            {username?.charAt(0)?.toUpperCase() || email?.charAt(0)?.toUpperCase() || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 min-w-0">
-                          <p className="text-sm font-medium truncate" title={profilePhoto?.name}>
-                            {profilePhoto?.name}
-                          </p>
-                          <p className="text-xs text-muted-foreground">
-                            {profilePhoto && `${(profilePhoto.size / 1024).toFixed(1)} KB`}
-                          </p>
-                        </div>
+                  {!isLogin && (
+                    <div className="space-y-2">
+                      <Label htmlFor="confirmPassword">비밀번호 확인</Label>
+                      <div className="relative">
+                        <Input
+                          id="confirmPassword"
+                          type={showConfirmPassword ? 'text' : 'password'}
+                          placeholder="비밀번호를 다시 입력하세요"
+                          value={confirmPassword}
+                          onChange={(e) => setConfirmPassword(e.target.value)}
+                          required
+                          className="h-11 pr-12"
+                        />
                         <Button
                           type="button"
                           variant="ghost"
-                          size="sm"
-                          onClick={removeProfilePhoto}
-                          className="p-1 h-8 w-8 shrink-0 hover:bg-destructive/10 hover:text-destructive"
+                          size="icon"
+                          className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center hover:bg-transparent"
+                          onClick={() =>
+                            setShowConfirmPassword(!showConfirmPassword)
+                          }
                         >
-                          <X className="h-4 w-4" />
+                          {showConfirmPassword ? (
+                            <EyeOff className="h-4 w-4 text-muted-foreground" />
+                          ) : (
+                            <Eye className="h-4 w-4 text-muted-foreground" />
+                          )}
                         </Button>
                       </div>
-                    ) : (
-                      <div className="flex items-center gap-4">
-                        <Avatar className="h-16 w-16 border-2 border-dashed border-border">
-                          <AvatarFallback className="bg-muted">
-                            {username?.charAt(0)?.toUpperCase() || email?.charAt(0)?.toUpperCase() || 'U'}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1">
-                          <Input
-                            id="profilePhoto"
-                            type="file"
-                            accept="image/*"
-                            onChange={handleProfilePhotoChange}
-                            className="hidden"
-                          />
-                          <Button
-                            type="button"
-                            variant="outline"
-                            size="sm"
-                            onClick={() => document.getElementById('profilePhoto')?.click()}
-                            className="w-full h-11"
-                          >
-                            <Upload className="h-4 w-4 mr-2" />
-                            사진 업로드
-                          </Button>
-                          <p className="text-xs text-muted-foreground mt-1">
-                            JPG, PNG (최대 5MB)
-                          </p>
-                        </div>
-                      </div>
-                    )}
-                  </div>
-                </>
-              )}
+                    </div>
+                  )}
 
-              <div className="space-y-2">
-                <Label htmlFor="password">비밀번호</Label>
-                <div className="relative">
-                  <Input
-                    id="password"
-                    type={showPassword ? 'text' : 'password'}
-                    placeholder="비밀번호를 입력하세요"
-                    value={password}
-                    onChange={(e) => setPassword(e.target.value)}
-                    required
-                    className="h-11 pr-10"
-                  />
                   <Button
-                    type="button"
-                    variant="ghost"
-                    size="sm"
-                    className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                    onClick={() => setShowPassword(!showPassword)}
+                    type="submit"
+                    className="w-full h-11 mt-6"
+                    disabled={isLoading}
                   >
-                    {showPassword ? (
-                      <EyeOff className="h-4 w-4 text-muted-foreground" />
-                    ) : (
-                      <Eye className="h-4 w-4 text-muted-foreground" />
-                    )}
+                    {isLoading ? '처리중...' : isLogin ? '로그인' : '회원가입'}
                   </Button>
-                </div>
-                {!isLogin && (
-                  <p className="text-xs text-muted-foreground">
-                    최소 6자 이상의 비밀번호를 입력하세요
-                  </p>
-                )}
-              </div>
+                </form>
 
-              {!isLogin && (
-                <div className="space-y-2">
-                  <Label htmlFor="confirmPassword">비밀번호 확인</Label>
+                {/* 아래 토글 영역 – 간격 넉넉하게 */}
+                <div className="mt-8 pt-4 border-t border-border/60">
                   <div className="relative">
-                    <Input
-                      id="confirmPassword"
-                      type={showConfirmPassword ? 'text' : 'password'}
-                      placeholder="비밀번호를 다시 입력하세요"
-                      value={confirmPassword}
-                      onChange={(e) => setConfirmPassword(e.target.value)}
-                      required
-                      className="h-11 pr-10"
-                    />
+                    <div className="absolute inset-0 flex items-center">
+                      <Separator />
+                    </div>
+                    <div className="relative flex justify-center text-xs uppercase">
+                      <span className="bg-background px-2 text-muted-foreground">
+                        또는
+                      </span>
+                    </div>
+                  </div>
+
+                  <div className="mt-6 text-center">
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {isLogin
+                        ? '아직 계정이 없으신가요?'
+                        : '이미 계정이 있으신가요?'}
+                    </p>
                     <Button
+                      variant="outline"
+                      className="w-full h-11"
+                      onClick={toggleMode}
                       type="button"
-                      variant="ghost"
-                      size="sm"
-                      className="absolute right-0 top-0 h-full px-3 py-2 hover:bg-transparent"
-                      onClick={() => setShowConfirmPassword(!showConfirmPassword)}
                     >
-                      {showConfirmPassword ? (
-                        <EyeOff className="h-4 w-4 text-muted-foreground" />
-                      ) : (
-                        <Eye className="h-4 w-4 text-muted-foreground" />
-                      )}
+                      {isLogin ? '회원가입하기' : '로그인하기'}
                     </Button>
                   </div>
                 </div>
-              )}
+              </CardContent>
+            </Card>
 
-              <Button type="submit" className="w-full h-11 mt-6" disabled={isLoading}>
-                {isLoading ? '처리중...' : (isLogin ? '로그인' : '회원가입')}
-              </Button>
-            </form>
-
-            <div className="mt-6">
-              <div className="relative">
-                <div className="absolute inset-0 flex items-center">
-                  <Separator />
-                </div>
-                <div className="relative flex justify-center text-xs uppercase">
-                  <span className="bg-background px-2 text-muted-foreground">또는</span>
-                </div>
-              </div>
-              
-              <div className="mt-6 text-center">
-                <p className="text-sm text-muted-foreground mb-2">
-                  {isLogin ? "아직 계정이 없으신가요?" : '이미 계정이 있으신가요?'}
-                </p>
-                <Button
-                  variant="outline"
-                  className="w-full h-11"
-                  onClick={toggleMode}
-                  type="button"
-                >
-                  {isLogin ? '회원가입하기' : '로그인하기'}
-                </Button>
-              </div>
+            {/* Footer Note */}
+            <div className="mt-4 text-center px-2">
+              <p className="text-xs text-muted-foreground leading-relaxed">
+                계속 진행하시면 Pet Friendly의{' '}
+                <a href="#" className="underline hover:text-foreground">
+                  이용약관
+                </a>
+                과{' '}
+                <a href="#" className="underline hover:text-foreground">
+                  개인정보처리방침
+                </a>
+                에 동의하게 됩니다.
+              </p>
             </div>
-          </CardContent>
-        </Card>
-
-        {/* Footer Note */}
-        <div className="text-center py-6 px-4">
-          <p className="text-xs text-muted-foreground">
-            계속 진행하시면 Pet Friendly의{' '}
-            <a href="#" className="underline hover:text-foreground">이용약관</a>과{' '}
-            <a href="#" className="underline hover:text-foreground">개인정보처리방침</a>에 동의하게 됩니다.
-          </p>
+          </div>
         </div>
-      </div>
       </div>
     </div>
   );

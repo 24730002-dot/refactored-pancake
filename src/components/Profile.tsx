@@ -542,83 +542,97 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
   // Determine which photo to show in avatar
   const avatarImageSrc = profilePhotoPreview || currentProfilePhotoUrl;
 
+
   return (
-    <div className="min-h-screen p-4" onClick={onBack}>
-      <div className="max-w-2xl mx-auto" onClick={(e) => e.stopPropagation()}>
-        {/* Header */}
-        <div className="bg-card border border-border rounded-xl mb-6 overflow-hidden">
-          <div className="bg-gradient-to-r from-primary/10 to-primary/5 p-6">
-            <div className="flex items-center gap-4">
-              <Button
-                variant="ghost"
-                size="sm"
-                onClick={onBack}
-                className="p-2 h-auto hover:bg-background/50"
-              >
-                <ArrowLeft className="h-5 w-5" />
-              </Button>
+  <div className="min-h-screen bg-background px-4 py-6 md:py-10">
+    <div className="w-full max-w-2xl mx-auto">
 
-              <div className="flex items-center gap-4 flex-1">
-                <div className="relative">
-                  <Avatar className="h-16 w-16 border-2 border-background">
-                    <AvatarImage src={avatarImageSrc} className="object-cover" />
-                    <AvatarFallback className="text-lg bg-primary text-primary-foreground">
-                      {isAuthenticated ? (
-                        userProfile?.username?.charAt(0)?.toUpperCase() ||
-                        userProfile?.email?.charAt(0)?.toUpperCase() || 'U'
-                      ) : (
-                        'G'
-                      )}
-                    </AvatarFallback>
-                  </Avatar>
 
-                  {/* Photo edit overlay when in editing mode */}
-                  {isAuthenticated && isEditing && (
-                    <div className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center cursor-pointer hover:bg-black/60 transition-colors"
-                      onClick={() => document.getElementById('profilePhotoEdit')?.click()}>
-                      <Camera className="h-6 w-6 text-white" />
-                      <Input
-                        id="profilePhotoEdit"
-                        type="file"
-                        accept="image/*"
-                        onChange={handleProfilePhotoChange}
-                        className="hidden"
-                      />
-                    </div>
-                  )}
-                </div>
+{/* Header */}
+<div className="bg-card border border-border rounded-xl mb-6 overflow-hidden">
+  <div className="bg-gradient-to-r from-primary/10 to-primary/5 px-4 py-4">
+    <div className="max-w-3xl mx-auto flex items-center">
+      {/* 왼쪽: 뒤로가기 버튼 */}
+      <div className="w-10 flex justify-start">
+        <Button
+          variant="ghost"
+          size="sm"
+          onClick={onBack}
+          className="p-2 h-auto hover:bg-background/50"
+        >
+          <ArrowLeft className="h-5 w-5" />
+        </Button>
+      </div>
 
-                <div className="flex-1">
-                  <h1 className="text-xl font-semibold text-foreground">
-                    {isAuthenticated ? (
-                      userProfile?.username ? `@${userProfile.username}` : '프로필'
-                    ) : (
-                      '설정'
-                    )}
-                  </h1>
-                  <p className="text-muted-foreground">
-                    {isAuthenticated ? userProfile?.email : '게스트 사용자'}
-                  </p>
-                </div>
+      {/* 가운데: 프로필(아바타 + 이름/이메일) */}
+      <div className="flex-1 flex items-center justify-center gap-3">
+        <div className="relative">
+          <Avatar className="h-16 w-16 border-2 border-background">
+            <AvatarImage src={avatarImageSrc} className="object-cover" />
+            <AvatarFallback className="text-lg bg-primary text-primary-foreground">
+              {isAuthenticated
+                ? userProfile?.username?.charAt(0)?.toUpperCase() ||
+                  userProfile?.email?.charAt(0)?.toUpperCase() ||
+                  'U'
+                : 'G'}
+            </AvatarFallback>
+          </Avatar>
 
-                {/* Edit Button - Only for authenticated users */}
-                {isAuthenticated && (
-                  <Button
-                    variant="ghost"
-                    size="sm"
-                    onClick={() => setIsEditing(!isEditing)}
-                    className="p-2 h-auto hover:bg-background/50"
-                  >
-                    <Edit2 className="h-4 w-4" />
-                  </Button>
-                )}
-              </div>
-            </div>
-          </div>
+          {/* 프로필 편집 중일 때만 카메라 오버레이 */}
+          {isAuthenticated && isEditing && (
+            <button
+              type="button"
+              className="absolute inset-0 bg-black/50 rounded-full flex items-center justify-center cursor-pointer hover:bg-black/60 transition-colors"
+              onClick={() =>
+                document.getElementById('profilePhotoEdit')?.click()
+              }
+            >
+              <Camera className="h-6 w-6 text-white" />
+              <Input
+                id="profilePhotoEdit"
+                type="file"
+                accept="image/*"
+                onChange={handleProfilePhotoChange}
+                className="hidden"
+              />
+            </button>
+          )}
+        </div>
+
+        <div className="min-w-0 text-center">
+          <h1 className="text-xl font-semibold text-foreground truncate">
+            {isAuthenticated
+              ? userProfile?.username
+                ? `@${userProfile.username}`
+                : '프로필'
+              : '설정'}
+          </h1>
+          <p className="text-sm text-muted-foreground truncate">
+            {isAuthenticated ? userProfile?.email : '게스트 사용자'}
+          </p>
+        </div>
+      </div>
+
+      {/* 오른쪽: 편집 버튼 */}
+      <div className="w-10 flex justify-end">
+        {isAuthenticated && (
+          <Button
+            variant="ghost"
+            size="sm"
+            onClick={() => setIsEditing(!isEditing)}
+            className="p-2 h-auto hover:bg-background/50"
+          >
+            <Edit2 className="h-4 w-4" />
+          </Button>
+        )}
+      </div>
+    </div>
+  </div>
+
 
           {/* Segmented Control */}
-          <div className="px-6 py-4 border-b border-border">
-            <div className="grid grid-cols-4 gap-1 bg-muted rounded-lg p-1 w-full">
+<div className="px-6 py-4 border-b border-border">
+    <div className="grid grid-cols-4 gap-1 bg-muted rounded-lg p-1 w-full">
 
               <button
                 onClick={() => setActiveTab('location')}
@@ -1882,7 +1896,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                               <h4>Pet Friendly 이용약관</h4>
                               <p className="text-sm text-muted-foreground">최종 업데이트: 2025년 11월 8일</p>
 
-                              <h5 className="mt-4">제1조 (��적)</h5>
+                              <h5 className="mt-4">제1조 </h5>
                               <p className="text-sm">
                                 본 약관은 Pet Friendly(이하 "서비스")가 제공하는 반려동물 동반 숙소 예약 및 정보 제공 서비스의 이용과 관련하여 ���사와 이용자 간의 권리, 의무 및 책임사항을 규정함을 목적으로 합니다.
                               </p>
@@ -1947,7 +1961,7 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
                                 - 서비스 제공 및 개선<br />
                                 - 맞춤형 서비스 제공 (배경, 음악, 위치 기반 날씨 정보)<br />
                                 - 고객 문의 및 불만 처리<br />
-                                - 법령 ��� 이용약관을 위반하는 회원에 대한 조치
+                                - 법령 이용약관을 위반하는 회원에 대한 조치
                               </p>
 
                               <h5 className="mt-4">2. 수집하는 개인정보 항목</h5>

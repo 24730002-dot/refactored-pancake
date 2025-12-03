@@ -12,7 +12,11 @@ function Table({ className, ...props }: React.ComponentProps<"table">) {
     >
       <table
         data-slot="table"
-        className={cn("w-full caption-bottom text-sm", className)}
+        className={cn(
+          // 모바일: text-xs, 데스크톱: text-sm
+          "w-full caption-bottom text-xs sm:text-sm",
+          className,
+        )}
         {...props}
       />
     </div>
@@ -70,7 +74,8 @@ function TableHead({ className, ...props }: React.ComponentProps<"th">) {
     <th
       data-slot="table-head"
       className={cn(
-        "text-foreground h-10 px-2 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        // 모바일: h-9 text-xs, 데스크톱: h-10 text-sm
+        "text-foreground h-9 sm:h-10 px-2 sm:px-3 text-left align-middle font-medium whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px] text-xs sm:text-sm",
         className,
       )}
       {...props}
@@ -83,7 +88,8 @@ function TableCell({ className, ...props }: React.ComponentProps<"td">) {
     <td
       data-slot="table-cell"
       className={cn(
-        "p-2 align-middle whitespace-nowrap [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
+        // 모바일 패딩/폰트 축소
+        "p-2 sm:p-3 align-middle whitespace-nowrap text-xs sm:text-sm [&:has([role=checkbox])]:pr-0 [&>[role=checkbox]]:translate-y-[2px]",
         className,
       )}
       {...props}
@@ -98,7 +104,7 @@ function TableCaption({
   return (
     <caption
       data-slot="table-caption"
-      className={cn("text-muted-foreground mt-4 text-sm", className)}
+      className={cn("text-muted-foreground mt-3 sm:mt-4 text-xs sm:text-sm", className)}
       {...props}
     />
   );

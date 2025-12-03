@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Button } from './ui/button';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import { Card, CardContent, CardHeader, CardTitle } from './ui/card';
 import { Badge } from './ui/badge';
 import { Input } from './ui/input';
 import { Label } from './ui/label';
@@ -14,10 +14,11 @@ import { FavoriteButton } from './Favorites';
 import { Chat } from './Chat';
 import { 
   ArrowLeft, Dog, Cat, Bird, Rabbit, Wifi, Car, Home, Trees, 
-  Star, MapPin, Phone, Mail, Calendar as CalendarIcon, Users,
+  Star, MapPin, Phone, Mail, Calendar as CalendarIcon,
   Check, X, ChevronLeft, ChevronRight
 } from 'lucide-react';
-// Using date-fns for date formatting
+import { toast } from 'sonner@2.0.3';
+
 const formatDate = (date: Date | undefined): string => {
   if (!date) return '날짜 선택';
   return date.toLocaleDateString('ko-KR', { 
@@ -26,7 +27,6 @@ const formatDate = (date: Date | undefined): string => {
     day: 'numeric' 
   });
 };
-import { toast } from 'sonner@2.0.3';
 
 interface Accommodation {
   id: number;
@@ -63,7 +63,6 @@ export function AccommodationDetail({
   const [currentImageIndex, setCurrentImageIndex] = useState(0);
   const [showReservationDialog, setShowReservationDialog] = useState(false);
   
-  // Reservation form state
   const [checkInDate, setCheckInDate] = useState<Date>();
   const [checkOutDate, setCheckOutDate] = useState<Date>();
   const [guestName, setGuestName] = useState('');
@@ -72,10 +71,8 @@ export function AccommodationDetail({
   const [numberOfPets, setNumberOfPets] = useState(1);
   const [specialRequests, setSpecialRequests] = useState('');
 
-  // Mock images - in a real app, these would come from the accommodation data
   const images = [
     accommodation.imageUrl,
-    // Add more image variations
     accommodation.imageUrl.replace('w=1080', 'w=1080&sat=-20'),
     accommodation.imageUrl.replace('w=1080', 'w=1080&hue=20'),
   ];
@@ -99,14 +96,12 @@ export function AccommodationDetail({
       return;
     }
 
-    // Calculate number of nights
-    const nights = Math.ceil((checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24));
+    const nights = Math.ceil(
+      (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
+    );
     const totalPrice = accommodation.pricePerNight * nights;
-
-    // Generate reservation number
     const reservationNumber = `PF${Date.now().toString().slice(-8)}`;
 
-    // Create reservation data
     const reservationData = {
       accommodationId: accommodation.id,
       accommodationName: accommodation.name,
@@ -126,26 +121,22 @@ export function AccommodationDetail({
       reservationDate: new Date(),
     };
 
-    // Save to localStorage for activity history
-    const existingReservations = JSON.parse(localStorage.getItem('petfriendly_reservations') || '[]');
+    const existingReservations = JSON.parse(
+      localStorage.getItem('petfriendly_reservations') || '[]'
+    );
     existingReservations.push(reservationData);
     localStorage.setItem('petfriendly_reservations', JSON.stringify(existingReservations));
 
-    // Show confirmation page
     onReservationComplete(reservationData);
     setShowReservationDialog(false);
   };
 
   const getPetTypeIcon = (petType: string) => {
     switch(petType) {
-      case 'dog':
-        return <Dog className="h-4 w-4" />;
-      case 'cat':
-        return <Cat className="h-4 w-4" />;
-      case 'bird':
-        return <Bird className="h-4 w-4" />;
-      case 'small':
-        return <Rabbit className="h-4 w-4" />;
+      case 'dog':   return <Dog className="h-4 w-4" />;
+      case 'cat':   return <Cat className="h-4 w-4" />;
+      case 'bird':  return <Bird className="h-4 w-4" />;
+      case 'small': return <Rabbit className="h-4 w-4" />;
       case 'all':
         return (
           <div className="flex gap-1">
@@ -153,8 +144,7 @@ export function AccommodationDetail({
             <Cat className="h-4 w-4" />
           </div>
         );
-      default:
-        return null;
+      default: return null;
     }
   };
 
@@ -175,9 +165,9 @@ export function AccommodationDetail({
   };
 
   return (
-    <div className="min-h-screen bg-background">
-      {/* Header */}
-      <div className="sticky top-0 z-10 bg-background/95 backdrop-blur-sm border-b border-border">
+    <div className="relative min-h-screen flex flex-col bg-background">
+      {/* 상단 헤더 (뒤로가기, 공유, 찜) */}
+      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
         <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
           <div className="flex items-center justify-between">
             <Button
@@ -213,166 +203,165 @@ export function AccommodationDetail({
         </div>
       </div>
 
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
-          {/* Left Column - Main Content */}
-          <div className="lg:col-span-2 space-y-6">
-            {/* Image Gallery */}
-            <div className="relative h-96 sm:h-[500px] rounded-2xl overflow-hidden group">
-              <ImageWithFallback
-                src={images[currentImageIndex]}
-                alt={`${accommodation.name} - 이미지 ${currentImageIndex + 1}`}
-                className="w-full h-full object-cover"
-              />
-              
-              {/* Navigation Buttons */}
-              {images.length > 1 && (
-                <>
-                  <button
-                    onClick={previousImage}
-                    className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
-                  >
-                    <ChevronLeft className="h-6 w-6" />
-                  </button>
-                  <button
-                    onClick={nextImage}
-                    className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
-                  >
-                    <ChevronRight className="h-6 w-6" />
-                  </button>
-                  
-                  {/* Image Indicators */}
-                  <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
-                    {images.map((_, index) => (
-                      <button
-                        key={index}
-                        onClick={() => setCurrentImageIndex(index)}
-                        className={`w-2 h-2 rounded-full transition-all ${
-                          index === currentImageIndex 
-                            ? 'bg-primary w-6' 
-                            : 'bg-background/60 hover:bg-background/80'
-                        }`}
-                      />
+      {/* 메인 컨텐츠 – 아래 고정 버튼 높이만큼 패딩 */}
+      <div className="flex-1 w-full">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-28">
+          <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
+            {/* Left Column - Main Content */}
+            <div className="lg:col-span-2 space-y-6">
+              {/* Image Gallery */}
+              <div className="relative h-96 sm:h-[500px] rounded-2xl overflow-hidden group">
+                <ImageWithFallback
+                  src={images[currentImageIndex]}
+                  alt={`${accommodation.name} - 이미지 ${currentImageIndex + 1}`}
+                  className="w-full h-full object-cover"
+                />
+                
+                {images.length > 1 && (
+                  <>
+                    <button
+                      onClick={previousImage}
+                      className="absolute left-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+                    >
+                      <ChevronLeft className="h-6 w-6" />
+                    </button>
+                    <button
+                      onClick={nextImage}
+                      className="absolute right-4 top-1/2 -translate-y-1/2 bg-background/80 backdrop-blur-sm rounded-full p-2 opacity-0 group-hover:opacity-100 transition-opacity hover:bg-background"
+                    >
+                      <ChevronRight className="h-6 w-6" />
+                    </button>
+
+                    <div className="absolute bottom-4 left-1/2 -translate-x-1/2 flex gap-2">
+                      {images.map((_, index) => (
+                        <button
+                          key={index}
+                          onClick={() => setCurrentImageIndex(index)}
+                          className={`w-2 h-2 rounded-full transition-all ${
+                            index === currentImageIndex 
+                              ? 'bg-primary w-6' 
+                              : 'bg-background/60 hover:bg-background/80'
+                          }`}
+                        />
+                      ))}
+                    </div>
+                  </>
+                )}
+
+                <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1 flex items-center gap-1">
+                  <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                  <span className="font-medium">{accommodation.rating}</span>
+                </div>
+              </div>
+
+              {/* Title & Location */}
+              <div>
+                <h1 className="text-foreground mb-2">{accommodation.name}</h1>
+                <div className="flex items-center gap-2 text-muted-foreground">
+                  <MapPin className="h-5 w-5" />
+                  <span>{accommodation.location}</span>
+                </div>
+              </div>
+
+              {/* Pet Types */}
+              <div>
+                <h3 className="text-foreground mb-3">반려동물</h3>
+                <div className="flex flex-wrap gap-2">
+                  {accommodation.petTypes.map((type, index) => {
+                    const label = 
+                      type === 'all' ? '모든 반려동물' :
+                      type === 'dog' ? '강아지' :
+                      type === 'cat' ? '고양이' :
+                      type === 'bird' ? '조류' :
+                      type === 'small' ? '소형 반려동물' : type;
+                    
+                    return (
+                      <Badge key={index} variant="secondary" className="flex items-center gap-2 px-3 py-1">
+                        {getPetTypeIcon(type)}
+                        <span>{label}</span>
+                      </Badge>
+                    );
+                  })}
+                  <Badge variant="outline" className="px-3 py-1">
+                    최대 {accommodation.maxPets}마리
+                  </Badge>
+                </div>
+              </div>
+
+              {/* Description */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>숙소 소개</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <p className="text-muted-foreground leading-relaxed">
+                    {accommodation.description}
+                  </p>
+                </CardContent>
+              </Card>
+
+              {/* Amenities */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>편의시설</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                    {accommodation.amenities.map((amenity, index) => (
+                      <div key={index} className="flex items-center gap-2 p-3 rounded-lg bg-muted/30">
+                        {getAmenityIcon(amenity)}
+                        <span className="text-sm">{amenity}</span>
+                      </div>
                     ))}
                   </div>
-                </>
-              )}
-              
-              {/* Rating Badge */}
-              <div className="absolute top-4 left-4 bg-background/90 backdrop-blur-sm rounded-lg px-3 py-1 flex items-center gap-1">
-                <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                <span className="font-medium">{accommodation.rating}</span>
-              </div>
-            </div>
+                </CardContent>
+              </Card>
 
-            {/* Title and Location */}
-            <div>
-              <h1 className="text-foreground mb-2">{accommodation.name}</h1>
-              <div className="flex items-center gap-2 text-muted-foreground">
-                <MapPin className="h-5 w-5" />
-                <span>{accommodation.location}</span>
-              </div>
-            </div>
+              {/* House Rules */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>숙소 이용 규칙</CardTitle>
+                </CardHeader>
+                <CardContent>
+                  <ul className="space-y-3">
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-muted-foreground">
+                        체크인: 오후 3시 이후, 체크아웃: 오전 11시 이전
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-muted-foreground">
+                        반려동물 예방접종 증명서 필수
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-muted-foreground">
+                        반려동물 배변 매너는 보호자가 책임집니다
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <X className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-muted-foreground">
+                        흡연 금지
+                      </span>
+                    </li>
+                    <li className="flex items-start gap-2">
+                      <X className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
+                      <span className="text-sm text-muted-foreground">
+                        파티 또는 이벤트 금지
+                      </span>
+                    </li>
+                  </ul>
+                </CardContent>
+              </Card>
 
-            {/* Pet Types */}
-            <div>
-              <h3 className="text-foreground mb-3">반려동물</h3>
-              <div className="flex flex-wrap gap-2">
-                {accommodation.petTypes.map((type, index) => {
-                  const label = 
-                    type === 'all' ? '모든 반려동물' :
-                    type === 'dog' ? '강아지' :
-                    type === 'cat' ? '고양이' :
-                    type === 'bird' ? '조류' :
-                    type === 'small' ? '소형 반려동물' : type;
-                  
-                  return (
-                    <Badge key={index} variant="secondary" className="flex items-center gap-2 px-3 py-1">
-                      {getPetTypeIcon(type)}
-                      <span>{label}</span>
-                    </Badge>
-                  );
-                })}
-                <Badge variant="outline" className="px-3 py-1">
-                  최대 {accommodation.maxPets}마리
-                </Badge>
-              </div>
-            </div>
-
-            {/* Description */}
-            <Card>
-              <CardHeader>
-                <CardTitle>숙소 소개</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <p className="text-muted-foreground leading-relaxed">
-                  {accommodation.description}
-                </p>
-              </CardContent>
-            </Card>
-
-            {/* Amenities */}
-            <Card>
-              <CardHeader>
-                <CardTitle>편의시설</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
-                  {accommodation.amenities.map((amenity, index) => (
-                    <div key={index} className="flex items-center gap-2 p-3 rounded-lg bg-muted/30">
-                      {getAmenityIcon(amenity)}
-                      <span className="text-sm">{amenity}</span>
-                    </div>
-                  ))}
-                </div>
-              </CardContent>
-            </Card>
-
-            {/* House Rules */}
-            <Card>
-              <CardHeader>
-                <CardTitle>숙소 이용 규칙</CardTitle>
-              </CardHeader>
-              <CardContent>
-                <ul className="space-y-3">
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-muted-foreground">
-                      체크인: 오후 3시 이후, 체크아웃: 오전 11시 이전
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-muted-foreground">
-                      반려동물 예방접종 증명서 필수
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <Check className="h-5 w-5 text-green-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-muted-foreground">
-                      반려동물 배변 매너는 보호자가 책임집니다
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <X className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-muted-foreground">
-                      흡연 금지
-                    </span>
-                  </li>
-                  <li className="flex items-start gap-2">
-                    <X className="h-5 w-5 text-red-500 flex-shrink-0 mt-0.5" />
-                    <span className="text-sm text-muted-foreground">
-                      파티 또는 이벤트 금지
-                    </span>
-                  </li>
-                </ul>
-              </CardContent>
-            </Card>
-
-            {/* Contact Info */}
-            <Card>
-              <CardHeader>
-                <CardTitle>연락처 정보</CardTitle>
+              {/* Contact Info */}
+              <Card>
+                <CardHeader>
+                  <CardTitle>연락처 정보</CardTitle>
               </CardHeader>
               <CardContent className="space-y-3">
                 <div className="flex items-center gap-3">
@@ -387,8 +376,8 @@ export function AccommodationDetail({
             </Card>
           </div>
 
-          {/* Right Column - Reservation Card */}
-          <div className="lg:col-span-1">
+          {/* Right Column - 데스크탑용 예약 카드 */}
+          <div className="lg:col-span-1 hidden lg:block">
             <Card className="sticky top-24">
               <CardHeader>
                 <div className="flex items-baseline justify-between">
@@ -437,16 +426,33 @@ export function AccommodationDetail({
           </div>
         </div>
       </div>
+    </div>
+    
+    {/* 🟦 모바일 하단 고정 예약 버튼 (가격 표시 없음) */}
+    <div
+      className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 backdrop-blur-md lg:hidden"
+      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+    >
+      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
+        <Button
+          onClick={handleReservation}
+          className="w-full h-11"
+          size="sm"
+        >
+          예약하기
+        </Button>
+      </div>
+    </div>
 
-      {/* Reservation Dialog */}
-      <Dialog open={showReservationDialog} onOpenChange={setShowReservationDialog}>
-        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-          <DialogHeader>
-            <DialogTitle>예약하기 - {accommodation.name}</DialogTitle>
-            <DialogDescription>
-              예약 정보를 입력해주세요. 모든 정보는 필수입니다.
-            </DialogDescription>
-          </DialogHeader>
+    {/* Reservation Dialog */}
+    <Dialog open={showReservationDialog} onOpenChange={setShowReservationDialog}>
+      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+        <DialogHeader>
+          <DialogTitle>예약하기 - {accommodation.name}</DialogTitle>
+          <DialogDescription>
+            예약 정보를 입력해주세요. 모든 정보는 필수입니다.
+          </DialogDescription>
+        </DialogHeader>
           
           <div className="space-y-6 py-4">
             {/* Date Selection */}

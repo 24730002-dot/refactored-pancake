@@ -446,7 +446,7 @@ if (filters.location !== 'all') {
  return (
   <>
     {/* 메인 콘텐츠 */}
-    <div className="min-h-screen bg-background py-16 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background pt-8 pb-16 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         {/* Header */}
         <div className="mb-8">

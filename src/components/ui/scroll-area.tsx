@@ -13,7 +13,11 @@ function ScrollArea({
   return (
     <ScrollAreaPrimitive.Root
       data-slot="scroll-area"
-      className={cn("relative", className)}
+      className={cn(
+        // 모바일: 기본 w-full, 부모 높이에 맞춰 사용
+        "relative w-full",
+        className,
+      )}
       {...props}
     >
       <ScrollAreaPrimitive.Viewport
@@ -38,11 +42,13 @@ function ScrollBar({
       data-slot="scroll-area-scrollbar"
       orientation={orientation}
       className={cn(
-        "flex touch-none p-px transition-colors select-none",
+        // 공통: 터치용 패딩 유지
+        "flex touch-none p-px select-none transition-colors",
+        // 모바일에서 스크롤바 두께 약간 증가
         orientation === "vertical" &&
-          "h-full w-2.5 border-l border-l-transparent",
+          "h-full w-3 sm:w-2.5 border-l border-l-transparent",
         orientation === "horizontal" &&
-          "h-2.5 flex-col border-t border-t-transparent",
+          "h-3 sm:h-2.5 flex-col border-t border-t-transparent",
         className,
       )}
       {...props}
