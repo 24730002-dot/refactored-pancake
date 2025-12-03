@@ -108,122 +108,141 @@ export function Auth({ onAuthSuccess, onBack, initialMode = 'login' }: AuthProps
   };
 
   const createUserProfile = async (
-    userId: string,
-    userEmail: string,
-    profilePhotoUrl?: string | null
-  ) => {
-    try {
-      const {
-        data: { session },
-      } = await supabase.auth.getSession();
-      if (!session) {
-        throw new Error('No active session found');
+  userId: string,
+  userEmail: string,
+  profilePhotoUrl?: string | null
+) => {
+  try {
+    const profileData: any = {
+      id: userId,
+      email: userEmail,
+    };
+
+    if (username) profileData.username = username;
+    if (phoneNumber) profileData.phone = phoneNumber;
+    if (profilePhotoUrl) profileData.profile_photo_url = profilePhotoUrl;
+
+    const { error: profileError } = await supabase
+      .from('profiles')
+      .insert([profileData]);
+
+    if (profileError) throw profileError;
+
+    return true;
+  } catch (error) {
+    console.error('Error creating profile:', error);
+    throw error;
+  }
+};
+const handleSubmit = async (e: React.FormEvent) => {
+  e.preventDefault();
+  setError('');
+
+  if (!validateForm()) return;
+
+  setIsLoading(true);
+
+  try {
+    if (isLogin) {
+      // 🔹 로그인 로직
+      const cleanedEmail = email.trim();
+
+      const { data, error } = await supabase.auth.signInWithPassword({
+        email: cleanedEmail,
+        password,
+      });
+
+      if (error) throw error;
+
+      if (data.user) {
+        toast.success('Welcome back!');
+        onAuthSuccess();
       }
+    } else {
+      // 🔹 회원가입 로직
+      const cleanedEmail = email.trim();
+      console.log('SIGNUP EMAIL:', JSON.stringify(cleanedEmail));
 
-      const profileData: any = {
-        id: userId,
-        email: userEmail,
-      };
+      const { data, error } = await supabase.auth.signUp({
+        email: cleanedEmail,
+        password,
+      });
 
-      if (username) profileData.username = username;
-      if (phoneNumber) profileData.phone = phoneNumber;
-      if (profilePhotoUrl) profileData.profile_photo_url = profilePhotoUrl;
+      if (error) throw error;
 
-      const { error: profileError } = await supabase.from('profiles').insert([profileData]);
+      if (data.user) {
+        try {
+          // Supabase가 사용자 생성/트리거 처리할 시간 살짝 줌
+          await new Promise((resolve) => setTimeout(resolve, 100));
 
-      if (profileError) throw profileError;
+          let profilePhotoUrl: string | null = null;
 
-      return true;
-    } catch (error) {
-      console.error('Error creating profile:', error);
-      throw error;
-    }
-  };
+          if (profilePhoto) {
+            try {
+              profilePhotoUrl = await uploadProfilePhoto(data.user.id);
+            } catch (uploadError) {
+              console.error(
+                'Profile photo upload failed, continuing without photo:',
+                uploadError
+              );
+              profilePhotoUrl = null;
+            }
+          }
 
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    setError('');
+          await createUserProfile(
+            data.user.id,
+            data.user.email!, // 이미 존재하는 게 확실하다고 가정
+            profilePhotoUrl
+          );
 
-    if (!validateForm()) return;
-
-    setIsLoading(true);
-
-    try {
-      if (isLogin) {
-        const { data, error } = await supabase.auth.signInWithPassword({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-
-        if (data.user) {
-          toast.success('Welcome back!');
+          toast.success('Account created successfully!');
+          onAuthSuccess();
+        } catch (profileError) {
+          console.error('Profile creation failed:', profileError);
+          toast.warning(
+            'Account created but profile setup incomplete. You can update your profile later.'
+          );
           onAuthSuccess();
         }
-      } else {
-        const { data, error } = await supabase.auth.signUp({
-          email,
-          password,
-        });
-
-        if (error) throw error;
-
-        if (data.user) {
-          try {
-            await new Promise((resolve) => setTimeout(resolve, 100));
-
-            let profilePhotoUrl: string | null = null;
-            if (profilePhoto) {
-              try {
-                profilePhotoUrl = await uploadProfilePhoto(data.user.id);
-              } catch (uploadError) {
-                console.error('Profile photo upload failed, continuing without photo:', uploadError);
-                profilePhotoUrl = null;
-              }
-            }
-
-            await createUserProfile(data.user.id, data.user.email!, profilePhotoUrl);
-
-            toast.success('Account created successfully!');
-            onAuthSuccess();
-          } catch (profileError) {
-            console.error('Profile creation failed:', profileError);
-            toast.warning(
-              'Account created but profile setup incomplete. You can update your profile later.'
-            );
-            onAuthSuccess();
-          }
-        }
       }
-    } catch (error: any) {
-      console.error('Auth error:', error);
-
-      const errorMessage = error.message?.toLowerCase() || '';
-
-      if (errorMessage.includes('invalid login credentials') || errorMessage.includes('invalid credentials')) {
-        setError('이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해주세요.');
-      } else if (errorMessage.includes('email not confirmed')) {
-        setError('이메일 인증이 완료되지 않았습니다. 이메일을 확인해주세요.');
-      } else if (errorMessage.includes('user already registered') || errorMessage.includes('duplicate')) {
-        setError('이미 가입된 이메일 주소입니다.');
-      } else if (errorMessage.includes('invalid email')) {
-        setError('올바른 이메일 형식이 아닙니다.');
-      } else if (errorMessage.includes('password')) {
-        setError('비밀번호는 최소 6자 이상이어야 합니다.');
-      } else if (errorMessage.includes('row-level security')) {
-        setError('프로필 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
-      } else if (errorMessage.includes('network') || errorMessage.includes('fetch')) {
-        setError('네트워크 연결을 확인해주세요.');
-      } else {
-        setError('인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
-      }
-
-      toast.error(isLogin ? '로그인 실패' : '회원가입 실패');
-    } finally {
-      setIsLoading(false);
     }
-  };
+  } catch (error: any) {
+    console.error('Auth error:', error);
+
+    const errorMessage = error.message?.toLowerCase() || '';
+
+    if (
+      errorMessage.includes('invalid login credentials') ||
+      errorMessage.includes('invalid credentials')
+    ) {
+      setError('이메일 또는 비밀번호가 올바르지 않습니다. 다시 확인해주세요.');
+    } else if (errorMessage.includes('email not confirmed')) {
+      setError('이메일 인증이 완료되지 않았습니다. 이메일을 확인해주세요.');
+    } else if (
+      errorMessage.includes('user already registered') ||
+      errorMessage.includes('duplicate')
+    ) {
+      setError('이미 가입된 이메일 주소입니다.');
+    } else if (errorMessage.includes('invalid email')) {
+      setError('올바른 이메일 형식이 아닙니다.');
+    } else if (errorMessage.includes('password')) {
+      setError('비밀번호는 최소 6자 이상이어야 합니다.');
+    } else if (errorMessage.includes('row-level security')) {
+      setError('프로필 생성 중 오류가 발생했습니다. 다시 시도해주세요.');
+    } else if (
+      errorMessage.includes('network') ||
+      errorMessage.includes('fetch')
+    ) {
+      setError('네트워크 연결을 확인해주세요.');
+    } else {
+      setError('인증 처리 중 오류가 발생했습니다. 잠시 후 다시 시도해주세요.');
+    }
+
+    toast.error(isLogin ? '로그인 실패' : '회원가입 실패');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
   const resetForm = () => {
     setEmail('');
