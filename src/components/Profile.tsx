@@ -73,6 +73,12 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
   const [phoneNumber, setPhoneNumber] = useState('');
   const [email, setEmail] = useState('');
   const [location, setLocation] = useState('');
+    // Supabase 기반 예약 / 찜 상태
+  const [reservations, setReservations] = useState<any[]>([]);
+  const [isLoadingReservations, setIsLoadingReservations] = useState(false);
+  const [favorites, setFavorites] = useState<any[]>([]);
+  const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
+
 
   // Favorites refresh trigger
   const [favoritesRefresh, setFavoritesRefresh] = useState(0);
@@ -118,59 +124,53 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
     }
   }, [isAuthenticated]);
 
-  // Fetch user profile for authenticated users
+    // Fetch user profile for authenticated users
   useEffect(() => {
-    if (isAuthenticated) {
-      const fetchProfile = async () => {
-        try {
-          const { data: { user } } = await supabase.auth.getUser();
+    if (!isAuthenticated) return;
 
-          if (user) {
-            // Try to get profile from profiles table
-            const { data: profile } = await supabase
-              .from('profiles')
-              .select('*')
-              .eq('id', user.id)
-              .single();
+    const fetchProfile = async () => {
+      try {
+        const { data: { user } } = await supabase.auth.getUser();
 
-            setUserProfile(profile || { id: user.id, email: user.email });
-            setEmail(user.email || '');
-            setUsername(profile?.username || '');
-            setPhoneNumber(profile?.phone || '');
-            setLocation(profile?.location || '');
-            setCurrentProfilePhotoUrl(profile?.profile_photo_url || '');
-            setPetName(profile?.pet_name || '');
-            setPetType(profile?.pet_type || '');
-          }
-        } catch (error) {
-          console.error('Error fetching profile:', error);
-          toast.error('Failed to load profile');
+        if (user) {
+          const { data: profile } = await supabase
+            .from('profiles')
+            .select('*')
+            .eq('id', user.id)
+            .single();
+
+          setUserProfile(profile || { id: user.id, email: user.email });
+          setEmail(user.email || '');
+          setUsername(profile?.username || '');
+          setPhoneNumber(profile?.phone || '');
+          setLocation(profile?.location || '');
+          setCurrentProfilePhotoUrl(profile?.profile_photo_url || '');
+          setPetName(profile?.pet_name || '');
+          setPetType(profile?.pet_type || '');
         }
-      };
+      } catch (error) {
+        console.error('Error fetching profile:', error);
+        toast.error('Failed to load profile');
+      }
+    };
 
-      fetchProfile();
-    }
+    fetchProfile();
   }, [isAuthenticated]);
 
   // Load temperature unit preference when location tab becomes active
   useEffect(() => {
-    if (activeTab === 'location') {
-      const loadTemperaturePreference = async () => {
-        // Use localStorage for all users
-        const saved = localStorage.getItem('useFahrenheit');
-        if (saved !== null) {
-          const savedValue = saved === 'true';
-          setUseFahrenheit(savedValue);
-          setOriginalUseFahrenheit(savedValue);
-        }
-      };
+    if (activeTab !== 'location') return;
 
-      loadTemperaturePreference();
-      // Reset change flags when tab becomes active
-      setHasLocationChanged(false);
-      setHasTemperatureChanged(false);
+    const saved = localStorage.getItem('useFahrenheit');
+    if (saved !== null) {
+      const savedValue = saved === 'true';
+      setUseFahrenheit(savedValue);
+      setOriginalUseFahrenheit(savedValue);
     }
-  }, [activeTab, isAuthenticated]);
+
+    setHasLocationChanged(false);
+    setHasTemperatureChanged(false);
+  }, [activeTab]);
 
   // Search cities using WeatherAPI
   useEffect(() => {
@@ -184,12 +184,14 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
     const searchTimeout = setTimeout(async () => {
       try {
         const response = await fetch(
-          `https://api.weatherapi.com/v1/search.json?key=${WEATHER_API_KEY}&q=${encodeURIComponent(searchQuery)}`
+          `https://api.weatherapi.com/v1/search.json?key=${WEATHER_API_KEY}&q=${encodeURIComponent(
+            searchQuery
+          )}`
         );
 
         if (response.ok) {
           const data: WeatherAPICity[] = await response.json();
-          setSearchResults(data.slice(0, 10)); // Limit to 10 results
+          setSearchResults(data.slice(0, 10));
         } else {
           console.error('Weather API search failed:', response.status);
           setSearchResults([]);
@@ -205,7 +207,77 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
     return () => clearTimeout(searchTimeout);
   }, [searchQuery]);
 
-  const handleDarkModeToggle = async (checked: boolean) => {
+  // 🔹 Supabase 예약 불러오기
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setReservations([]);
+      return;
+    }
+
+    const fetchReservations = async () => {
+      try {
+        setIsLoadingReservations(true);
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        // 아직 reservations 테이블 안 만들었으면 이 부분은 나중에 테이블 만든 뒤 살리면 돼!
+        const { data, error } = await supabase
+          .from('reservations')
+          .select('*')
+          .eq('user_id', user.id)
+          .order('reservation_date', { ascending: false });
+
+        if (error) throw error;
+
+        setReservations(data || []);
+      } catch (error) {
+        console.error('Error fetching reservations:', error);
+        toast.error('예약 내역을 불러오지 못했습니다.');
+      } finally {
+        setIsLoadingReservations(false);
+      }
+    };
+
+    fetchReservations();
+  }, [isAuthenticated]);
+
+  // 🔹 Supabase 찜(favorites) 불러오기
+  useEffect(() => {
+    if (!isAuthenticated) {
+      setFavorites([]);
+      return;
+    }
+
+    const fetchFavorites = async () => {
+      try {
+        setIsLoadingFavorites(true);
+
+        const { data: { user } } = await supabase.auth.getUser();
+        if (!user) return;
+
+        const { data, error } = await supabase
+          .from('favorites')
+          .select('id, user_id, accommodation_id, accommodation_name, accommodation_data, created_at')
+          .eq('user_id', user.id)
+          .order('created_at', { ascending: false });
+
+        if (error) throw error;
+
+        setFavorites(data || []);
+      } catch (error) {
+        console.error('Error fetching favorites:', error);
+        toast.error('좋아요한 숙소를 불러오지 못했습니다.');
+      } finally {
+        setIsLoadingFavorites(false);
+      }
+    };
+
+    fetchFavorites();
+  }, [isAuthenticated, favoritesRefresh]);
+
+
+const handleDarkModeToggle = async (checked: boolean) => {
     setIsDarkMode(checked);
 
     if (checked) {
@@ -216,25 +288,17 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
       localStorage.setItem('darkMode', 'false');
     }
 
-    // Persist to Supabase for authenticated users
+ // Supabase에도 다크모드 설정 저장 (로그인 유저만)
     if (isAuthenticated) {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-const { error } = await supabase
-  .from('profiles')
-  .upsert({
-    id: userProfile.id,
-    username: username || null,
-    phone: phoneNumber || null,
-    email: email,
-    location: location || null,
-    profile_photo_url: profilePhotoUrl || null,
-    pet_name: petName || null,   // 🔽 추가
-    pet_type: petType || null,   // 🔽 추가
-    updated_at: new Date().toISOString()
-  });
-
+          const { error } = await supabase
+            .from('profiles')
+            .upsert({
+              id: user.id,
+              is_dark_mode: checked,
+              updated_at: new Date().toISOString()
             });
 
           if (error) {
@@ -1257,7 +1321,7 @@ const handleCancelEdit = () => {
               </div>
             )}
 
-            {activeTab === 'reservations' && (
+                   {activeTab === 'reservations' && (
               <div className="space-y-6">
                 <div>
                   <h3 className="text-lg font-medium text-foreground mb-2">숙소 이용 기록</h3>
@@ -1266,107 +1330,124 @@ const handleCancelEdit = () => {
                   </p>
                 </div>
 
-                {(() => {
-                  const reservations = JSON.parse(localStorage.getItem('petfriendly_reservations') || '[]');
-                  const sortedReservations = reservations.sort((a: any, b: any) =>
-                    new Date(b.reservationDate).getTime() - new Date(a.reservationDate).getTime()
-                  );
-
-                  return sortedReservations.length > 0 ? (
-                    <div className="space-y-4">
-                      {sortedReservations.map((reservation: any, index: number) => (
-                        <Card key={index} className="overflow-hidden">
-                          <div className="flex flex-col sm:flex-row gap-4 p-4">
-                            {/* Accommodation Image */}
-                            <div className="w-full sm:w-32 h-24 rounded-lg overflow-hidden flex-shrink-0">
+                {isLoadingReservations ? (
+                  <Card>
+                    <CardContent className="py-12 flex flex-col items-center justify-center text-center">
+                      <Loader2 className="h-6 w-6 animate-spin mb-2 text-muted-foreground" />
+                      <p className="text-sm text-muted-foreground">예약 내역을 불러오는 중입니다...</p>
+                    </CardContent>
+                  </Card>
+                ) : reservations.length > 0 ? (
+                  <div className="space-y-4">
+                    {reservations.map((reservation: any, index: number) => (
+                      <Card key={reservation.id ?? index} className="overflow-hidden">
+                        <div className="flex flex-col sm:flex-row gap-4 p-4">
+                          {/* Accommodation Image */}
+                          <div className="w-full sm:w-32 h-24 rounded-lg overflow-hidden flex-shrink-0 bg-muted">
+                            {reservation.accommodation_image && (
                               <img
-                                src={reservation.accommodationImage}
-                                alt={reservation.accommodationName}
+                                src={reservation.accommodation_image}
+                                alt={reservation.accommodation_name}
                                 className="w-full h-full object-cover"
                               />
-                            </div>
+                            )}
+                          </div>
 
-                            {/* Reservation Details */}
-                            <div className="flex-1 space-y-2">
-                              <div>
-                                <h4 className="font-medium text-foreground">{reservation.accommodationName}</h4>
+                          {/* Reservation Details */}
+                          <div className="flex-1 space-y-2">
+                            <div>
+                              <h4 className="font-medium text-foreground">
+                                {reservation.accommodation_name}
+                              </h4>
+                              {reservation.accommodation_location && (
                                 <p className="text-sm text-muted-foreground flex items-center gap-1">
                                   <MapPin className="h-3 w-3" />
-                                  {reservation.accommodationLocation}
+                                  {reservation.accommodation_location}
                                 </p>
-                              </div>
+                              )}
+                            </div>
 
-                              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                              {reservation.nights !== null && (
                                 <div className="text-muted-foreground">
-                                  <span className="font-medium text-foreground">예약번호:</span> {reservation.reservationNumber}
+                                  <span className="font-medium text-foreground">숙박:</span>{' '}
+                                  {reservation.nights}박
                                 </div>
+                              )}
+                              {reservation.number_of_pets !== null && (
                                 <div className="text-muted-foreground">
-                                  <span className="font-medium text-foreground">숙박:</span> {reservation.nights}박
-                                </div>
-                                <div className="text-muted-foreground">
-                                  <span className="font-medium text-foreground">반려동물:</span> {reservation.numberOfPets}마리
-                                </div>
-                              </div>
-
-                              <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
-                                <div className="text-muted-foreground">
-                                  <span className="font-medium text-foreground">체크인:</span>{' '}
-                                  {new Date(reservation.checkInDate).toLocaleDateString('ko-KR', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                  })}
-                                </div>
-                                <div className="text-muted-foreground">
-                                  <span className="font-medium text-foreground">체크아웃:</span>{' '}
-                                  {new Date(reservation.checkOutDate).toLocaleDateString('ko-KR', {
-                                    year: 'numeric',
-                                    month: 'long',
-                                    day: 'numeric'
-                                  })}
-                                </div>
-                              </div>
-
-                              <div className="flex items-center justify-between pt-2 border-t">
-                                <div>
-                                  <span className="text-sm text-muted-foreground">총 금액</span>
-                                  <div className="text-lg text-primary">
-                                    ₩{reservation.totalPrice.toLocaleString()}
-                                  </div>
-                                </div>
-                                <div className="text-right">
-                                  <div className="text-xs text-muted-foreground">예약일시</div>
-                                  <div className="text-sm">
-                                    {new Date(reservation.reservationDate).toLocaleDateString('ko-KR')}
-                                  </div>
-                                </div>
-                              </div>
-
-                              {reservation.specialRequests && (
-                                <div className="pt-2 border-t">
-                                  <div className="text-sm font-medium mb-1">특별 요청사항</div>
-                                  <div className="text-sm text-muted-foreground bg-muted/30 p-2 rounded">
-                                    {reservation.specialRequests}
-                                  </div>
+                                  <span className="font-medium text-foreground">반려동물:</span>{' '}
+                                  {reservation.number_of_pets}마리
                                 </div>
                               )}
                             </div>
+
+                            <div className="flex flex-wrap gap-x-4 gap-y-1 text-sm">
+                              {reservation.check_in_date && (
+                                <div className="text-muted-foreground">
+                                  <span className="font-medium text-foreground">체크인:</span>{' '}
+                                  {new Date(reservation.check_in_date).toLocaleDateString('ko-KR', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                  })}
+                                </div>
+                              )}
+                              {reservation.check_out_date && (
+                                <div className="text-muted-foreground">
+                                  <span className="font-medium text-foreground">체크아웃:</span>{' '}
+                                  {new Date(reservation.check_out_date).toLocaleDateString('ko-KR', {
+                                    year: 'numeric',
+                                    month: 'long',
+                                    day: 'numeric',
+                                  })}
+                                </div>
+                              )}
+                            </div>
+
+                            <div className="flex items-center justify-between pt-2 border-t">
+                              <div>
+                                <span className="text-sm text-muted-foreground">총 금액</span>
+                                <div className="text-lg text-primary">
+                                  {reservation.total_price != null
+                                    ? `₩${Number(reservation.total_price).toLocaleString()}`
+                                    : '-'}
+                                </div>
+                              </div>
+                              <div className="text-right">
+                                <div className="text-xs text-muted-foreground">예약일시</div>
+                                <div className="text-sm">
+                                  {reservation.reservation_date
+                                    ? new Date(reservation.reservation_date).toLocaleDateString('ko-KR')
+                                    : '-'}
+                                </div>
+                              </div>
+                            </div>
+
+                            {reservation.special_requests && (
+                              <div className="pt-2 border-t">
+                                <div className="text-sm font-medium mb-1">특별 요청사항</div>
+                                <div className="text-sm text-muted-foreground bg-muted/30 p-2 rounded">
+                                  {reservation.special_requests}
+                                </div>
+                              </div>
+                            )}
                           </div>
-                        </Card>
-                      ))}
-                    </div>
-                  ) : (
-                    <Card>
-                      <CardContent className="py-12 text-center">
-                        <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
-                        <p className="text-muted-foreground mb-2">아직 예약 내역이 없습니다</p>
-                        <p className="text-sm text-muted-foreground">
-                          Pet Friendly 숙소를 예약하고 반려동물과 함께 특별한 여행을 떠나보세요!
-                        </p>
-                      </CardContent>
-                    </Card>
-                  );
-                })()}
+                        </div>
+                      </Card>
+                    ))}
+                  </div>
+                ) : (
+                  <Card>
+                    <CardContent className="py-12 text-center">
+                      <FileText className="h-12 w-12 mx-auto mb-4 text-muted-foreground opacity-50" />
+                      <p className="text-muted-foreground mb-2">아직 예약 내역이 없습니다</p>
+                      <p className="text-sm text-muted-foreground">
+                        Pet Friendly 숙소를 예약하고 반려동물과 함께 특별한 여행을 떠나보세요!
+                      </p>
+                    </CardContent>
+                  </Card>
+                )}
               </div>
             )}
 
@@ -1694,13 +1775,29 @@ const handleCancelEdit = () => {
                           내가 좋아요를 누른 숙소들을 모아볼 수 있습니다.
                         </CardDescription>
                       </CardHeader>
-                      <CardContent>
+                                          <CardContent>
                         {(() => {
-                          // Get favorites from localStorage
-                          const favoritesDataJson = localStorage.getItem('petfriendly_favorites_data');
-                          const favoritesData = favoritesDataJson ? JSON.parse(favoritesDataJson) : [];
+                          if (!isAuthenticated) {
+                            return (
+                              <div className="flex flex-col items-center justify-center py-8 text-center">
+                                <Heart className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
+                                <p className="text-muted-foreground mb-2">로그인이 필요합니다</p>
+                              </div>
+                            );
+                          }
 
-                          if (favoritesData.length === 0) {
+                          if (isLoadingFavorites) {
+                            return (
+                              <div className="flex flex-col items-center justify-center py-8 text-center">
+                                <Loader2 className="h-6 w-6 animate-spin mb-2 text-muted-foreground" />
+                                <p className="text-sm text-muted-foreground">
+                                  좋아요한 숙소를 불러오는 중입니다...
+                                </p>
+                              </div>
+                            );
+                          }
+
+                          if (favorites.length === 0) {
                             return (
                               <div className="flex flex-col items-center justify-center py-8 text-center">
                                 <Heart className="h-12 w-12 text-muted-foreground mb-4 opacity-50" />
@@ -1712,48 +1809,68 @@ const handleCancelEdit = () => {
                             );
                           }
 
-                          const handleRemoveFavorite = (e: React.MouseEvent, favoriteId: string) => {
+                          const handleRemoveFavorite = async (
+                            e: React.MouseEvent,
+                            favoriteId: number
+                          ) => {
                             e.stopPropagation();
+                            try {
+                              const { error } = await supabase
+                                .from('favorites')
+                                .delete()
+                                .eq('id', favoriteId);
 
-                            // Remove from favorites
-                            const updatedFavorites = favoritesData.filter((fav: any) => fav.id !== favoriteId);
-                            localStorage.setItem('petfriendly_favorites_data', JSON.stringify(updatedFavorites));
+                              if (error) throw error;
 
-                            // Also update the favorites list
-                            const favoritesJson = localStorage.getItem('petfriendly_favorites');
-                            const favorites: string[] = favoritesJson ? JSON.parse(favoritesJson) : [];
-                            const updatedFavoritesList = favorites.filter(id => id !== favoriteId);
-                            localStorage.setItem('petfriendly_favorites', JSON.stringify(updatedFavoritesList));
+                              setFavorites((prev) =>
+                                prev.filter((fav) => fav.id !== favoriteId)
+                              );
 
-                            toast.success('좋아요를 취소했습니다');
-
-                            // Force re-render by triggering a state update
-                            window.dispatchEvent(new Event('storage'));
+                              toast.success('좋아요를 취소했습니다');
+                            } catch (error) {
+                              console.error('Error removing favorite:', error);
+                              toast.error('좋아요 취소에 실패했습니다.');
+                            }
                           };
 
                           const handleCardClick = (favorite: any) => {
-                            if (onViewAccommodation) {
-                              // Navigate to detail page and close profile
-                              onViewAccommodation(favorite);
-                              onBack();
-                            }
+                            if (!onViewAccommodation) return;
+
+                            const data = favorite.accommodation_data || {};
+                            const accommodation =
+                              favorite.accommodation_data ||
+                              {
+                                id: favorite.accommodation_id,
+                                name: favorite.accommodation_name || data.name,
+                                ...data,
+                              };
+
+                            onViewAccommodation(accommodation);
+                            onBack();
                           };
 
                           return (
                             <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                              {favoritesData.map((favorite: any) => {
-                                const data = favorite.data || {};
+                              {favorites.map((favorite: any) => {
+                                const data = favorite.accommodation_data || {};
+                                const name =
+                                  favorite.accommodation_name || data.name || '숙소';
+                                const image = data.image;
+                                const locationText = data.location;
+                                const rating = data.rating;
+                                const price = data.price;
+
                                 return (
                                   <Card
                                     key={favorite.id}
                                     className="overflow-hidden hover:shadow-md transition-shadow cursor-pointer"
                                     onClick={() => handleCardClick(favorite)}
                                   >
-                                    <div className="relative aspect-video overflow-hidden">
-                                      {data.image && (
+                                    <div className="relative aspect-video overflow-hidden bg-muted">
+                                      {image && (
                                         <ImageWithFallback
-                                          src={data.image}
-                                          alt={favorite.name}
+                                          src={image}
+                                          alt={name}
                                           className="w-full h-full object-cover"
                                         />
                                       )}
@@ -1766,23 +1883,25 @@ const handleCancelEdit = () => {
                                       </button>
                                     </div>
                                     <CardContent className="p-4">
-                                      <h4 className="font-medium mb-1 line-clamp-1">{favorite.name}</h4>
-                                      {data.location && (
+                                      <h4 className="font-medium mb-1 line-clamp-1">
+                                        {name}
+                                      </h4>
+                                      {locationText && (
                                         <div className="flex items-center gap-1 text-sm text-muted-foreground mb-2">
                                           <MapPin className="h-3 w-3" />
-                                          {data.location}
+                                          {locationText}
                                         </div>
                                       )}
                                       <div className="flex items-center justify-between">
-                                        {data.rating && (
+                                        {rating && (
                                           <div className="flex items-center gap-1">
                                             <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                                            <span className="text-sm">{data.rating}</span>
+                                            <span className="text-sm">{rating}</span>
                                           </div>
                                         )}
-                                        {data.price && (
+                                        {price && (
                                           <div className="text-sm font-medium">
-                                            {data.price}
+                                            {price}
                                           </div>
                                         )}
                                       </div>
@@ -1794,7 +1913,8 @@ const handleCancelEdit = () => {
                           );
                         })()}
                       </CardContent>
-                    </Card>
+       </Card> 
+          
 
                     {/* Additional Sections - Accordion */}
                     <Card>
