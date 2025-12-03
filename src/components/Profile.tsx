@@ -139,6 +139,8 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
             setPhoneNumber(profile?.phone || '');
             setLocation(profile?.location || '');
             setCurrentProfilePhotoUrl(profile?.profile_photo_url || '');
+            setPetName(profile?.pet_name || '');
+            setPetType(profile?.pet_type || '');
           }
         } catch (error) {
           console.error('Error fetching profile:', error);
@@ -219,12 +221,20 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          const { error } = await supabase
-            .from('profiles')
-            .upsert({
-              id: user.id,
-              is_dark_mode: checked,
-              updated_at: new Date().toISOString()
+const { error } = await supabase
+  .from('profiles')
+  .upsert({
+    id: userProfile.id,
+    username: username || null,
+    phone: phoneNumber || null,
+    email: email,
+    location: location || null,
+    profile_photo_url: profilePhotoUrl || null,
+    pet_name: petName || null,   // 🔽 추가
+    pet_type: petType || null,   // 🔽 추가
+    updated_at: new Date().toISOString()
+  });
+
             });
 
           if (error) {
@@ -489,14 +499,17 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
 
       if (error) throw error;
 
-      setUserProfile({
-        ...userProfile,
-        username,
-        phone: phoneNumber,
-        email,
-        location,
-        profile_photo_url: profilePhotoUrl
-      });
+setUserProfile({
+  ...userProfile,
+  username,
+  phone: phoneNumber,
+  email,
+  location,
+  profile_photo_url: profilePhotoUrl,
+  pet_name: petName,
+  pet_type: petType,
+});
+
 
       setCurrentProfilePhotoUrl(profilePhotoUrl || '');
       setProfilePhoto(null);
@@ -511,16 +524,19 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
     }
   };
 
-  const handleCancelEdit = () => {
-    // Reset form to original values
-    setUsername(userProfile?.username || '');
-    setPhoneNumber(userProfile?.phone || '');
-    setEmail(userProfile?.email || '');
-    setLocation(userProfile?.location || '');
-    setProfilePhoto(null);
-    setProfilePhotoPreview('');
-    setIsEditing(false);
-  };
+const handleCancelEdit = () => {
+  // Reset form to original values
+  setUsername(userProfile?.username || '');
+  setPhoneNumber(userProfile?.phone || '');
+  setEmail(userProfile?.email || '');
+  setLocation(userProfile?.location || '');
+  setPetName(userProfile?.pet_name || '');   // 🔽 추가
+  setPetType(userProfile?.pet_type || '');   // 🔽 추가
+  setProfilePhoto(null);
+  setProfilePhotoPreview('');
+  setIsEditing(false);
+};
+
 
 
 

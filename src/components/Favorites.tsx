@@ -9,7 +9,7 @@ import { supabase } from '../lib/supabase';
 import { toast } from 'sonner@2.0.3';
 
 interface Favorite {
-  id: string;
+  id: string;                 // favorites.id (bigserial이지만 string으로 받아도 됨)
   accommodation_id: string;
   accommodation_name: string;
   accommodation_data: any;
@@ -22,55 +22,37 @@ interface FavoritesProps {
   onAccommodationClick?: (accommodationId: string) => void;
 }
 
-export function Favorites({ userId, isAuthenticated = true, onAccommodationClick }: FavoritesProps) {
+export function Favorites({
+  userId,
+  isAuthenticated = true,
+  onAccommodationClick,
+}: FavoritesProps) {
   const [favorites, setFavorites] = useState<Favorite[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
-  // ⭐ React 강제 리렌더 — 핵심
-  const forceUpdate = React.useReducer(() => ({}), {})[1];
-
-  // localStorage → Favorite[] 형태로 변환
-  const loadFromLocalStorage = () => {
-    const favoritesDataJson = localStorage.getItem('petfriendly_favorites_data');
-    const favoritesData = favoritesDataJson ? JSON.parse(favoritesDataJson) : [];
-
-    return favoritesData.map((item: any) => ({
-      id: item.id,
-      accommodation_id: item.id,
-      accommodation_name: item.name,
-      accommodation_data: item.data,
-      created_at: item.created_at
-    }));
-  };
-
-  // 즐겨찾기 불러오기
   const fetchFavorites = async () => {
+    if (!isAuthenticated || !userId) {
+      setFavorites([]);
+      return;
+    }
+
     try {
       setIsLoading(true);
 
-      if (isAuthenticated && userId) {
-        // 로그인 사용자 → Supabase 먼저 시도
-        try {
-          const { data, error } = await supabase
-            .from('favorites')
-            .select('*')
-            .eq('user_id', userId)
-            .order('created_at', { ascending: false });
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('*')
+        .eq('user_id', userId)
+        .order('created_at', { ascending: false });
 
-          if (!error && data) {
-            setFavorites(data);
-          } else {
-            console.log('Supabase failed, fallback to localStorage');
-            setFavorites(loadFromLocalStorage());
-          }
-        } catch (e) {
-          console.log('Supabase exception, fallback local');
-          setFavorites(loadFromLocalStorage());
-        }
-      } else {
-        // 비로그인 사용자 → localStorage만 사용
-        setFavorites(loadFromLocalStorage());
+      if (error) {
+        console.error('Error fetching favorites:', error);
+        toast.error('즐겨찾기를 불러오는 중 오류가 발생했습니다');
+        setFavorites([]);
+        return;
       }
+
+      setFavorites((data || []) as Favorite[]);
     } catch (err) {
       console.error('Error fetching favorites:', err);
       setFavorites([]);
@@ -80,63 +62,47 @@ export function Favorites({ userId, isAuthenticated = true, onAccommodationClick
   };
 
   useEffect(() => {
-    fetchFavorites();
+    if (isAuthenticated && userId) {
+      fetchFavorites();
+    } else {
+      setFavorites([]);
+    }
 
     const handleFavoritesChanged = () => {
       fetchFavorites();
-      forceUpdate(); // ⭐ 여기서도 리렌더
     };
 
     window.addEventListener('favoritesChanged', handleFavoritesChanged);
     return () => window.removeEventListener('favoritesChanged', handleFavoritesChanged);
   }, [userId, isAuthenticated]);
 
-  // ⭐ 즐겨찾기 삭제 (즉시 반영 포함)
   const removeFavorite = async (favoriteId: string) => {
+    if (!userId) return;
+
     try {
-      // localStorage 삭제
-      const removeFromLocal = () => {
-        const idsJson = localStorage.getItem('petfriendly_favorites');
-        let ids = idsJson ? JSON.parse(idsJson) : [];
-        ids = ids.filter((id: string) => id !== favoriteId);
-        localStorage.setItem('petfriendly_favorites', JSON.stringify(ids));
+      const { error } = await supabase
+        .from('favorites')
+        .delete()
+        .eq('id', favoriteId)
+        .eq('user_id', userId); // 안전하게 내 것만 삭제
 
-        const dataJson = localStorage.getItem('petfriendly_favorites_data');
-        let data = dataJson ? JSON.parse(dataJson) : [];
-        data = data.filter((f: any) => f.id !== favoriteId);
-        localStorage.setItem('petfriendly_favorites_data', JSON.stringify(data));
-      };
-
-      if (isAuthenticated && userId) {
-        try {
-          const { error } = await supabase
-            .from('favorites')
-            .delete()
-            .eq('id', favoriteId);
-
-          if (error) console.log('Supabase delete failed');
-        } catch (e) {
-          console.log('Supabase delete exception');
-        }
-
-        removeFromLocal();
-      } else {
-        removeFromLocal();
+      if (error) {
+        console.error('Error deleting favorite:', error);
+        toast.error('삭제 실패');
+        return;
       }
 
-      setFavorites((prev) => prev.filter((f) => f.id !== favoriteId));
-
+      setFavorites(prev => prev.filter(f => f.id !== favoriteId));
       toast.success('즐겨찾기에서 제거했습니다');
 
-      // ⭐ 즉시 갱신
       window.dispatchEvent(new CustomEvent('favoritesChanged'));
-      forceUpdate();
     } catch (err) {
       console.error('Error removing favorite:', err);
       toast.error('삭제 실패');
     }
   };
-  if (!userId) {
+
+  if (!isAuthenticated || !userId) {
     return (
       <div className="flex flex-col items-center justify-center py-12 text-center">
         <Heart className="h-12 w-12 text-muted-foreground mb-4" />
@@ -168,7 +134,7 @@ export function Favorites({ userId, isAuthenticated = true, onAccommodationClick
   return (
     <ScrollArea className="h-[600px]">
       <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
-        {favorites.map((favorite) => {
+        {favorites.map(favorite => {
           const data = favorite.accommodation_data || {};
           return (
             <Card
@@ -190,12 +156,12 @@ export function Favorites({ userId, isAuthenticated = true, onAccommodationClick
                     variant="secondary"
                     size="icon"
                     className="absolute top-2 right-2 bg-white/90 hover:bg-white"
-                    onClick={(e) => {
+                    onClick={e => {
                       e.stopPropagation();
                       removeFavorite(favorite.id);
                     }}
                   >
-                    <Heart className="h-4 w-4 fill-red-500 text-red-500" />
+                    <Trash2 className="h-4 w-4 text-red-500" />
                   </Button>
                 </div>
               </CardHeader>
@@ -264,36 +230,30 @@ export function FavoriteButton({
   const [isFavorite, setIsFavorite] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
 
-  // ⭐ 강제 렌더링 추가
-  const forceUpdate = React.useReducer(() => ({}), {})[1];
-
-  // 좋아요 상태 체크
   const checkFavorite = async () => {
-    try {
-      if (isAuthenticated && userId) {
-        const { data, error } = await supabase
-          .from('favorites')
-          .select('id')
-          .eq('user_id', userId)
-          .eq('accommodation_id', accommodationId)
-          .maybeSingle();
+    if (!isAuthenticated || !userId) {
+      setIsFavorite(false);
+      return;
+    }
 
-        if (data) {
-          setIsFavorite(true);
-        } else {
-          const ls = localStorage.getItem('petfriendly_favorites');
-          const arr = ls ? JSON.parse(ls) : [];
-          setIsFavorite(arr.includes(accommodationId));
-        }
-      } else {
-        const ls = localStorage.getItem('petfriendly_favorites');
-        const arr = ls ? JSON.parse(ls) : [];
-        setIsFavorite(arr.includes(accommodationId));
+    try {
+      const { data, error } = await supabase
+        .from('favorites')
+        .select('id')
+        .eq('user_id', userId)
+        .eq('accommodation_id', accommodationId)
+        .maybeSingle();
+
+      if (error) {
+        console.error('Error checking favorite:', error);
+        setIsFavorite(false);
+        return;
       }
-    } catch {
-      const ls = localStorage.getItem('petfriendly_favorites');
-      const arr = ls ? JSON.parse(ls) : [];
-      setIsFavorite(arr.includes(accommodationId));
+
+      setIsFavorite(!!data);
+    } catch (err) {
+      console.error('Error checking favorite:', err);
+      setIsFavorite(false);
     }
   };
 
@@ -301,62 +261,44 @@ export function FavoriteButton({
     checkFavorite();
   }, [userId, accommodationId, isAuthenticated]);
 
-  // 좋아요 토글
   const toggleFavorite = async () => {
+    if (!isAuthenticated || !userId) {
+      toast.error('로그인이 필요합니다');
+      return;
+    }
+
     setIsLoading(true);
     try {
-      const updateLocal = () => {
-        const idsJson = localStorage.getItem('petfriendly_favorites');
-        let ids = idsJson ? JSON.parse(idsJson) : [];
+      if (isFavorite) {
+        const { error } = await supabase
+          .from('favorites')
+          .delete()
+          .eq('user_id', userId)
+          .eq('accommodation_id', accommodationId);
 
-        const dataJson = localStorage.getItem('petfriendly_favorites_data');
-        let dataArr = dataJson ? JSON.parse(dataJson) : [];
+        if (error) throw error;
 
-        if (isFavorite) {
-          ids = ids.filter((id: string) => id !== accommodationId);
-          dataArr = dataArr.filter((f: any) => f.id !== accommodationId);
-          setIsFavorite(false);
-        } else {
-          ids.push(accommodationId);
-          dataArr.push({
-            id: accommodationId,
-            name: accommodationName,
-            data: accommodationData,
-            created_at: new Date().toISOString()
-          });
-          setIsFavorite(true);
-        }
-
-        localStorage.setItem('petfriendly_favorites', JSON.stringify(ids));
-        localStorage.setItem('petfriendly_favorites_data', JSON.stringify(dataArr));
-
-        window.dispatchEvent(new CustomEvent('favoritesChanged'));
-        forceUpdate(); // ⭐ 즉시 렌더링!
-      };
-
-      if (isAuthenticated && userId) {
-        try {
-          if (isFavorite) {
-            await supabase
-              .from('favorites')
-              .delete()
-              .eq('user_id', userId)
-              .eq('accommodation_id', accommodationId);
-          } else {
-            await supabase.from('favorites').insert({
-              user_id: userId,
-              accommodation_id: accommodationId,
-              accommodation_name: accommodationName,
-              accommodation_data: accommodationData,
-            });
-          }
-        } catch {
-          // 실패해도 local로 처리됨
-        }
-        updateLocal();
+        setIsFavorite(false);
+        toast.success('즐겨찾기에서 제거했습니다');
       } else {
-        updateLocal();
+        const { error } = await supabase.from('favorites').insert({
+          user_id: userId,
+          accommodation_id: accommodationId,
+          accommodation_name: accommodationName,
+          accommodation_data: accommodationData,
+        });
+
+        if (error) throw error;
+
+        setIsFavorite(true);
+        toast.success('즐겨찾기에 추가했습니다');
       }
+
+      // 리스트 컴포넌트(Favorites)가 다시 불러오도록 이벤트
+      window.dispatchEvent(new CustomEvent('favoritesChanged'));
+    } catch (err) {
+      console.error('Error toggling favorite:', err);
+      toast.error('즐겨찾기 처리 중 오류가 발생했습니다');
     } finally {
       setIsLoading(false);
     }
