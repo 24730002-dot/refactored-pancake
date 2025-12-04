@@ -64,7 +64,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
 const fetchPosts = async () => {
   setLoading(true);
 
-  // 1) Supabase posts 불러오기
+  // Supabase 데이터
   const { data: supaPosts, error } = await supabase
     .from("community_posts")
     .select(
@@ -77,7 +77,7 @@ const fetchPosts = async () => {
       content,
       images,
       created_at,
-      profiles:user_id (
+      profiles:user_id(
         username,
         profile_photo_url
       )
@@ -87,31 +87,32 @@ const fetchPosts = async () => {
 
   if (error) {
     console.error(error);
-    toast.error("게시글을 불러오는 데 실패했습니다.");
+    toast.error("게시글 불러오기 실패");
   }
 
   const supabasePosts = supaPosts || [];
 
-  // 2) 더미 데이터 + Supabase 데이터 합치기
-  const merged = [
-    ...DUMMY_POSTS.map((p) => ({
-      ...p,
-      profiles: {
-        username: p.username || "익명",
-        profile_photo_url: p.profile_photo_url || null,
-      },
-    })),
-    ...supabasePosts,
-  ];
+  // ⭐ 더미 → profiles 형태 맞춰 변환
+  const dummyFormatted = DUMMY_POSTS.map((p) => ({
+    ...p,
+    profiles: {
+      username: p.username || "익명",
+      profile_photo_url: p.profile_photo_url || null,
+    },
+  }));
+
+  // ⭐ 병합
+  const merged = [...dummyFormatted, ...supabasePosts];
 
   setPosts(merged);
 
-  // 3) 좋아요 정보 + 댓글 정보도 합쳐서 불러오기
+  // 좋아요 + 댓글도 merged 기준
   await fetchLikeInfo(merged);
   await fetchAllComments(merged);
 
   setLoading(false);
 };
+
 
 
   // ------------------------
@@ -160,36 +161,35 @@ const fetchAllComments = async (posts: Post[]) => {
       .from("community_comments")
       .select(
         `
-          id,
-          post_id,
-          user_id,
-          content,
-          created_at,
-          profiles:user_id(
-            username,
-            profile_photo_url
-          )
-        `
+        id,
+        post_id,
+        user_id,
+        content,
+        created_at,
+        profiles:user_id(
+          username,
+          profile_photo_url
+        )
+      `
       )
       .eq("post_id", post.id)
       .order("created_at", { ascending: true });
 
-    // 더미 댓글
+    // ⭐ 더미 댓글 (profiles 형태 통일)
     const dummy = (DUMMY_COMMENTS[post.id] || []).map((c: any) => ({
       ...c,
       profiles: {
         username: c.username,
-        profile_photo_url: c.profile_photo_url,
+        profile_photo_url: c.profile_photo_url || null,
       },
     }));
 
     // 합치기
-    map[post.id] = [...dummy, ...(supaComments || [])];
+  map[post.id] = [...dummy, ...(supaComments || [])];
   }
 
   setComments(map);
 };
-
 
   useEffect(() => {
     fetchPosts();
