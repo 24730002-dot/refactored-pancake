@@ -1,10 +1,15 @@
-import { DUMMY_POSTS, DUMMY_COMMENTS } from "../data/communityDummy";
 import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
-import { Card, CardHeader, CardContent, CardDescription, CardTitle } from "./ui/card";
+import {
+  Card,
+  CardHeader,
+  CardContent,
+  CardDescription,
+  CardTitle,
+} from "./ui/card";
 import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
 import { Loader2, Heart, MessageCircle, Star, Plus } from "lucide-react";
 import { toast } from "sonner";
@@ -36,7 +41,7 @@ interface Comment {
   content: string;
   created_at: string;
   profiles?: {
-    username: string |null;
+    username: string | null;
     profile_photo_url: string | null;
   };
 }
@@ -50,6 +55,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     title: "",
     content: "",
   });
+
   const [commentInput, setCommentInput] = useState<Record<number, string>>({});
   const [loading, setLoading] = useState(true);
   const [creatingPost, setCreatingPost] = useState(false);
@@ -59,16 +65,15 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
   const [addingComment, setAddingComment] = useState<number | null>(null);
 
   // -------------------------------
-  // Fetch all posts + load profiles
+  // Fetch posts
   // -------------------------------
-const fetchPosts = async () => {
-  setLoading(true);
+  const fetchPosts = async () => {
+    setLoading(true);
 
-  // Supabase 데이터
-  const { data: supaPosts, error } = await supabase
-    .from("community_posts")
-    .select(
-      `
+    const { data, error } = await supabase
+      .from("community_posts")
+      .select(
+        `
       id,
       user_id,
       accommodation_name,
@@ -77,52 +82,40 @@ const fetchPosts = async () => {
       content,
       images,
       created_at,
-      profiles:user_id(
+      profiles:user_id (
         username,
         profile_photo_url
       )
     `
-    )
-    .order("created_at", { ascending: false });
+      )
+      .order("created_at", { ascending: false });
 
-  if (error) {
-    console.error(error);
-    toast.error("게시글 불러오기 실패");
-  }
+    if (error) {
+      console.error(error);
+      toast.error("게시글 불러오기 실패");
+      setLoading(false);
+      return;
+    }
 
-  const supabasePosts = supaPosts || [];
+    const posts = data || [];
 
-  // ⭐ 더미 → profiles 형태 맞춰 변환
-  const dummyFormatted = DUMMY_POSTS.map((p) => ({
-    ...p,
-    profiles: {
-      username: p.username || "익명",
-      profile_photo_url: p.profile_photo_url || null,
-    },
-  }));
+    setPosts(posts);
+    await fetchLikeInfo(posts);
+    await fetchAllComments(posts);
 
-  // ⭐ 병합
-  const merged = [...dummyFormatted, ...supabasePosts];
-
-  setPosts(merged);
-
-  // 좋아요 + 댓글도 merged 기준
-  await fetchLikeInfo(merged);
-  await fetchAllComments(merged);
-
-  setLoading(false);
-};
-
-
+    setLoading(false);
+  };
 
   // ------------------------
-  // Fetch like counts + mine
+  // Fetch like info
   // ------------------------
   const fetchLikeInfo = async (posts: Post[]) => {
     const likeMap: Record<number, boolean> = {};
     const countMap: Record<number, number> = {};
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     const userId = user?.id;
 
     for (const post of posts) {
@@ -150,52 +143,42 @@ const fetchPosts = async () => {
   };
 
   // ------------------------
-  // Fetch comments per post
+  // Fetch comments
   // ------------------------
-const fetchAllComments = async (posts: Post[]) => {
-  const map: Record<number, Comment[]> = {};
+  const fetchAllComments = async (posts: Post[]) => {
+    const map: Record<number, Comment[]> = {};
 
-  for (const post of posts) {
-    // Supabase 댓글
-    const { data: supaComments } = await supabase
-      .from("community_comments")
-      .select(
-        `
+    for (const post of posts) {
+      const { data } = await supabase
+        .from("community_comments")
+        .select(
+          `
         id,
         post_id,
         user_id,
         content,
         created_at,
-        profiles:user_id(
+        profiles:user_id (
           username,
           profile_photo_url
         )
       `
-      )
-      .eq("post_id", post.id)
-      .order("created_at", { ascending: true });
+        )
+        .eq("post_id", post.id)
+        .order("created_at", { ascending: true });
 
-    // ⭐ 더미 댓글 (profiles 형태 통일)
-    const dummy = (DUMMY_COMMENTS[post.id] || []).map((c: any) => ({
-      ...c,
-      profiles: {
-        username: c.username,
-        profile_photo_url: c.profile_photo_url || null,
-      },
-    }));
+      map[post.id] = data || [];
+    }
 
-    // 합치기
-  map[post.id] = [...dummy, ...(supaComments || [])];
-  }
-
-  setComments(map);
-};
+    setComments(map);
+  };
 
   useEffect(() => {
     fetchPosts();
   }, []);
+
   // ------------------------
-  // Create new post
+  // Create post
   // ------------------------
   const handleCreatePost = async () => {
     if (!isAuthenticated) return onShowAuth("login");
@@ -208,7 +191,9 @@ const fetchAllComments = async (posts: Post[]) => {
 
     setCreatingPost(true);
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
     if (!user) return;
 
     const { error } = await supabase.from("community_posts").insert({
@@ -241,13 +226,15 @@ const fetchAllComments = async (posts: Post[]) => {
   // Toggle like
   // ------------------------
   const toggleLike = async (postId: number) => {
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) return onShowAuth("login");
 
     const alreadyLiked = likes[postId];
 
     if (alreadyLiked) {
-      // Unlike
       await supabase
         .from("post_likes")
         .delete()
@@ -260,7 +247,6 @@ const fetchAllComments = async (posts: Post[]) => {
         [postId]: (likeCounts[postId] || 1) - 1,
       });
     } else {
-      // Like
       const { error } = await supabase.from("post_likes").insert({
         post_id: postId,
         user_id: user.id,
@@ -286,7 +272,10 @@ const fetchAllComments = async (posts: Post[]) => {
     const text = commentInput[postId];
     if (!text || text.trim() === "") return;
 
-    const { data: { user } } = await supabase.auth.getUser();
+    const {
+      data: { user },
+    } = await supabase.auth.getUser();
+
     if (!user) return onShowAuth("login");
 
     setAddingComment(postId);
@@ -309,9 +298,6 @@ const fetchAllComments = async (posts: Post[]) => {
     setAddingComment(null);
   };
 
-  // ------------------------
-  // Helper: format date
-  // ------------------------
   const formatDate = (dateString: string) => {
     const date = new Date(dateString);
     return date.toLocaleDateString("ko-KR", {
@@ -319,235 +305,247 @@ const fetchAllComments = async (posts: Post[]) => {
       day: "numeric",
     });
   };
+
   // ------------------------
-  // RENDER
+  // Render
   // ------------------------
- return (
-  <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+  return (
+    <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      {/* 작성 박스 */}
+      <Card className="border border-gray-200 shadow-sm">
+        <CardHeader>
+          <CardTitle className="text-xl font-semibold">후기 작성</CardTitle>
+          <CardDescription className="text-sm text-muted-foreground">
+            반려동물과 떠난 숙소 경험을 공유해주세요 🐶🐱
+          </CardDescription>
+        </CardHeader>
 
-    {/* 작성 박스 */}
-    <Card className="border border-gray-200 shadow-sm">
-      <CardHeader>
-        <CardTitle className="text-xl font-semibold">후기 작성</CardTitle>
-        <CardDescription className="text-sm text-muted-foreground">
-          반려동물과 떠난 숙소 경험을 공유해주세요 🐶🐱
-        </CardDescription>
-      </CardHeader>
-
-      <CardContent className="space-y-4">
-        {!isAuthenticated ? (
-          <div className="p-4 bg-muted rounded-lg text-center">
-            <p className="text-sm text-muted-foreground mb-3">
-              로그인 후 후기를 작성할 수 있습니다.
-            </p>
-            <Button onClick={() => onShowAuth("login")} size="sm">
-              로그인하기
-            </Button>
-          </div>
-        ) : (
-          <>
-            <Input
-              placeholder="숙소 이름"
-              value={newPost.accommodation_name}
-              onChange={(e) =>
-                setNewPost({ ...newPost, accommodation_name: e.target.value })
-              }
-            />
-
-            <Input
-              placeholder="제목"
-              value={newPost.title}
-              onChange={(e) =>
-                setNewPost({ ...newPost, title: e.target.value })
-              }
-            />
-
-            <Textarea
-              placeholder="작성 내용..."
-              className="min-h-[100px]"
-              value={newPost.content}
-              onChange={(e) =>
-                setNewPost({ ...newPost, content: e.target.value })
-              }
-            />
-
-            <div className="flex items-center gap-3">
-              <span className="text-sm font-medium">평점 :</span>
-              <div className="flex items-center gap-1">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <Star
-                    key={n}
-                    className={`h-5 w-5 cursor-pointer transition ${
-                      newPost.rating >= n
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-300"
-                    }`}
-                    onClick={() => setNewPost({ ...newPost, rating: n })}
-                  />
-                ))}
-              </div>
+        <CardContent className="space-y-4">
+          {!isAuthenticated ? (
+            <div className="p-4 bg-muted rounded-lg text-center">
+              <p className="text-sm text-muted-foreground mb-3">
+                로그인 후 후기를 작성할 수 있습니다.
+              </p>
+              <Button onClick={() => onShowAuth("login")} size="sm">
+                로그인하기
+              </Button>
             </div>
+          ) : (
+            <>
+              <Input
+                placeholder="숙소 이름"
+                value={newPost.accommodation_name}
+                onChange={(e) =>
+                  setNewPost({
+                    ...newPost,
+                    accommodation_name: e.target.value,
+                  })
+                }
+              />
 
-            <Button
-              onClick={handleCreatePost}
-              className="w-full"
-              disabled={creatingPost}
-            >
-              {creatingPost ? (
-                <Loader2 className="h-4 w-4 animate-spin" />
-              ) : (
-                <>
-                  <Plus className="h-4 w-4 mr-2" />
-                  후기 등록
-                </>
-              )}
-            </Button>
-          </>
-        )}
-      </CardContent>
-    </Card>
+              <Input
+                placeholder="제목"
+                value={newPost.title}
+                onChange={(e) =>
+                  setNewPost({ ...newPost, title: e.target.value })
+                }
+              />
 
+              <Textarea
+                placeholder="작성 내용..."
+                className="min-h-[100px]"
+                value={newPost.content}
+                onChange={(e) =>
+                  setNewPost({ ...newPost, content: e.target.value })
+                }
+              />
 
-
-    {/* 게시글 목록 */}
-    <div className="space-y-6">
-      {loading && (
-        <div className="flex justify-center py-6">
-          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-        </div>
-      )}
-
-      {!loading &&
-        posts.map((post) => (
-          <Card key={post.id} className="border shadow-sm">
-            <CardContent className="p-5 space-y-4">
-
-              {/* Header */}
               <div className="flex items-center gap-3">
-                <Avatar className="h-10 w-10">
-                  <AvatarImage src={post.profiles?.profile_photo_url || ""} />
-                  <AvatarFallback>
-                    {post.profiles?.username?.[0]?.toUpperCase() || "U"}
-                  </AvatarFallback>
-                </Avatar>
-
-                <div className="flex flex-col">
-                  <span className="font-medium text-sm">
-                    {post.profiles?.username || "익명 사용자"}
-                  </span>
-                  <span className="text-xs text-muted-foreground">
-                    {post.accommodation_name} · {formatDate(post.created_at)}
-                  </span>
-                </div>
-              </div>
-
-              {/* Title + Content */}
-              <div>
-                <h3 className="font-semibold text-base mb-1">{post.title}</h3>
-                <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
-                  {post.content}
-                </p>
-              </div>
-
-              {/* Rating */}
-              <div className="flex gap-1">
-                {[1, 2, 3, 4, 5].map((n) => (
-                  <Star
-                    key={n}
-                    className={`h-4 w-4 ${
-                      post.rating >= n
-                        ? "fill-yellow-400 text-yellow-400"
-                        : "text-gray-300"
-                    }`}
-                  />
-                ))}
-              </div>
-
-              {/* Like + Comment */}
-              <div className="flex items-center gap-6 border-t pt-3">
-                <button
-                  className="flex items-center gap-1 text-sm hover:opacity-80"
-                  onClick={() => toggleLike(post.id)}
-                >
-                  <Heart
-                    className={`h-5 w-5 transition ${
-                      likes[post.id]
-                        ? "fill-red-500 text-red-500"
-                        : "text-muted-foreground"
-                    }`}
-                  />
-                  {likeCounts[post.id] || 0}
-                </button>
-
-                <button
-                  className="flex items-center gap-1 text-sm hover:opacity-80"
-                  onClick={() =>
-                    setExpandedPostId(expandedPostId === post.id ? null : post.id)
-                  }
-                >
-                  <MessageCircle className="h-5 w-5" />
-                  댓글
-                </button>
-              </div>
-
-              {/* 댓글 리스트 */}
-              {expandedPostId === post.id && (
-                <div className="pt-4 space-y-4 bg-muted/30 rounded-lg p-4">
-
-                  {comments[post.id]?.map((c) => (
-                    <div key={c.id} className="flex gap-3">
-                      <Avatar className="h-8 w-8">
-                        <AvatarImage src={c.profiles?.profile_photo_url || ""} />
-                        <AvatarFallback>
-                          {c.profiles?.username?.[0] || "U"}
-                        </AvatarFallback>
-                      </Avatar>
-
-                      <div className="flex-1 bg-white border rounded-lg p-3 shadow-sm">
-                        <p className="text-sm font-medium mb-0.5">
-                          {c.profiles?.username || "익명"}
-                        </p>
-                        <p className="text-sm text-muted-foreground leading-5">
-                          {c.content}
-                        </p>
-                      </div>
-                    </div>
+                <span className="text-sm font-medium">평점 :</span>
+                <div className="flex items-center gap-1">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Star
+                      key={n}
+                      className={`h-5 w-5 cursor-pointer transition ${
+                        newPost.rating >= n
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                      onClick={() => setNewPost({ ...newPost, rating: n })}
+                    />
                   ))}
-
-                  {/* 댓글 입력 */}
-                  {isAuthenticated ? (
-                    <div className="flex gap-2 pt-1">
-                      <Input
-                        placeholder="댓글 입력..."
-                        value={commentInput[post.id] || ""}
-                        onChange={(e) =>
-                          setCommentInput({
-                            ...commentInput,
-                            [post.id]: e.target.value,
-                          })
-                        }
-                      />
-                      <Button
-                        onClick={() => addComment(post.id)}
-                        disabled={addingComment === post.id}
-                      >
-                        {addingComment === post.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          "등록"
-                        )}
-                      </Button>
-                    </div>
-                  ) : (
-                    <p className="text-sm text-muted-foreground pt-1">
-                      로그인 후 댓글을 작성할 수 있습니다.
-                    </p>
-                  )}
                 </div>
-              )}
-            </CardContent>
-          </Card>
-        ))}
+              </div>
+
+              <Button
+                onClick={handleCreatePost}
+                className="w-full"
+                disabled={creatingPost}
+              >
+                {creatingPost ? (
+                  <Loader2 className="h-4 w-4 animate-spin" />
+                ) : (
+                  <>
+                    <Plus className="h-4 w-4 mr-2" />
+                    후기 등록
+                  </>
+                )}
+              </Button>
+            </>
+          )}
+        </CardContent>
+      </Card>
+
+      {/* 게시글 목록 */}
+      <div className="space-y-6">
+        {loading && (
+          <div className="flex justify-center py-6">
+            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+          </div>
+        )}
+
+        {!loading &&
+          posts.map((post) => (
+            <Card key={post.id} className="border shadow-sm">
+              <CardContent className="p-5 space-y-4">
+                {/* Header */}
+                <div className="flex items-center gap-3">
+                  <Avatar className="h-10 w-10">
+                    <AvatarImage
+                      src={post.profiles?.profile_photo_url || ""}
+                    />
+                    <AvatarFallback>
+                      {post.profiles?.username?.[0]?.toUpperCase() || "U"}
+                    </AvatarFallback>
+                  </Avatar>
+
+                  <div className="flex flex-col">
+                    <span className="font-medium text-sm">
+                      {post.profiles?.username || "익명 사용자"}
+                    </span>
+                    <span className="text-xs text-muted-foreground">
+                      {post.accommodation_name} ·{" "}
+                      {formatDate(post.created_at)}
+                    </span>
+                  </div>
+                </div>
+
+                {/* Title + Content */}
+                <div>
+                  <h3 className="font-semibold text-base mb-1">
+                    {post.title}
+                  </h3>
+                  <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+                    {post.content}
+                  </p>
+                </div>
+
+                {/* Rating */}
+                <div className="flex gap-1">
+                  {[1, 2, 3, 4, 5].map((n) => (
+                    <Star
+                      key={n}
+                      className={`h-4 w-4 ${
+                        post.rating >= n
+                          ? "fill-yellow-400 text-yellow-400"
+                          : "text-gray-300"
+                      }`}
+                    />
+                  ))}
+                </div>
+
+                {/* Like + Comment */}
+                <div className="flex items-center gap-6 border-t pt-3">
+                  <button
+                    className="flex items-center gap-1 text-sm hover:opacity-80"
+                    onClick={() => toggleLike(post.id)}
+                  >
+                    <Heart
+                      className={`h-5 w-5 transition ${
+                        likes[post.id]
+                          ? "fill-red-500 text-red-500"
+                          : "text-muted-foreground"
+                      }`}
+                    />
+                    {likeCounts[post.id] || 0}
+                  </button>
+
+                  <button
+                    className="flex items-center gap-1 text-sm hover:opacity-80"
+                    onClick={() =>
+                      setExpandedPostId(
+                        expandedPostId === post.id ? null : post.id
+                      )
+                    }
+                  >
+                    <MessageCircle className="h-5 w-5" />
+                    댓글
+                  </button>
+                </div>
+
+                {/* 댓글 리스트 */}
+                {expandedPostId === post.id && (
+                  <div className="pt-4 space-y-4 bg-muted/30 rounded-lg p-4">
+                    {comments[post.id]?.map((c) => (
+                      <div
+                        key={c.id}
+                        className="flex items-start gap-3"
+                      >
+                        <Avatar className="h-8 w-8">
+                          <AvatarImage
+                            src={c.profiles?.profile_photo_url || ""}
+                          />
+                          <AvatarFallback>
+                            {c.profiles?.username?.[0] || "U"}
+                          </AvatarFallback>
+                        </Avatar>
+
+                        <div className="flex-1 bg-white border rounded-lg p-3 shadow-sm">
+                          <p className="text-sm font-medium mb-0.5">
+                            {c.profiles?.username || "익명"}
+                          </p>
+                          <p className="text-sm text-muted-foreground leading-5">
+                            {c.content}
+                          </p>
+                        </div>
+                      </div>
+                    ))}
+
+                    {/* 댓글 입력 */}
+                    {isAuthenticated ? (
+                      <div className="flex gap-2 pt-1">
+                        <Input
+                          placeholder="댓글 입력..."
+                          value={commentInput[post.id] || ""}
+                          onChange={(e) =>
+                            setCommentInput({
+                              ...commentInput,
+                              [post.id]: e.target.value,
+                            })
+                          }
+                        />
+                        <Button
+                          onClick={() => addComment(post.id)}
+                          disabled={addingComment === post.id}
+                        >
+                          {addingComment === post.id ? (
+                            <Loader2 className="h-4 w-4 animate-spin" />
+                          ) : (
+                            "등록"
+                          )}
+                        </Button>
+                      </div>
+                    ) : (
+                      <p className="text-sm text-muted-foreground pt-1">
+                        로그인 후 댓글을 작성할 수 있습니다.
+                      </p>
+                    )}
+                  </div>
+                )}
+              </CardContent>
+            </Card>
+          ))}
+      </div>
     </div>
-  </div>
-);
+  );
+}
