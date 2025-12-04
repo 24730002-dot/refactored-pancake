@@ -36,8 +36,23 @@ import {
   CommandInput,
 } from "./ui/command";
 
-// 🔥 실제 더미 숙소 리스트
-import { accommodations } from "../data/accommodations"; // ← 너가 생성한 파일 위치 맞게 수정
+const ACC_LIST = [
+  "코지 펫 리조트",
+  "럭셔리 도그 하우스",
+  "캣 프렌들리 아파트",
+  "포레스트 펫 코티지",
+  "버드 프렌들리 스튜디오",
+  "스몰 펫 가든 하우스",
+  "해운대 펫 리조트",
+  "송도 펫 호텔",
+  "팔공산 힐링 펜션",
+  "전주 한옥 펫 스테이",
+  "여수 오션뷰 빌라",
+  "경주 역사공원 펫 하우스",
+  "속초 설악 펫 캠핑장",
+  "남이섬 펫 카페 스테이",
+  "담양 죽녹원 펫 스테이"
+];
 
 // ------------------------------------------------------
 // Types
@@ -325,37 +340,38 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
             </div>
           ) : (
             <>
-              {/* 숙소 선택 */}
-              <Popover>
-                <PopoverTrigger asChild>
-                  <Button variant="outline" className="w-full justify-between">
-                    {newPost.accommodation_name || "숙소 선택하기"}
-                  </Button>
-                </PopoverTrigger>
+             {/* 숙소 선택 */}
+<Popover>
+  <PopoverTrigger asChild>
+    <Button variant="outline" className="w-full justify-between">
+      {newPost.accommodation_name || "숙소 선택하기"}
+    </Button>
+  </PopoverTrigger>
 
-                <PopoverContent className="w-[300px] p-0">
-                  <Command>
-                    <CommandInput placeholder="검색..." />
-                    <CommandList>
-                      <CommandGroup heading="숙소 목록">
-                        {accommodations.map((acc) => (
-                          <CommandItem
-                            key={acc.id}
-                            onSelect={() =>
-                              setNewPost({
-                                ...newPost,
-                                accommodation_name: acc.name,
-                              })
-                            }
-                          >
-                            {acc.name}
-                          </CommandItem>
-                        ))}
-                      </CommandGroup>
-                    </CommandList>
-                  </Command>
-                </PopoverContent>
-              </Popover>
+  <PopoverContent className="w-[300px] p-0">
+    <Command>
+      <CommandInput placeholder="검색..." />
+      <CommandList>
+        <CommandGroup heading="숙소 목록">
+          {ACC_LIST.map((name) => (
+            <CommandItem
+              key={name}
+              onSelect={() =>
+                setNewPost({
+                  ...newPost,
+                  accommodation_name: name,
+                })
+              }
+            >
+              {name}
+            </CommandItem>
+          ))}
+        </CommandGroup>
+      </CommandList>
+    </Command>
+  </PopoverContent>
+</Popover>
+
 
               {/* 제목 */}
               <Input
