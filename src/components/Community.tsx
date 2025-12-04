@@ -384,19 +384,9 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
             </div>
           ) : (
             <>
-   
+  
+{/* 숙소 선택 */}
 <Popover>
-  <PopoverTrigger asChild>
-    <Button
-      variant="outline"
-      className="w-full justify-between"
-    >
-      {newPost.accommodation_name || "숙소 선택하기"}
-    </Button>
-  </PopoverTrigger>
-
-  {/* 버튼이랑 똑같은 폭으로 맞추기 */}
- <Popover>
   <PopoverTrigger asChild>
     <Button
       variant="outline"
@@ -430,10 +420,6 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     </div>
   </PopoverContent>
 </Popover>
-
-
-
-
 
 
               {/* 제목 */}
