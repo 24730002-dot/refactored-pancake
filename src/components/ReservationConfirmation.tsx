@@ -7,7 +7,6 @@ import {
   CardTitle,
 } from './ui/card';
 import { Button } from './ui/button';
-import { Badge } from './ui/badge';
 import { ImageWithFallback } from './figma/ImageWithFallback';
 import {
   CheckCircle2,
@@ -18,15 +17,12 @@ import {
   Mail,
   MapPin,
   Dog,
-  Cat,
-  Bird,
-  Rabbit,
   Download,
   Share2,
   ArrowLeft,
 } from 'lucide-react';
-import { toast } from 'sonner'; // 🔧 원래 sonner@2.0.3 이라고 되어 있던 거 수정
-import { supabase } from '../lib/supabase'; // ✅ Supabase 인스턴스
+import { toast } from 'sonner';
+import { supabase } from '../lib/supabase';
 
 interface ReservationData {
   accommodationId: number;
@@ -58,10 +54,10 @@ export function ReservationConfirmation({
   onBackToList,
   onBackToDetail,
 }: ReservationConfirmationProps) {
-  // ✅ 같은 예약이 두 번 insert 되는 것 방지용
+  // 같은 예약이 두 번 insert 되는 것 방지
   const hasSyncedRef = useRef(false);
 
-  // ✅ 이 화면이 열릴 때 Supabase reservations 테이블에 한 번 저장
+  // ✅ 이 화면이 처음 뜰 때 Supabase `reservations`에 한 번 저장
   useEffect(() => {
     if (hasSyncedRef.current) return;
     hasSyncedRef.current = true;
@@ -77,28 +73,24 @@ export function ReservationConfirmation({
           return;
         }
 
-        // ⚠ 여기 컬럼 이름은 Supabase reservations 테이블에 맞춰서 필요하면 바꿔줘
         const { error } = await supabase.from('reservations').insert({
           user_id: user.id,
-          accommodation_id: reservation.accommodationId.toString(),
+          // Profile.tsx가 쓰는 필드 이름에 맞춰서 저장
           accommodation_name: reservation.accommodationName,
+          accommodation_image: reservation.accommodationImage,
           accommodation_location: reservation.accommodationLocation,
-          check_in: reservation.checkInDate.toISOString(),
-          check_out: reservation.checkOutDate.toISOString(),
           nights: reservation.nights,
           number_of_pets: reservation.numberOfPets,
-          guest_name: reservation.guestName,
-          guest_phone: reservation.guestPhone,
-          guest_email: reservation.guestEmail,
+          check_in_date: reservation.checkInDate.toISOString(),
+          check_out_date: reservation.checkOutDate.toISOString(),
           total_price: reservation.totalPrice,
-          reservation_number: reservation.reservationNumber,
           reservation_date: reservation.reservationDate.toISOString(),
-          special_requests: reservation.specialRequests,
+          special_requests: reservation.specialRequests || null,
         });
 
         if (error) {
           console.error('Supabase 예약 저장 오류:', error);
-          // 필요하면 사용자에게도 알려주고 싶을 때:
+          // 필요하면 유저에게도 알림
           // toast.error('예약 내역 저장에 실패했습니다.');
         } else {
           console.log('Supabase 예약 저장 완료');
@@ -128,30 +120,28 @@ export function ReservationConfirmation({
   };
 
   const handleDownload = () => {
-    // In a real app, this would generate a PDF
     toast.success('예약 확인서를 다운로드합니다');
   };
 
   const handleShare = async () => {
-    const text = `${reservation.accommodationName} 예약이 완료되었습니다!\n예약번호: ${reservation.reservationNumber}\n체크인: ${formatDate(
-      reservation.checkInDate,
-    )}\n체크아웃: ${formatDate(reservation.checkOutDate)}`;
+    const text = `${reservation.accommodationName} 예약이 완료되었습니다!
+예약번호: ${reservation.reservationNumber}
+체크인: ${formatDate(reservation.checkInDate)}
+체크아웃: ${formatDate(reservation.checkOutDate)}`;
 
     if (navigator.share) {
       try {
         await navigator.share({
           title: '숙소 예약 완료',
-          text: text,
+          text,
         });
       } catch (error: any) {
-        if (error.name === 'AbortError') {
-          // 사용자가 공유 다이얼로그를 취소한 경우
-          return;
-        }
+        if (error.name === 'AbortError') return;
+
         try {
           await navigator.clipboard.writeText(text);
           toast.success('예약 정보가 클립보드에 복사되었습니다');
-        } catch (clipboardError) {
+        } catch {
           toast.error('공유할 수 없습니다');
         }
       }
@@ -159,7 +149,7 @@ export function ReservationConfirmation({
       try {
         await navigator.clipboard.writeText(text);
         toast.success('예약 정보가 클립보드에 복사되었습니다');
-      } catch (error) {
+      } catch {
         toast.error('클립보드에 복사할 수 없습니다');
       }
     }
