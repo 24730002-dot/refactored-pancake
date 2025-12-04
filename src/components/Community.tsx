@@ -341,6 +341,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
           ) : (
             <>
              {/* 숙소 선택 */}
+{/* 숙소 선택 */}
 <Popover>
   <PopoverTrigger asChild>
     <Button variant="outline" className="w-full justify-between">
@@ -348,10 +349,10 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     </Button>
   </PopoverTrigger>
 
+  {/* 버튼이랑 길이 비슷하게 300px 유지 + 스크롤 */}
   <PopoverContent className="w-[300px] p-0">
     <Command>
-      <CommandInput placeholder="검색..." />
-      <CommandList>
+      <CommandList className="max-h-60 overflow-y-auto">
         <CommandGroup heading="숙소 목록">
           {ACC_LIST.map((name) => (
             <CommandItem
@@ -371,6 +372,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     </Command>
   </PopoverContent>
 </Popover>
+
 
 
               {/* 제목 */}
@@ -550,26 +552,28 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
 
                   {/* Comment Input */}
                   {isAuthenticated ? (
-                    <div className="flex items-center gap-3 mt-2">
-                      <Input
-                        className="flex-1 h-10"
-                        placeholder="댓글 입력..."
-                        value={commentInput[post.id] || ""}
-                        onChange={(e) =>
-                          setCommentInput({
-                            ...commentInput,
-                            [post.id]: e.target.value,
-                          })
-                        }
-                      />
-                      <Button
-                        className="px-4 h-10 whitespace-nowrap"
-                        onClick={() => addComment(post.id)}
-                        disabled={addingComment === post.id}
-                      >
-                        등록
-                      </Button>
-                    </div>
+<div className="flex items-center gap-2 mt-2">
+  <Input
+    className="flex-1 h-11 text-sm"
+    placeholder="댓글 입력..."
+    value={commentInput[post.id] || ""}
+    onChange={(e) =>
+      setCommentInput({
+        ...commentInput,
+        [post.id]: e.target.value,
+      })
+    }
+  />
+  <Button
+    size="sm"
+    className="h-9 px-3 text-sm whitespace-nowrap"
+    onClick={() => addComment(post.id)}
+    disabled={addingComment === post.id}
+  >
+    등록
+  </Button>
+</div>
+
                   ) : (
                     <p className="text-sm text-muted-foreground">
                       로그인 후 댓글 작성 가능
