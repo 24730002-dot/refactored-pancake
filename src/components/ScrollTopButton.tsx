@@ -1,18 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { ArrowUp } from 'lucide-react';
-import { Button } from './ui/button';
+// src/components/ScrollTopButton.tsx
+
+import React from 'react';
 
 export function ScrollTopButton() {
-  const [visible, setVisible] = useState(false);
-
-  useEffect(() => {
-    const onScroll = () => {
-      setVisible(window.scrollY > 150); // 150px 이상 내려가면 버튼 보이기
-    };
-
-    window.addEventListener('scroll', onScroll);
-    return () => window.removeEventListener('scroll', onScroll);
-  }, []);
+  console.log('✅ ScrollTopButton 렌더됨');
 
   const handleClick = () => {
     window.scrollTo({
@@ -21,15 +12,23 @@ export function ScrollTopButton() {
     });
   };
 
-  if (!visible) return null;
-
   return (
-    <Button
+    <div
       onClick={handleClick}
-      size="icon"
-      className="fixed bottom-6 right-6 h-12 w-12 rounded-full shadow-lg"
+      style={{
+        position: 'fixed',
+        bottom: '24px',
+        right: '24px',
+        background: 'red',
+        color: 'white',
+        padding: '10px 16px',
+        borderRadius: '9999px',
+        fontWeight: 'bold',
+        cursor: 'pointer',
+        zIndex: 99999,
+      }}
     >
-      <ArrowUp className="h-5 w-5" />
-    </Button>
+      TOP
+    </div>
   );
 }
