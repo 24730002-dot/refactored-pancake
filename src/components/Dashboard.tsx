@@ -958,7 +958,6 @@ export function Dashboard({
         isAuthenticated={isAuthenticated}
       />
 
-      {/* 화면 오른쪽 아래 TOP 버튼 */}
       <ScrollTopButton />
     </div>
   );
