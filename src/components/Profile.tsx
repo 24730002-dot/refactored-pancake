@@ -22,6 +22,7 @@ import volumeIconPaths from '../imports/svg-x788y0ihop';
 import { supabase } from '../lib/supabase';
 import { toast } from 'sonner@2.0.3';
 
+
 interface WeatherAPICity {
   id: number;
   name: string;
@@ -78,6 +79,10 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
   const [isLoadingReservations, setIsLoadingReservations] = useState(false);
   const [favorites, setFavorites] = useState<any[]>([]);
   const [isLoadingFavorites, setIsLoadingFavorites] = useState(false);
+ 
+  // ‘활동기록’ 부분 전용 코드
+const [myPosts, setMyPosts] = useState<any[]>([]);
+const [myComments, setMyComments] = useState<any[]>([]);
 
 
   // Favorites refresh trigger
@@ -103,6 +108,47 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
       localStorage.getItem('darkMode') === 'true';
     setIsDarkMode(isDark);
   }, []);
+
+  const fetchMyActivity = async () => {
+  const { data: userData } = await supabase.auth.getUser();
+  if (!userData.user) return;
+
+  const userId = userData.user.id;
+
+  // 내가 작성한 후기
+  const { data: posts } = await supabase
+    .from("community_posts")
+    .select("*")
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  setMyPosts(posts || []);
+
+  // 내가 작성한 댓글
+  const { data: comments } = await supabase
+    .from("community_comments")
+    .select(
+      `
+      id,
+      content,
+      created_at,
+      post_id,
+      community_posts:post_id(
+        title
+      )
+    `
+    )
+    .eq("user_id", userId)
+    .order("created_at", { ascending: false });
+
+  setMyComments(comments || []);
+};
+
+ useEffect(() => {
+    if (!isAuthenticated) return;
+    if (activeTab !== "profile") return;
+    fetchMyActivity();
+  }, [isAuthenticated, activeTab]);
 
   // Listen for favorites updates
   useEffect(() => {
@@ -1920,105 +1966,102 @@ const handleCancelEdit = () => {
                     {/* Additional Sections - Accordion */}
                     <Card>
                       <Accordion type="single" collapsible className="w-full">
-                        {/* Activity History */}
-                        <AccordionItem value="activity">
-                          <AccordionTrigger className="px-6">
-                            <div className="flex items-center gap-2">
-                              <Activity className="h-4 w-4" />
-                              <span>활동기록</span>
-                            </div>
-                          </AccordionTrigger>
-                          <AccordionContent className="px-6">
-                            <div className="space-y-4">
-                              {(() => {
-                                const reviews = JSON.parse(localStorage.getItem('petfriendly_reviews') || '[]');
-                                const userReviews = reviews.filter((r: any) => r.user_id === userProfile?.id);
+                     {/* Activity History */}
+<AccordionItem value="activity">
+  <AccordionTrigger className="px-6">
+    <div className="flex items-center gap-2">
+      <Activity className="h-4 w-4" />
+      <span>활동기록</span>
+    </div>
+  </AccordionTrigger>
+  <AccordionContent className="px-6">
+    <div className="space-y-6">
 
-                                // Get all comments from localStorage (including comments on MOCK_REVIEWS)
-                                const allComments: any[] = [];
-                                // Check all localStorage keys for comments
-                                for (let i = 0; i < localStorage.length; i++) {
-                                  const key = localStorage.key(i);
-                                  if (key && key.startsWith('petfriendly_comments_')) {
-                                    const commentsJson = localStorage.getItem(key);
-                                    if (commentsJson) {
-                                      try {
-                                        const reviewComments = JSON.parse(commentsJson);
-                                        allComments.push(...reviewComments);
-                                      } catch (e) {
-                                        console.error('Error parsing comments:', e);
-                                      }
-                                    }
-                                  }
-                                }
-                                const userComments = allComments.filter((c: any) => c.user_id === userProfile?.id);
+      {/* 내가 작성한 후기 */}
+      <div>
+        <h4 className="font-medium mb-2">내가 작성한 후기</h4>
 
-                                return (
-                                  <>
-                                    <div>
-                                      <h4 className="font-medium mb-2">내가 작성한 후기</h4>
-                                      {userReviews.length > 0 ? (
-                                        <div className="space-y-2">
-                                          {userReviews.map((review: any) => (
-                                            <Card
-                                              key={review.id}
-                                              className="cursor-pointer hover:bg-muted/50 transition-colors"
-                                              onClick={() => setActiveTab('community')}
-                                            >
-                                              <CardContent className="p-4">
-                                                <div className="flex items-start gap-3">
-                                                  <div className="flex-1">
-                                                    <div className="flex items-center gap-2 mb-1">
-                                                      <span className="font-medium">{review.accommodation_name}</span>
-                                                      <Badge variant="secondary" className="text-xs">
-                                                        ⭐ {review.rating}
-                                                      </Badge>
-                                                    </div>
-                                                    <p className="font-medium text-sm mb-1">{review.title}</p>
-                                                    <p className="text-sm text-muted-foreground line-clamp-2">{review.content}</p>
-                                                    <p className="text-xs text-muted-foreground mt-1">
-                                                      {new Date(review.created_at).toLocaleDateString('ko-KR')}
-                                                    </p>
-                                                  </div>
-                                                </div>
-                                              </CardContent>
-                                            </Card>
-                                          ))}
-                                        </div>
-                                      ) : (
-                                        <p className="text-sm text-muted-foreground">작성한 후기가 없습니다.</p>
-                                      )}
-                                    </div>
+        {myPosts.length > 0 ? (
+          <div className="space-y-2">
+            {myPosts.map((post) => (
+              <Card
+                key={post.id}
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => setActiveTab("community")}
+              >
+                <CardContent className="p-4">
+                  <div className="flex items-start gap-3">
+                    <div className="flex-1">
+                      <div className="flex items-center gap-2 mb-1">
+                        <span className="font-medium">
+                          {post.accommodation_name}
+                        </span>
+                        <Badge variant="secondary" className="text-xs">
+                          ⭐ {post.rating}
+                        </Badge>
+                      </div>
+                      <p className="font-medium text-sm mb-1">
+                        {post.title}
+                      </p>
+                      <p className="text-sm text-muted-foreground line-clamp-2">
+                        {post.content}
+                      </p>
+                      <p className="text-xs text-muted-foreground mt-1">
+                        {post.created_at
+                          ? new Date(post.created_at).toLocaleDateString("ko-KR")
+                          : ""}
+                      </p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            작성한 후기가 없습니다.
+          </p>
+        )}
+      </div>
 
-                                    <div>
-                                      <h4 className="font-medium mb-2">내가 작성한 댓글</h4>
-                                      {userComments.length > 0 ? (
-                                        <div className="space-y-2">
-                                          {userComments.map((comment: any, idx: number) => (
-                                            <Card
-                                              key={idx}
-                                              className="cursor-pointer hover:bg-muted/50 transition-colors"
-                                              onClick={() => setActiveTab('community')}
-                                            >
-                                              <CardContent className="p-3">
-                                                <p className="text-sm">{comment.content}</p>
-                                                <p className="text-xs text-muted-foreground mt-1">
-                                                  {new Date(comment.created_at).toLocaleDateString('ko-KR')}
-                                                </p>
-                                              </CardContent>
-                                            </Card>
-                                          ))}
-                                        </div>
-                                      ) : (
-                                        <p className="text-sm text-muted-foreground">작성한 댓글이 없습니다.</p>
-                                      )}
-                                    </div>
-                                  </>
-                                );
-                              })()}
-                            </div>
-                          </AccordionContent>
-                        </AccordionItem>
+      {/* 내가 작성한 댓글 */}
+      <div>
+        <h4 className="font-medium mb-2">내가 작성한 댓글</h4>
+
+        {myComments.length > 0 ? (
+          <div className="space-y-2">
+            {myComments.map((comment) => (
+              <Card
+                key={comment.id}
+                className="cursor-pointer hover:bg-muted/50 transition-colors"
+                onClick={() => setActiveTab("community")}
+              >
+                <CardContent className="p-3">
+                  {comment.community_posts?.title && (
+                    <p className="text-xs text-muted-foreground mb-1">
+                      게시글: {comment.community_posts.title}
+                    </p>
+                  )}
+                  <p className="text-sm">{comment.content}</p>
+                  <p className="text-xs text-muted-foreground mt-1">
+                    {comment.created_at
+                      ? new Date(comment.created_at).toLocaleDateString("ko-KR")
+                      : ""}
+                  </p>
+                </CardContent>
+              </Card>
+            ))}
+          </div>
+        ) : (
+          <p className="text-sm text-muted-foreground">
+            작성한 댓글이 없습니다.
+          </p>
+        )}
+      </div>
+    </div>
+  </AccordionContent>
+</AccordionItem>
+
 
                         {/* Terms of Service */}
                         <AccordionItem value="terms">
