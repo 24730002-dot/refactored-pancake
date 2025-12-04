@@ -1,8 +1,10 @@
 import React, { useEffect, useState } from "react";
 import { supabase } from "../lib/supabase";
+
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Textarea } from "./ui/textarea";
+
 import {
   Card,
   CardHeader,
@@ -10,10 +12,49 @@ import {
   CardDescription,
   CardTitle,
 } from "./ui/card";
-import { Avatar, AvatarImage, AvatarFallback } from "./ui/avatar";
-import { Loader2, Heart, MessageCircle, Star, Plus, Trash2 } from "lucide-react";
+
+import { Avatar, AvatarFallback, AvatarImage } from "./ui/avatar";
+
+import {
+  Loader2,
+  Heart,
+  MessageCircle,
+  Star,
+  Plus,
+  Trash2,
+} from "lucide-react";
+
 import { toast } from "sonner";
 
+// popover + command for 숙소 선택
+import {
+  Popover,
+  PopoverTrigger,
+  PopoverContent,
+} from "./ui/popover";
+
+import {
+  Command,
+  CommandInput,
+  CommandList,
+  CommandGroup,
+  CommandItem,
+} from "./ui/command";
+
+// --------------------------------------------------
+// 더미 숙소 목록
+// --------------------------------------------------
+const MOCK_ACCOMMODATIONS = [
+  "제주 오션뷰 펫 리조트",
+  "강릉 바다 애견 호텔",
+  "서울 펫 프렌들리 호텔",
+  "포항 힐링 애견 리조트",
+  "부산 해변 애견 펜션",
+];
+
+// --------------------------------------------------
+// 타입 정의
+// --------------------------------------------------
 interface CommunityProps {
   isAuthenticated: boolean;
   onShowAuth: (mode?: "login" | "signup") => void;
@@ -46,9 +87,14 @@ interface Comment {
   };
 }
 
+// --------------------------------------------------
+// 컴포넌트 시작
+// --------------------------------------------------
 export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
   const [posts, setPosts] = useState<Post[]>([]);
   const [comments, setComments] = useState<Record<number, Comment[]>>({});
+  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
+
   const [newPost, setNewPost] = useState({
     accommodation_name: "",
     rating: 5,
@@ -57,26 +103,27 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
   });
 
   const [commentInput, setCommentInput] = useState<Record<number, string>>({});
+  const [expandedPostId, setExpandedPostId] = useState<number | null>(null);
+
   const [loading, setLoading] = useState(true);
   const [creatingPost, setCreatingPost] = useState(false);
-  const [expandedPostId, setExpandedPostId] = useState<number | null>(null);
+  const [addingComment, setAddingComment] = useState<number | null>(null);
+
   const [likes, setLikes] = useState<Record<number, boolean>>({});
   const [likeCounts, setLikeCounts] = useState<Record<number, number>>({});
-  const [addingComment, setAddingComment] = useState<number | null>(null);
-  const [currentUserId, setCurrentUserId] = useState<string | null>(null);
 
-  // -------------------------------
-  // LOAD CURRENT USER
-  // -------------------------------
+  // --------------------------------------------------
+  // 현재 로그인 사용자 로드
+  // --------------------------------------------------
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setCurrentUserId(data.user?.id || null);
     });
   }, []);
 
-  // -------------------------------
-  // FETCH POSTS
-  // -------------------------------
+  // --------------------------------------------------
+  // 게시글 불러오기
+  // --------------------------------------------------
   const fetchPosts = async () => {
     setLoading(true);
 
@@ -84,25 +131,24 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
       .from("community_posts")
       .select(
         `
-        id,
-        user_id,
-        accommodation_name,
-        rating,
-        title,
-        content,
-        images,
-        created_at,
-        profiles:user_id (
-          username,
-          profile_photo_url
-        )
-      `
+      id,
+      user_id,
+      accommodation_name,
+      rating,
+      title,
+      content,
+      images,
+      created_at,
+      profiles:user_id(
+        username,
+        profile_photo_url
+      )
+    `
       )
       .order("created_at", { ascending: false });
 
     if (error) {
-      console.error(error);
-      toast.error("게시글을 불러오는 데 실패했습니다.");
+      toast.error("게시글 불러오기 실패");
       setLoading(false);
       return;
     }
@@ -114,9 +160,13 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     setLoading(false);
   };
 
-  // -------------------------------
-  // FETCH LIKE COUNTS
-  // -------------------------------
+  useEffect(() => {
+    fetchPosts();
+  }, []);
+
+  // --------------------------------------------------
+  // 좋아요 정보 로드
+  // --------------------------------------------------
   const fetchLikeInfo = async (posts: Post[]) => {
     const likeMap: Record<number, boolean> = {};
     const countMap: Record<number, number> = {};
@@ -148,9 +198,9 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     setLikeCounts(countMap);
   };
 
-  // -------------------------------
-  // FETCH COMMENTS
-  // -------------------------------
+  // --------------------------------------------------
+  // 댓글 불러오기
+  // --------------------------------------------------
   const fetchAllComments = async (posts: Post[]) => {
     const map: Record<number, Comment[]> = {};
 
@@ -159,16 +209,16 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
         .from("community_comments")
         .select(
           `
-          id,
-          post_id,
-          user_id,
-          content,
-          created_at,
-          profiles:user_id(
-            username,
-            profile_photo_url
-          )
-        `
+        id,
+        post_id,
+        user_id,
+        content,
+        created_at,
+        profiles:user_id(
+          username,
+          profile_photo_url
+        )
+      `
         )
         .eq("post_id", post.id)
         .order("created_at", { ascending: true });
@@ -179,18 +229,13 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     setComments(map);
   };
 
-  useEffect(() => {
-    fetchPosts();
-  }, []);
-
-  // -------------------------------
-  // CREATE POST
-  // -------------------------------
+  // --------------------------------------------------
+  // 게시글 작성
+  // --------------------------------------------------
   const handleCreatePost = async () => {
     if (!isAuthenticated) return onShowAuth("login");
 
     const { accommodation_name, rating, title, content } = newPost;
-
     if (!accommodation_name || !title || !content) {
       toast.error("모든 필드를 입력해주세요.");
       return;
@@ -210,10 +255,9 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
       images: null,
     });
 
-    if (error) {
-      toast.error("게시글 작성 실패");
-    } else {
-      toast.success("게시글이 등록되었습니다!");
+    if (error) toast.error("작성 실패");
+    else {
+      toast.success("작성 완료!");
       setNewPost({ accommodation_name: "", rating: 5, title: "", content: "" });
       fetchPosts();
     }
@@ -221,29 +265,21 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     setCreatingPost(false);
   };
 
-  // -------------------------------
-  // DELETE POST
-  // -------------------------------
+  // --------------------------------------------------
+  // 게시글 삭제
+  // --------------------------------------------------
   const deletePost = async (postId: number) => {
     const ok = confirm("정말 삭제하시겠습니까?");
     if (!ok) return;
 
-    const { error } = await supabase
-      .from("community_posts")
-      .delete()
-      .eq("id", postId);
-
-    if (error) {
-      toast.error("삭제 실패");
-    } else {
-      toast.success("삭제되었습니다.");
-      fetchPosts();
-    }
+    await supabase.from("community_posts").delete().eq("id", postId);
+    toast.success("삭제 완료");
+    fetchPosts();
   };
 
-  // -------------------------------
-  // LIKE TOGGLE
-  // -------------------------------
+  // --------------------------------------------------
+  // 좋아요 토글
+  // --------------------------------------------------
   const toggleLike = async (postId: number) => {
     const { data } = await supabase.auth.getUser();
     if (!data.user) return onShowAuth("login");
@@ -270,9 +306,9 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     }
   };
 
-  // -------------------------------
-  // ADD COMMENT
-  // -------------------------------
+  // --------------------------------------------------
+  // 댓글 작성
+  // --------------------------------------------------
   const addComment = async (postId: number) => {
     const text = commentInput[postId];
     if (!text || text.trim() === "") return;
@@ -288,15 +324,16 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
       content: text,
     });
 
-    toast.success("댓글이 추가되었습니다.");
+    toast.success("댓글 작성됨!");
     setCommentInput({ ...commentInput, [postId]: "" });
     fetchPosts();
+
     setAddingComment(null);
   };
 
-  // -------------------------------
-  // DATE FORMAT
-  // -------------------------------
+  // --------------------------------------------------
+  // 날짜 포맷
+  // --------------------------------------------------
   const formatDate = (date: string) => {
     return new Date(date).toLocaleDateString("ko-KR", {
       month: "long",
@@ -304,36 +341,60 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     });
   };
 
-  // -------------------------------
+  // --------------------------------------------------
   // RENDER
-  // -------------------------------
+  // --------------------------------------------------
   return (
     <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
-      {/* 작성 박스 */}
+      {/* ---------------------------
+          작성 카드
+      ---------------------------- */}
       <Card>
         <CardHeader>
           <CardTitle>후기 작성</CardTitle>
-          <CardDescription>반려동물과 머물렀던 숙소에 대해 작성해주세요.</CardDescription>
+          <CardDescription>반려동물과 머문 숙소를 공유해주세요!</CardDescription>
         </CardHeader>
 
         <CardContent className="space-y-4">
           {!isAuthenticated ? (
             <div className="p-4 bg-muted rounded-lg text-center">
               <p className="text-sm mb-3 text-muted-foreground">
-                로그인 후 후기를 작성할 수 있습니다.
+                로그인 후 작성 가능합니다.
               </p>
               <Button onClick={() => onShowAuth("login")}>로그인하기</Button>
             </div>
           ) : (
             <>
-              <Input
-                placeholder="숙소 이름"
-                value={newPost.accommodation_name}
-                onChange={(e) =>
-                  setNewPost({ ...newPost, accommodation_name: e.target.value })
-                }
-              />
+              {/* 숙소 선택 버튼 */}
+              <Popover>
+                <PopoverTrigger asChild>
+                  <Button variant="outline" className="w-full justify-between">
+                    {newPost.accommodation_name || "숙소 선택하기"}
+                  </Button>
+                </PopoverTrigger>
 
+                <PopoverContent className="w-[300px] p-0">
+                  <Command>
+                    <CommandInput placeholder="숙소 검색..." />
+                    <CommandList>
+                      <CommandGroup heading="숙소 목록">
+                        {MOCK_ACCOMMODATIONS.map((item) => (
+                          <CommandItem
+                            key={item}
+                            onSelect={() =>
+                              setNewPost({ ...newPost, accommodation_name: item })
+                            }
+                          >
+                            {item}
+                          </CommandItem>
+                        ))}
+                      </CommandGroup>
+                    </CommandList>
+                  </Command>
+                </PopoverContent>
+              </Popover>
+
+              {/* 제목 */}
               <Input
                 placeholder="제목"
                 value={newPost.title}
@@ -342,6 +403,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                 }
               />
 
+              {/* 내용 */}
               <Textarea
                 placeholder="내용을 입력하세요"
                 value={newPost.content}
@@ -350,6 +412,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                 }
               />
 
+              {/* 평점 */}
               <div className="flex items-center gap-3">
                 <span className="text-sm">평점 :</span>
                 <div className="flex gap-1">
@@ -361,12 +424,15 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                           ? "fill-yellow-400 text-yellow-400"
                           : "text-gray-300"
                       }`}
-                      onClick={() => setNewPost({ ...newPost, rating: n })}
+                      onClick={() =>
+                        setNewPost({ ...newPost, rating: n })
+                      }
                     />
                   ))}
                 </div>
               </div>
 
+              {/* 작성 버튼 */}
               <Button
                 onClick={handleCreatePost}
                 className="w-full"
@@ -376,7 +442,8 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                   <Loader2 className="h-4 w-4 animate-spin" />
                 ) : (
                   <>
-                    <Plus className="h-4 w-4 mr-2" /> 작성하기
+                    <Plus className="h-4 w-4 mr-2" />
+                    작성하기
                   </>
                 )}
               </Button>
@@ -385,18 +452,18 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
         </CardContent>
       </Card>
 
-      {/* 게시글 목록 */}
-      {loading && (
+      {/* ---------------------------
+          게시글 목록
+      ---------------------------- */}
+      {loading ? (
         <div className="flex justify-center py-10">
           <Loader2 className="h-6 w-6 animate-spin" />
         </div>
-      )}
-
-      {!loading &&
+      ) : (
         posts.map((post) => (
           <Card key={post.id} className="shadow-sm">
-            <CardContent className="p-5 space-y-4">
-              {/* Header */}
+            <CardContent className="p-6 space-y-5">
+              {/* ---------------- Header ---------------- */}
               <div className="flex items-center justify-between">
                 <div className="flex items-center gap-3">
                   <Avatar className="h-10 w-10">
@@ -405,6 +472,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                       {post.profiles?.username?.[0] || "U"}
                     </AvatarFallback>
                   </Avatar>
+
                   <div>
                     <p className="font-medium text-sm">
                       {post.profiles?.username || "익명"}
@@ -415,7 +483,6 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                   </div>
                 </div>
 
-                {/* 내 글일 때 삭제 */}
                 {currentUserId === post.user_id && (
                   <button
                     onClick={() => deletePost(post.id)}
@@ -426,7 +493,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                 )}
               </div>
 
-              {/* Title + Content */}
+              {/* ---------------- Title + Content ---------------- */}
               <div className="space-y-1">
                 <h4 className="font-semibold">{post.title}</h4>
                 <p className="text-sm text-muted-foreground whitespace-pre-line">
@@ -434,7 +501,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                 </p>
               </div>
 
-              {/* Rating */}
+              {/* ---------------- Rating ---------------- */}
               <div className="flex gap-1">
                 {[1, 2, 3, 4, 5].map((n) => (
                   <Star
@@ -448,7 +515,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                 ))}
               </div>
 
-              {/* Like + Comment */}
+              {/* ---------------- Buttons ---------------- */}
               <div className="flex gap-6 items-center border-t pt-3">
                 <button
                   className="flex items-center gap-1 text-sm"
@@ -477,18 +544,17 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                 </button>
               </div>
 
-              {/* 댓글 */}
+              {/* ---------------- Comments ---------------- */}
               {expandedPostId === post.id && (
-                <div className="space-y-4 pt-3 bg-muted/30 p-4 rounded-lg">
+                <div className="space-y-4 pt-3 bg-muted/20 p-4 rounded-lg">
+                  {/* 댓글 리스트 */}
                   {comments[post.id]?.map((c) => (
                     <div
                       key={c.id}
                       className="flex items-start gap-3 bg-white p-3 rounded-lg border"
                     >
-                      <Avatar className="h-6 w-6">
-                        <AvatarImage
-                          src={c.profiles?.profile_photo_url || ""}
-                        />
+                      <Avatar className="h-7 w-7">
+                        <AvatarImage src={c.profiles?.profile_photo_url || ""} />
                         <AvatarFallback>
                           {c.profiles?.username?.[0] || "U"}
                         </AvatarFallback>
@@ -505,10 +571,11 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                     </div>
                   ))}
 
-                  {/* 댓글 입력 */}
+                  {/* 댓글 입력창 */}
                   {isAuthenticated ? (
-                    <div className="flex gap-2">
+                    <div className="flex items-center gap-2 pt-1">
                       <Input
+                        className="flex-1"
                         placeholder="댓글 입력..."
                         value={commentInput[post.id] || ""}
                         onChange={(e) =>
@@ -519,6 +586,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                         }
                       />
                       <Button
+                        className="px-4"
                         onClick={() => addComment(post.id)}
                         disabled={addingComment === post.id}
                       >
@@ -530,15 +598,16 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                       </Button>
                     </div>
                   ) : (
-                    <p classname="text-sm text-muted-foreground">
-                      로그인 후 댓글을 작성할 수 있습니다.
+                    <p className="text-sm text-muted-foreground">
+                      로그인 후 댓글 작성 가능
                     </p>
                   )}
                 </div>
               )}
             </CardContent>
           </Card>
-        ))}
+        ))
+      )}
     </div>
   );
 }
