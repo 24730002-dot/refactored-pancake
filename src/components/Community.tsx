@@ -115,6 +115,50 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
   const [likes, setLikes] = useState<Record<number, boolean>>({});
   const [likeCounts, setLikeCounts] = useState<Record<number, number>>({});
 
+    // ------------------------------------------------------
+  // Toggle Like
+  // ------------------------------------------------------
+  const toggleLike = async (postId: number) => {
+    if (!isAuthenticated) {
+      onShowAuth("login");
+      return;
+    }
+
+    const { data } = await supabase.auth.getUser();
+    const userId = data.user?.id;
+    if (!userId) return;
+
+    const alreadyLiked = likes[postId];
+
+    if (alreadyLiked) {
+      // 좋아요 취소
+      await supabase
+        .from("post_likes")
+        .delete()
+        .eq("post_id", postId)
+        .eq("user_id", userId);
+
+      setLikes((prev) => ({ ...prev, [postId]: false }));
+      setLikeCounts((prev) => ({
+        ...prev,
+        [postId]: Math.max((prev[postId] || 1) - 1, 0),
+      }));
+    } else {
+      // 좋아요 추가
+      await supabase.from("post_likes").insert({
+        post_id: postId,
+        user_id: userId,
+      });
+
+      setLikes((prev) => ({ ...prev, [postId]: true }));
+      setLikeCounts((prev) => ({
+        ...prev,
+        [postId]: (prev[postId] || 0) + 1,
+      }));
+    }
+  };
+
+
   useEffect(() => {
     supabase.auth.getUser().then(({ data }) => {
       setCurrentUserId(data.user?.id || null);
