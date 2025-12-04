@@ -293,13 +293,20 @@ const handleDarkModeToggle = async (checked: boolean) => {
       try {
         const { data: { user } } = await supabase.auth.getUser();
         if (user) {
-          const { error } = await supabase
-            .from('profiles')
-            .upsert({
-              id: user.id,
-              is_dark_mode: checked,
-              updated_at: new Date().toISOString()
-            });
+const { error } = await supabase
+  .from('profiles')
+  .upsert({
+    id: userProfile.id,
+    username: username || null,
+    phone: phoneNumber || null,
+    email: email,
+    location: location || null,
+    profile_photo_url: profilePhotoUrl || null,
+    pet_name: petName || null,   // 🔥 추가
+    pet_type: petType || null,   // 🔥 추가
+    updated_at: new Date().toISOString()
+  });
+
 
           if (error) {
             console.error('Error updating dark mode preference:', error);
@@ -530,38 +537,38 @@ const handleDarkModeToggle = async (checked: boolean) => {
     }
   };
 
-  const handleSaveProfile = async () => {
-    if (!userProfile?.id) return;
+ const handleSaveProfile = async () => {
+  if (!userProfile?.id) return;
 
-    setIsLoading(true);
+  setIsLoading(true);
 
-    try {
-      let profilePhotoUrl = currentProfilePhotoUrl;
+  try {
+    let profilePhotoUrl = currentProfilePhotoUrl;
 
-      // Upload new profile photo if one was selected
-      if (profilePhoto) {
-        try {
-          profilePhotoUrl = await uploadProfilePhoto(userProfile.id);
-        } catch (uploadError) {
-          console.error('Profile photo upload failed:', uploadError);
-          toast.error('Failed to upload profile photo. Other changes will still be saved.');
-          // Continue with other updates even if photo upload fails
-        }
+    if (profilePhoto) {
+      try {
+        profilePhotoUrl = await uploadProfilePhoto(userProfile.id);
+      } catch (uploadError) {
+        console.error('Profile photo upload failed:', uploadError);
+        toast.error('Failed to upload profile photo. Other changes will still be saved.');
       }
+    }
 
-      const { error } = await supabase
-        .from('profiles')
-        .upsert({
-          id: userProfile.id,
-          username: username || null,
-          phone: phoneNumber || null,
-          email: email,
-          location: location || null,
-          profile_photo_url: profilePhotoUrl || null,
-          updated_at: new Date().toISOString()
-        });
+    const { error } = await supabase
+      .from('profiles')
+      .upsert({
+        id: userProfile.id,
+        username: username || null,
+        phone: phoneNumber || null,
+        email,
+        location: location || null,
+        profile_photo_url: profilePhotoUrl || null,
+        pet_name: petName || null,   // 🔥 추가
+        pet_type: petType || null,   // 🔥 추가
+        updated_at: new Date().toISOString(),
+      });
 
-      if (error) throw error;
+    if (error) throw error;
 
 setUserProfile({
   ...userProfile,
@@ -570,23 +577,23 @@ setUserProfile({
   email,
   location,
   profile_photo_url: profilePhotoUrl,
-  pet_name: petName,
-  pet_type: petType,
+  pet_name: petName,   // 🔥 추가
+  pet_type: petType,   // 🔥 추가
 });
 
+    setCurrentProfilePhotoUrl(profilePhotoUrl || '');
+    setProfilePhoto(null);
+    setProfilePhotoPreview('');
+    setIsEditing(false);
+    toast.success('Profile updated successfully');
+  } catch (error) {
+    console.error('Error updating profile:', error);
+    toast.error('Failed to update profile');
+  } finally {
+    setIsLoading(false);
+  }
+};
 
-      setCurrentProfilePhotoUrl(profilePhotoUrl || '');
-      setProfilePhoto(null);
-      setProfilePhotoPreview('');
-      setIsEditing(false);
-      toast.success('Profile updated successfully');
-    } catch (error) {
-      console.error('Error updating profile:', error);
-      toast.error('Failed to update profile');
-    } finally {
-      setIsLoading(false);
-    }
-  };
 
 const handleCancelEdit = () => {
   // Reset form to original values
@@ -594,12 +601,13 @@ const handleCancelEdit = () => {
   setPhoneNumber(userProfile?.phone || '');
   setEmail(userProfile?.email || '');
   setLocation(userProfile?.location || '');
-  setPetName(userProfile?.pet_name || '');   // 🔽 추가
-  setPetType(userProfile?.pet_type || '');   // 🔽 추가
+  setPetName(userProfile?.pet_name || '');   // 🔥 추가
+  setPetType(userProfile?.pet_type || '');   // 🔥 추가
   setProfilePhoto(null);
   setProfilePhotoPreview('');
   setIsEditing(false);
 };
+
 
 
 
