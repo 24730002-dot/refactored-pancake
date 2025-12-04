@@ -14,6 +14,7 @@ import { useBackground } from '../lib/useBackground';
 import newbg from '../assets/1.jpg';
 import framesvgPaths from '../imports/svg-wrlpobapsl';
 // 음악 관련 import 전부 제거 (useMusicContext, MusicSelector, playButtonPaths 등)
+import { ScrollTopButton } from './ScrollTopButton'; 
 
 interface DashboardProps {
   isAuthenticated: boolean;
@@ -956,6 +957,10 @@ export function Dashboard({
         currentLocation={displayLocation}
         isAuthenticated={isAuthenticated}
       />
+
+      {/* 화면 오른쪽 아래 TOP 버튼 */}
+      <ScrollTopButton />
     </div>
   );
 }
+

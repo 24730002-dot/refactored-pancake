@@ -73,20 +73,28 @@ export function ReservationConfirmation({
           return;
         }
 
-        const { error } = await supabase.from('reservations').insert({
-          user_id: user.id,
-          // Profile.tsx가 쓰는 필드 이름에 맞춰서 저장
-          accommodation_name: reservation.accommodationName,
-          accommodation_image: reservation.accommodationImage,
-          accommodation_location: reservation.accommodationLocation,
-          nights: reservation.nights,
-          number_of_pets: reservation.numberOfPets,
-          check_in_date: reservation.checkInDate.toISOString(),
-          check_out_date: reservation.checkOutDate.toISOString(),
-          total_price: reservation.totalPrice,
-          reservation_date: reservation.reservationDate.toISOString(),
-          special_requests: reservation.specialRequests || null,
-        });
+const { error } = await supabase
+  .from('reservations')
+  .upsert(
+    {
+      user_id: user.id,
+      reservation_number: reservation.reservationNumber,
+      accommodation_name: reservation.accommodationName,
+      accommodation_image: reservation.accommodationImage,
+      accommodation_location: reservation.accommodationLocation,
+      nights: reservation.nights,
+      number_of_pets: reservation.numberOfPets,
+      check_in_date: reservation.checkInDate.toISOString(),
+      check_out_date: reservation.checkOutDate.toISOString(),
+      total_price: reservation.totalPrice,
+      reservation_date: reservation.reservationDate.toISOString(),
+      special_requests: reservation.specialRequests || null,
+    },
+    {
+      onConflict: 'user_id,reservation_number', // 🔑 위에서 만든 unique 키 기준
+    }
+  );
+
 
         if (error) {
           console.error('Supabase 예약 저장 오류:', error);

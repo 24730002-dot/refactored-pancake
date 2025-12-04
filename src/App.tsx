@@ -5,6 +5,7 @@ import { Card, CardContent } from './components/ui/card';
 import { supabase } from './lib/supabase';
 import { MusicProvider } from './lib/MusicContext';
 
+
 export default function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [userId, setUserId] = useState<string | null>(null);
