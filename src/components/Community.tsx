@@ -573,30 +573,27 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
 
                   {/* 댓글 입력창 */}
                   {isAuthenticated ? (
-                    <div className="flex items-center gap-2 pt-1">
-                      <Input
-                        className="flex-1"
-                        placeholder="댓글 입력..."
-                        value={commentInput[post.id] || ""}
-                        onChange={(e) =>
-                          setCommentInput({
-                            ...commentInput,
-                            [post.id]: e.target.value,
-                          })
-                        }
-                      />
-                      <Button
-                        className="px-4"
-                        onClick={() => addComment(post.id)}
-                        disabled={addingComment === post.id}
-                      >
-                        {addingComment === post.id ? (
-                          <Loader2 className="h-4 w-4 animate-spin" />
-                        ) : (
-                          "등록"
-                        )}
-                      </Button>
-                    </div>
+<div className="flex items-center gap-2">
+  <Input
+    className="flex-1"
+    placeholder="댓글 입력..."
+    value={commentInput[post.id] || ""}
+    onChange={(e) =>
+      setCommentInput({
+        ...commentInput,
+        [post.id]: e.target.value,
+      })
+    }
+  />
+  <Button
+    className="px-4 h-10"
+    onClick={() => addComment(post.id)}
+    disabled={addingComment === post.id}
+  >
+    등록
+  </Button>
+</div>
+
                   ) : (
                     <p className="text-sm text-muted-foreground">
                       로그인 후 댓글 작성 가능
