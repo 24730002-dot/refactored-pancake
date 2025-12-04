@@ -278,45 +278,38 @@ export function Profile({ isAuthenticated, onLogout, onBack, onShowAuth, onViewA
 
 
 const handleDarkModeToggle = async (checked: boolean) => {
-    setIsDarkMode(checked);
+  setIsDarkMode(checked);
 
-    if (checked) {
-      document.documentElement.classList.add('dark');
-      localStorage.setItem('darkMode', 'true');
-    } else {
-      document.documentElement.classList.remove('dark');
-      localStorage.setItem('darkMode', 'false');
-    }
+  if (checked) {
+    document.documentElement.classList.add('dark');
+    localStorage.setItem('darkMode', 'true');
+  } else {
+    document.documentElement.classList.remove('dark');
+    localStorage.setItem('darkMode', 'false');
+  }
 
  // Supabase에도 다크모드 설정 저장 (로그인 유저만)
-    if (isAuthenticated) {
-      try {
-        const { data: { user } } = await supabase.auth.getUser();
-        if (user) {
-const { error } = await supabase
-  .from('profiles')
-  .upsert({
-    id: userProfile.id,
-    username: username || null,
-    phone: phoneNumber || null,
-    email: email,
-    location: location || null,
-    profile_photo_url: profilePhotoUrl || null,
-    pet_name: petName || null,   // 🔥 추가
-    pet_type: petType || null,   // 🔥 추가
-    updated_at: new Date().toISOString()
-  });
+if (isAuthenticated) {
+    try {
+      const { data: { user } } = await supabase.auth.getUser();
+      if (user) {
+        const { error } = await supabase
+          .from('profiles')
+          .update({
+            is_dark_mode: checked,
+            updated_at: new Date().toISOString(),
+          })
+          .eq('id', user.id);
 
-
-          if (error) {
-            console.error('Error updating dark mode preference:', error);
-          }
+        if (error) {
+          console.error('Error updating dark mode preference:', error);
         }
-      } catch (error) {
-        console.error('Error saving dark mode preference:', error);
       }
+    } catch (error) {
+      console.error('Error saving dark mode preference:', error);
     }
-  };
+  }
+};
 
   const handleBackgroundSelect = async (selection: BackgroundSelection) => {
     const success = await saveBackground(selection);
