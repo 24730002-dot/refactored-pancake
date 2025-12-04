@@ -30,11 +30,21 @@ import { toast } from "sonner";
 // 숙소 더미 데이터 (검색 제거 버전)
 // -------------------------------
 const ACC_LIST = [
-  "제주 오션뷰 펫 리조트",
-  "강릉 바다 애견 호텔",
-  "서울 펫 프렌들리 호텔",
-  "포항 힐링 애견 리조트",
-  "부산 해변 애견 펜션",
+  "코지 펫 리조트",
+  "럭셔리 도그 하우스",
+  "캣 프렌들리 아파트",
+  "포레스트 펫 코티지",
+  "버드 프렌들리 스튜디오",
+  "스몰 펫 가든 하우스",
+  "해운대 펫 리조트",
+  "송도 펫 호텔",
+  "팔공산 힐링 펜션",
+  "전주 한옥 펫 스테이",
+  "여수 오션뷰 빌라",
+  "경주 역사공원 펫 하우스",
+  "속초 설악 펫 캠핑장",
+  "남이섬 펫 카페 스테이",
+  "담양 죽녹원 펫 스테이"
 ];
 
 interface CommunityProps {
@@ -475,26 +485,28 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
 
                   {/* 댓글 입력창 (수정됨) */}
                   {isAuthenticated ? (
-                    <div className="flex items-center gap-3 mt-2">
-                      <Input
-                        className="flex-1"
-                        placeholder="댓글 입력…"
-                        value={commentInput[post.id] || ""}
-                        onChange={(e) =>
-                          setCommentInput({
-                            ...commentInput,
-                            [post.id]: e.target.value,
-                          })
-                        }
-                      />
-                      <Button
-                        className="h-10 px-4"
-                        onClick={() => addComment(post.id)}
-                        disabled={addingComment === post.id}
-                      >
-                        등록
-                      </Button>
-                    </div>
+<div className="flex items-center gap-3">
+  <Input
+    className="flex-1"
+    placeholder="댓글 입력..."
+    value={commentInput[post.id] || ""}
+    onChange={(e) =>
+      setCommentInput({
+        ...commentInput,
+        [post.id]: e.target.value,
+      })
+    }
+  />
+
+  <Button
+    className="px-4 h-10 whitespace-nowrap"
+    onClick={() => addComment(post.id)}
+    disabled={addingComment === post.id}
+  >
+    등록
+  </Button>
+</div>
+
                   ) : (
                     <p className="text-sm text-muted-foreground">
                       로그인 후 댓글 작성 가능
