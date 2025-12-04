@@ -395,18 +395,26 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     </Button>
   </PopoverTrigger>
 
-  {/* 버튼 width = 부모 width 그대로 따라가게 w-full */}
-  <PopoverContent className="w-full p-0">
+  {/* 버튼이랑 똑같은 폭으로 맞추기 */}
+  <PopoverContent
+    align="start"
+    className="w-[var(--radix-popover-trigger-width)] p-0"
+  >
     <div className="max-h-60 overflow-y-auto">
-      <div className="p-2 text-sm text-muted-foreground">숙소 목록</div>
+      <div className="px-3 py-2 text-sm text-muted-foreground">
+        숙소 목록
+      </div>
 
       {ACC_LIST.map((name) => (
         <button
           key={name}
           className="w-full text-left px-3 py-2 hover:bg-muted text-sm"
-          onClick={() => {
-            setNewPost({ ...newPost, accommodation_name: name });
-          }}
+          onClick={() =>
+            setNewPost({
+              ...newPost,
+              accommodation_name: name,
+            })
+          }
         >
           {name}
         </button>
@@ -414,6 +422,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     </div>
   </PopoverContent>
 </Popover>
+
 
 
 
