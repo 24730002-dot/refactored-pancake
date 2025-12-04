@@ -340,38 +340,37 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
             </div>
           ) : (
             <>
-             {/* 숙소 선택 */}
-{/* 숙소 선택 */}
+   
 <Popover>
   <PopoverTrigger asChild>
-    <Button variant="outline" className="w-full justify-between">
+    <Button
+      variant="outline"
+      className="w-full justify-between"
+    >
       {newPost.accommodation_name || "숙소 선택하기"}
     </Button>
   </PopoverTrigger>
 
-  {/* 버튼이랑 길이 비슷하게 300px 유지 + 스크롤 */}
-  <PopoverContent className="w-[300px] p-0">
-    <Command>
-      <CommandList className="max-h-60 overflow-y-auto">
-        <CommandGroup heading="숙소 목록">
-          {ACC_LIST.map((name) => (
-            <CommandItem
-              key={name}
-              onSelect={() =>
-                setNewPost({
-                  ...newPost,
-                  accommodation_name: name,
-                })
-              }
-            >
-              {name}
-            </CommandItem>
-          ))}
-        </CommandGroup>
-      </CommandList>
-    </Command>
+  {/* 버튼 width = 부모 width 그대로 따라가게 w-full */}
+  <PopoverContent className="w-full p-0">
+    <div className="max-h-60 overflow-y-auto">
+      <div className="p-2 text-sm text-muted-foreground">숙소 목록</div>
+
+      {ACC_LIST.map((name) => (
+        <button
+          key={name}
+          className="w-full text-left px-3 py-2 hover:bg-muted text-sm"
+          onClick={() => {
+            setNewPost({ ...newPost, accommodation_name: name });
+          }}
+        >
+          {name}
+        </button>
+      ))}
+    </div>
   </PopoverContent>
 </Popover>
+
 
 
 
@@ -552,9 +551,9 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
 
                   {/* Comment Input */}
                   {isAuthenticated ? (
-<div className="flex items-center gap-2 mt-2">
-  <Input
-    className="flex-1 h-11 text-sm"
+<div className="flex items-start gap-3 mt-2">
+  <Textarea
+    className="flex-1 h-20 text-sm resize-none"
     placeholder="댓글 입력..."
     value={commentInput[post.id] || ""}
     onChange={(e) =>
@@ -564,15 +563,17 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
       })
     }
   />
+
   <Button
     size="sm"
-    className="h-9 px-3 text-sm whitespace-nowrap"
+    className="h-9 px-3 mt-auto"
     onClick={() => addComment(post.id)}
     disabled={addingComment === post.id}
   >
     등록
   </Button>
 </div>
+
 
                   ) : (
                     <p className="text-sm text-muted-foreground">
