@@ -396,9 +396,20 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
   </PopoverTrigger>
 
   {/* 버튼이랑 똑같은 폭으로 맞추기 */}
+ <Popover>
+  <PopoverTrigger asChild>
+    <Button
+      variant="outline"
+      className="w-full justify-between"
+    >
+      {newPost.accommodation_name || "숙소 선택하기"}
+    </Button>
+  </PopoverTrigger>
+
   <PopoverContent
     align="start"
-    className="w-[var(--radix-popover-trigger-width)] p-0"
+    sideOffset={4}
+    className="p-0 w-[var(--radix-popover-trigger-width)] min-w-0"
   >
     <div className="max-h-60 overflow-y-auto">
       <div className="px-3 py-2 text-sm text-muted-foreground">
@@ -410,10 +421,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
           key={name}
           className="w-full text-left px-3 py-2 hover:bg-muted text-sm"
           onClick={() =>
-            setNewPost({
-              ...newPost,
-              accommodation_name: name,
-            })
+            setNewPost({ ...newPost, accommodation_name: name })
           }
         >
           {name}
@@ -422,6 +430,7 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     </div>
   </PopoverContent>
 </Popover>
+
 
 
 
