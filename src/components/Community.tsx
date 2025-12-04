@@ -322,239 +322,232 @@ const fetchAllComments = async (posts: Post[]) => {
   // ------------------------
   // RENDER
   // ------------------------
-  return (
-    <div className="max-w-3xl mx-auto px-4 py-6 space-y-6">
+ return (
+  <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
 
-      {/* -------------------------
-          글 작성 영역
-      -------------------------- */}
-      <Card>
-        <CardHeader>
-          <CardTitle>후기 작성</CardTitle>
-          <CardDescription>반려동물과 함께한 숙소 경험을 공유해주세요.</CardDescription>
-        </CardHeader>
-        <CardContent className="space-y-4">
+    {/* 작성 박스 */}
+    <Card className="border border-gray-200 shadow-sm">
+      <CardHeader>
+        <CardTitle className="text-xl font-semibold">후기 작성</CardTitle>
+        <CardDescription className="text-sm text-muted-foreground">
+          반려동물과 떠난 숙소 경험을 공유해주세요 🐶🐱
+        </CardDescription>
+      </CardHeader>
 
-          {!isAuthenticated && (
-            <div className="p-4 rounded-lg bg-muted text-center">
-              <p className="mb-3 text-sm text-muted-foreground">
-                로그인 후 후기를 작성할 수 있습니다.
-              </p>
-              <Button onClick={() => onShowAuth("login")} size="sm">
-                로그인하기
-              </Button>
+      <CardContent className="space-y-4">
+        {!isAuthenticated ? (
+          <div className="p-4 bg-muted rounded-lg text-center">
+            <p className="text-sm text-muted-foreground mb-3">
+              로그인 후 후기를 작성할 수 있습니다.
+            </p>
+            <Button onClick={() => onShowAuth("login")} size="sm">
+              로그인하기
+            </Button>
+          </div>
+        ) : (
+          <>
+            <Input
+              placeholder="숙소 이름"
+              value={newPost.accommodation_name}
+              onChange={(e) =>
+                setNewPost({ ...newPost, accommodation_name: e.target.value })
+              }
+            />
+
+            <Input
+              placeholder="제목"
+              value={newPost.title}
+              onChange={(e) =>
+                setNewPost({ ...newPost, title: e.target.value })
+              }
+            />
+
+            <Textarea
+              placeholder="작성 내용..."
+              className="min-h-[100px]"
+              value={newPost.content}
+              onChange={(e) =>
+                setNewPost({ ...newPost, content: e.target.value })
+              }
+            />
+
+            <div className="flex items-center gap-3">
+              <span className="text-sm font-medium">평점 :</span>
+              <div className="flex items-center gap-1">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <Star
+                    key={n}
+                    className={`h-5 w-5 cursor-pointer transition ${
+                      newPost.rating >= n
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                    onClick={() => setNewPost({ ...newPost, rating: n })}
+                  />
+                ))}
+              </div>
             </div>
-          )}
 
-          {isAuthenticated && (
-            <>
-              <Input
-                placeholder="숙소 이름"
-                value={newPost.accommodation_name}
-                onChange={(e) =>
-                  setNewPost({ ...newPost, accommodation_name: e.target.value })
-                }
-              />
+            <Button
+              onClick={handleCreatePost}
+              className="w-full"
+              disabled={creatingPost}
+            >
+              {creatingPost ? (
+                <Loader2 className="h-4 w-4 animate-spin" />
+              ) : (
+                <>
+                  <Plus className="h-4 w-4 mr-2" />
+                  후기 등록
+                </>
+              )}
+            </Button>
+          </>
+        )}
+      </CardContent>
+    </Card>
 
-              <Input
-                placeholder="제목"
-                value={newPost.title}
-                onChange={(e) =>
-                  setNewPost({ ...newPost, title: e.target.value })
-                }
-              />
 
-              <Textarea
-                placeholder="내용을 입력하세요"
-                value={newPost.content}
-                onChange={(e) =>
-                  setNewPost({ ...newPost, content: e.target.value })
-                }
-              />
 
+    {/* 게시글 목록 */}
+    <div className="space-y-6">
+      {loading && (
+        <div className="flex justify-center py-6">
+          <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
+        </div>
+      )}
+
+      {!loading &&
+        posts.map((post) => (
+          <Card key={post.id} className="border shadow-sm">
+            <CardContent className="p-5 space-y-4">
+
+              {/* Header */}
               <div className="flex items-center gap-3">
-                <span className="text-sm">평점:</span>
-                <div className="flex items-center gap-1">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <Star
-                      key={n}
-                      className={`h-5 w-5 cursor-pointer ${
-                        newPost.rating >= n
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
-                      }`}
-                      onClick={() =>
-                        setNewPost({ ...newPost, rating: n })
-                      }
-                    />
-                  ))}
+                <Avatar className="h-10 w-10">
+                  <AvatarImage src={post.profiles?.profile_photo_url || ""} />
+                  <AvatarFallback>
+                    {post.profiles?.username?.[0]?.toUpperCase() || "U"}
+                  </AvatarFallback>
+                </Avatar>
+
+                <div className="flex flex-col">
+                  <span className="font-medium text-sm">
+                    {post.profiles?.username || "익명 사용자"}
+                  </span>
+                  <span className="text-xs text-muted-foreground">
+                    {post.accommodation_name} · {formatDate(post.created_at)}
+                  </span>
                 </div>
               </div>
 
-              <Button
-                onClick={handleCreatePost}
-                className="w-full"
-                disabled={creatingPost}
-              >
-                {creatingPost ? (
-                  <Loader2 className="h-4 w-4 animate-spin" />
-                ) : (
-                  <>
-                    <Plus className="h-4 w-4 mr-2" />
-                    작성하기
-                  </>
-                )}
-              </Button>
-            </>
-          )}
-        </CardContent>
-      </Card>
+              {/* Title + Content */}
+              <div>
+                <h3 className="font-semibold text-base mb-1">{post.title}</h3>
+                <p className="text-sm leading-relaxed text-muted-foreground whitespace-pre-line">
+                  {post.content}
+                </p>
+              </div>
 
-      {/* -------------------------
-          게시글 목록
-      -------------------------- */}
-      <div className="space-y-6">
-        {loading && (
-          <div className="flex justify-center py-8">
-            <Loader2 className="h-6 w-6 animate-spin text-muted-foreground" />
-          </div>
-        )}
+              {/* Rating */}
+              <div className="flex gap-1">
+                {[1, 2, 3, 4, 5].map((n) => (
+                  <Star
+                    key={n}
+                    className={`h-4 w-4 ${
+                      post.rating >= n
+                        ? "fill-yellow-400 text-yellow-400"
+                        : "text-gray-300"
+                    }`}
+                  />
+                ))}
+              </div>
 
-        {!loading &&
-          posts.map((post) => (
-            <Card key={post.id} className="overflow-hidden">
-              <CardContent className="p-6 space-y-4">
+              {/* Like + Comment */}
+              <div className="flex items-center gap-6 border-t pt-3">
+                <button
+                  className="flex items-center gap-1 text-sm hover:opacity-80"
+                  onClick={() => toggleLike(post.id)}
+                >
+                  <Heart
+                    className={`h-5 w-5 transition ${
+                      likes[post.id]
+                        ? "fill-red-500 text-red-500"
+                        : "text-muted-foreground"
+                    }`}
+                  />
+                  {likeCounts[post.id] || 0}
+                </button>
 
-                {/* Header */}
-                <div className="flex items-center gap-3">
-                  <Avatar className="h-10 w-10">
-                    <AvatarImage
-                      src={post.profiles?.profile_photo_url || ""}
-                    />
-                    <AvatarFallback>
-                      {post.profiles?.username?.[0]?.toUpperCase() || "U"}
-                    </AvatarFallback>
-                  </Avatar>
+                <button
+                  className="flex items-center gap-1 text-sm hover:opacity-80"
+                  onClick={() =>
+                    setExpandedPostId(expandedPostId === post.id ? null : post.id)
+                  }
+                >
+                  <MessageCircle className="h-5 w-5" />
+                  댓글
+                </button>
+              </div>
 
-                  <div>
-                    <p className="font-medium">
-                      {post.profiles?.username || "익명"}
-                    </p>
-                    <p className="text-sm text-muted-foreground">
-                      {post.accommodation_name} · {formatDate(post.created_at)}
-                    </p>
-                  </div>
-                </div>
+              {/* 댓글 리스트 */}
+              {expandedPostId === post.id && (
+                <div className="pt-4 space-y-4 bg-muted/30 rounded-lg p-4">
 
-                {/* Title + Content */}
-                <div>
-                  <h4 className="font-semibold mb-1">{post.title}</h4>
-                  <p className="text-sm text-muted-foreground">
-                    {post.content}
-                  </p>
-                </div>
+                  {comments[post.id]?.map((c) => (
+                    <div key={c.id} className="flex gap-3">
+                      <Avatar className="h-8 w-8">
+                        <AvatarImage src={c.profiles?.profile_photo_url || ""} />
+                        <AvatarFallback>
+                          {c.profiles?.username?.[0] || "U"}
+                        </AvatarFallback>
+                      </Avatar>
 
-                {/* Rating */}
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <Star
-                      key={n}
-                      className={`h-4 w-4 ${
-                        post.rating >= n
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
-                      }`}
-                    />
+                      <div className="flex-1 bg-white border rounded-lg p-3 shadow-sm">
+                        <p className="text-sm font-medium mb-0.5">
+                          {c.profiles?.username || "익명"}
+                        </p>
+                        <p className="text-sm text-muted-foreground leading-5">
+                          {c.content}
+                        </p>
+                      </div>
+                    </div>
                   ))}
+
+                  {/* 댓글 입력 */}
+                  {isAuthenticated ? (
+                    <div className="flex gap-2 pt-1">
+                      <Input
+                        placeholder="댓글 입력..."
+                        value={commentInput[post.id] || ""}
+                        onChange={(e) =>
+                          setCommentInput({
+                            ...commentInput,
+                            [post.id]: e.target.value,
+                          })
+                        }
+                      />
+                      <Button
+                        onClick={() => addComment(post.id)}
+                        disabled={addingComment === post.id}
+                      >
+                        {addingComment === post.id ? (
+                          <Loader2 className="h-4 w-4 animate-spin" />
+                        ) : (
+                          "등록"
+                        )}
+                      </Button>
+                    </div>
+                  ) : (
+                    <p className="text-sm text-muted-foreground pt-1">
+                      로그인 후 댓글을 작성할 수 있습니다.
+                    </p>
+                  )}
                 </div>
-
-                {/* Like + Comment buttons */}
-                <div className="flex items-center gap-6 pt-2 border-t">
-                  <button
-                    className="flex items-center gap-1 text-sm"
-                    onClick={() => toggleLike(post.id)}
-                  >
-                    <Heart
-                      className={`h-5 w-5 ${
-                        likes[post.id]
-                          ? "fill-red-500 text-red-500"
-                          : "text-muted-foreground"
-                      }`}
-                    />
-                    {likeCounts[post.id] || 0}
-                  </button>
-
-                  <button
-                    className="flex items-center gap-1 text-sm"
-                    onClick={() =>
-                      setExpandedPostId(
-                        expandedPostId === post.id ? null : post.id
-                      )
-                    }
-                  >
-                    <MessageCircle className="h-5 w-5" />
-                    댓글
-                  </button>
-                </div>
-
-                {/* 댓글 목록 */}
-                {expandedPostId === post.id && (
-                  <div className="pt-4 space-y-4">
-
-                    {comments[post.id]?.map((c) => (
-                      <div key={c.id} className="flex gap-3">
-                        <Avatar className="h-8 w-8">
-                          <AvatarImage src={c.profiles?.profile_photo_url || ""} />
-                          <AvatarFallback>
-                            {c.profiles?.username?.[0] || "U"}
-                          </AvatarFallback>
-                        </Avatar>
-                        <div className="flex-1 bg-muted/40 rounded-lg p-3">
-                          <p className="text-sm font-medium">
-                            {c.profiles?.username || "익명"}
-                          </p>
-                          <p className="text-sm text-muted-foreground">
-                            {c.content}
-                          </p>
-                        </div>
-                      </div>
-                    ))}
-
-                    {/* 댓글 입력 */}
-                    {isAuthenticated ? (
-                      <div className="flex gap-2 pt-2">
-                        <Input
-                          placeholder="댓글 입력..."
-                          value={commentInput[post.id] || ""}
-                          onChange={(e) =>
-                            setCommentInput({
-                              ...commentInput,
-                              [post.id]: e.target.value,
-                            })
-                          }
-                        />
-                        <Button
-                          onClick={() => addComment(post.id)}
-                          disabled={addingComment === post.id}
-                        >
-                          {addingComment === post.id ? (
-                            <Loader2 className="h-4 w-4 animate-spin" />
-                          ) : (
-                            "등록"
-                          )}
-                        </Button>
-                      </div>
-                    ) : (
-                      <div className="text-muted-foreground text-sm pt-2">
-                        로그인 후 댓글을 작성할 수 있습니다.
-                      </div>
-                    )}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))}
-      </div>
+              )}
+            </CardContent>
+          </Card>
+        ))}
     </div>
-  );
-}
+  </div>
+);
