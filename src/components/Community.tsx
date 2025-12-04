@@ -549,37 +549,40 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                     </div>
                   ))}
 
-                  {/* Comment Input */}
-                  {isAuthenticated ? (
-<div className="flex items-start gap-3 mt-2">
-  <Textarea
-    className="flex-1 h-20 text-sm resize-none"
-    placeholder="댓글 입력..."
-    value={commentInput[post.id] || ""}
-    onChange={(e) =>
-      setCommentInput({
-        ...commentInput,
-        [post.id]: e.target.value,
-      })
-    }
-  />
+{/* Comment Input */}
+{isAuthenticated ? (
+  <div className="mt-2 space-y-2">
+    {/* 댓글 입력칸: 가로 꽉 + 적당한 높이 */}
+    <Textarea
+      className="w-full min-h-[70px] text-sm resize-none"
+      placeholder="댓글 입력..."
+      value={commentInput[post.id] || ""}
+      onChange={(e) =>
+        setCommentInput({
+          ...commentInput,
+          [post.id]: e.target.value,
+        })
+      }
+    />
 
-  <Button
-    size="sm"
-    className="h-9 px-3 mt-auto"
-    onClick={() => addComment(post.id)}
-    disabled={addingComment === post.id}
-  >
-    등록
-  </Button>
-</div>
+    {/* 등록 버튼: 아래에 작게 / 오른쪽 정렬 */}
+    <div className="flex justify-end">
+      <Button
+        size="sm"
+        className="px-4"
+        onClick={() => addComment(post.id)}
+        disabled={addingComment === post.id}
+      >
+        등록
+      </Button>
+    </div>
+  </div>
+) : (
+  <p className="text-sm text-muted-foreground">
+    로그인 후 댓글 작성 가능
+  </p>
+)}
 
-
-                  ) : (
-                    <p className="text-sm text-muted-foreground">
-                      로그인 후 댓글 작성 가능
-                    </p>
-                  )}
                 </div>
               )}
             </CardContent>
