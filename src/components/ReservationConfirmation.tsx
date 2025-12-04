@@ -1,13 +1,32 @@
-import React from 'react';
-import { Card, CardContent, CardDescription, CardHeader, CardTitle } from './ui/card';
+import React, { useEffect, useRef } from 'react';
+import {
+  Card,
+  CardContent,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from './ui/card';
 import { Button } from './ui/button';
 import { Badge } from './ui/badge';
 import { ImageWithFallback } from './figma/ImageWithFallback';
-import { 
-  CheckCircle2, Home, Calendar, User, Phone, Mail, MapPin, 
-  Dog, Cat, Bird, Rabbit, Download, Share2, ArrowLeft 
+import {
+  CheckCircle2,
+  Home,
+  Calendar,
+  User,
+  Phone,
+  Mail,
+  MapPin,
+  Dog,
+  Cat,
+  Bird,
+  Rabbit,
+  Download,
+  Share2,
+  ArrowLeft,
 } from 'lucide-react';
-import { toast } from 'sonner@2.0.3';
+import { toast } from 'sonner'; // 🔧 원래 sonner@2.0.3 이라고 되어 있던 거 수정
+import { supabase } from '../lib/supabase'; // ✅ Supabase 인스턴스
 
 interface ReservationData {
   accommodationId: number;
@@ -34,25 +53,77 @@ interface ReservationConfirmationProps {
   onBackToDetail: () => void;
 }
 
-export function ReservationConfirmation({ 
-  reservation, 
-  onBackToList, 
-  onBackToDetail 
+export function ReservationConfirmation({
+  reservation,
+  onBackToList,
+  onBackToDetail,
 }: ReservationConfirmationProps) {
-  
+  // ✅ 같은 예약이 두 번 insert 되는 것 방지용
+  const hasSyncedRef = useRef(false);
+
+  // ✅ 이 화면이 열릴 때 Supabase reservations 테이블에 한 번 저장
+  useEffect(() => {
+    if (hasSyncedRef.current) return;
+    hasSyncedRef.current = true;
+
+    const syncReservationToSupabase = async () => {
+      try {
+        const {
+          data: { user },
+        } = await supabase.auth.getUser();
+
+        if (!user) {
+          console.error('예약 저장 실패: 로그인된 유저가 없습니다.');
+          return;
+        }
+
+        // ⚠ 여기 컬럼 이름은 Supabase reservations 테이블에 맞춰서 필요하면 바꿔줘
+        const { error } = await supabase.from('reservations').insert({
+          user_id: user.id,
+          accommodation_id: reservation.accommodationId.toString(),
+          accommodation_name: reservation.accommodationName,
+          accommodation_location: reservation.accommodationLocation,
+          check_in: reservation.checkInDate.toISOString(),
+          check_out: reservation.checkOutDate.toISOString(),
+          nights: reservation.nights,
+          number_of_pets: reservation.numberOfPets,
+          guest_name: reservation.guestName,
+          guest_phone: reservation.guestPhone,
+          guest_email: reservation.guestEmail,
+          total_price: reservation.totalPrice,
+          reservation_number: reservation.reservationNumber,
+          reservation_date: reservation.reservationDate.toISOString(),
+          special_requests: reservation.specialRequests,
+        });
+
+        if (error) {
+          console.error('Supabase 예약 저장 오류:', error);
+          // 필요하면 사용자에게도 알려주고 싶을 때:
+          // toast.error('예약 내역 저장에 실패했습니다.');
+        } else {
+          console.log('Supabase 예약 저장 완료');
+        }
+      } catch (e) {
+        console.error('Supabase 예약 동기화 중 에러:', e);
+      }
+    };
+
+    syncReservationToSupabase();
+  }, [reservation]);
+
   const formatDate = (date: Date): string => {
-    return date.toLocaleDateString('ko-KR', { 
-      year: 'numeric', 
-      month: 'long', 
+    return date.toLocaleDateString('ko-KR', {
+      year: 'numeric',
+      month: 'long',
       day: 'numeric',
-      weekday: 'short'
+      weekday: 'short',
     });
   };
 
   const formatTime = (date: Date): string => {
     return date.toLocaleTimeString('ko-KR', {
       hour: '2-digit',
-      minute: '2-digit'
+      minute: '2-digit',
     });
   };
 
@@ -62,8 +133,10 @@ export function ReservationConfirmation({
   };
 
   const handleShare = async () => {
-    const text = `${reservation.accommodationName} 예약이 완료되었습니다!\n예약번호: ${reservation.reservationNumber}\n체크인: ${formatDate(reservation.checkInDate)}\n체크아웃: ${formatDate(reservation.checkOutDate)}`;
-    
+    const text = `${reservation.accommodationName} 예약이 완료되었습니다!\n예약번호: ${reservation.reservationNumber}\n체크인: ${formatDate(
+      reservation.checkInDate,
+    )}\n체크아웃: ${formatDate(reservation.checkOutDate)}`;
+
     if (navigator.share) {
       try {
         await navigator.share({
@@ -71,12 +144,10 @@ export function ReservationConfirmation({
           text: text,
         });
       } catch (error: any) {
-        // If user cancels or denies, fall back to clipboard
         if (error.name === 'AbortError') {
-          // User cancelled the share dialog, do nothing
+          // 사용자가 공유 다이얼로그를 취소한 경우
           return;
         }
-        // For other errors (like NotAllowedError), fall back to clipboard
         try {
           await navigator.clipboard.writeText(text);
           toast.success('예약 정보가 클립보드에 복사되었습니다');
@@ -85,7 +156,6 @@ export function ReservationConfirmation({
         }
       }
     } else {
-      // Fallback for browsers that don't support Web Share API
       try {
         await navigator.clipboard.writeText(text);
         toast.success('예약 정보가 클립보드에 복사되었습니다');
@@ -121,7 +191,8 @@ export function ReservationConfirmation({
               {reservation.reservationNumber}
             </div>
             <CardDescription className="mt-2">
-              예약일시: {formatDate(reservation.reservationDate)} {formatTime(reservation.reservationDate)}
+              예약일시: {formatDate(reservation.reservationDate)}{' '}
+              {formatTime(reservation.reservationDate)}
             </CardDescription>
           </CardHeader>
         </Card>
@@ -141,7 +212,9 @@ export function ReservationConfirmation({
                 />
               </div>
               <div className="flex-1 space-y-2">
-                <h3 className="text-foreground">{reservation.accommodationName}</h3>
+                <h3 className="text-foreground">
+                  {reservation.accommodationName}
+                </h3>
                 <div className="flex items-center gap-2 text-muted-foreground">
                   <MapPin className="h-4 w-4" />
                   <span>{reservation.accommodationLocation}</span>
@@ -165,8 +238,12 @@ export function ReservationConfirmation({
                   <span>체크인</span>
                 </div>
                 <div className="pl-6">
-                  <div className="font-medium">{formatDate(reservation.checkInDate)}</div>
-                  <div className="text-sm text-muted-foreground">오후 3시 이후</div>
+                  <div className="font-medium">
+                    {formatDate(reservation.checkInDate)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    오후 3시 이후
+                  </div>
                 </div>
               </div>
               <div className="space-y-2">
@@ -175,8 +252,12 @@ export function ReservationConfirmation({
                   <span>체크아웃</span>
                 </div>
                 <div className="pl-6">
-                  <div className="font-medium">{formatDate(reservation.checkOutDate)}</div>
-                  <div className="text-sm text-muted-foreground">오전 11시 이전</div>
+                  <div className="font-medium">
+                    {formatDate(reservation.checkOutDate)}
+                  </div>
+                  <div className="text-sm text-muted-foreground">
+                    오전 11시 이전
+                  </div>
                 </div>
               </div>
             </div>
@@ -250,10 +331,14 @@ export function ReservationConfirmation({
           <CardContent className="space-y-3">
             <div className="flex justify-between">
               <span className="text-muted-foreground">
-                ₩{reservation.pricePerNight.toLocaleString()} x {reservation.nights}박
+                ₩{reservation.pricePerNight.toLocaleString()} x{' '}
+                {reservation.nights}박
               </span>
               <span className="font-medium">
-                ₩{(reservation.pricePerNight * reservation.nights).toLocaleString()}
+                ₩
+                {(
+                  reservation.pricePerNight * reservation.nights
+                ).toLocaleString()}
               </span>
             </div>
             <div className="border-t pt-3 flex justify-between text-lg">
@@ -271,7 +356,9 @@ export function ReservationConfirmation({
         {/* Important Notice */}
         <Card className="mb-6 border-blue-200 dark:border-blue-900 bg-blue-50/50 dark:bg-blue-950/20">
           <CardHeader>
-            <CardTitle className="text-blue-900 dark:text-blue-300">유의사항</CardTitle>
+            <CardTitle className="text-blue-900 dark:text-blue-300">
+              유의사항
+            </CardTitle>
           </CardHeader>
           <CardContent className="space-y-2 text-sm text-blue-800 dark:text-blue-200">
             <p>• 반려동물 예방접종 증명서를 반드시 지참해주세요</p>
@@ -283,19 +370,11 @@ export function ReservationConfirmation({
 
         {/* Action Buttons */}
         <div className="grid grid-cols-1 sm:grid-cols-3 gap-3 mb-6">
-          <Button
-            variant="outline"
-            onClick={handleDownload}
-            className="gap-2"
-          >
+          <Button variant="outline" onClick={handleDownload} className="gap-2">
             <Download className="h-4 w-4" />
             확인서 다운로드
           </Button>
-          <Button
-            variant="outline"
-            onClick={handleShare}
-            className="gap-2"
-          >
+          <Button variant="outline" onClick={handleShare} className="gap-2">
             <Share2 className="h-4 w-4" />
             예약 공유
           </Button>
@@ -311,11 +390,7 @@ export function ReservationConfirmation({
 
         {/* Back to List Button */}
         <div className="flex justify-center">
-          <Button
-            onClick={onBackToList}
-            size="lg"
-            className="gap-2"
-          >
+          <Button onClick={onBackToList} size="lg" className="gap-2">
             <ArrowLeft className="h-4 w-4" />
             숙소 목록으로 돌아가기
           </Button>
@@ -325,8 +400,11 @@ export function ReservationConfirmation({
         <div className="text-center mt-8 text-sm text-muted-foreground">
           <p>예약에 문제가 있으신가요?</p>
           <p className="mt-1">
-            고객센터: <span className="text-foreground font-medium">1588-0000</span> | 
-            이메일: <span className="text-foreground font-medium">support@petfriendly.com</span>
+            고객센터:{' '}
+            <span className="text-foreground font-medium">1588-0000</span> | 이메일:{' '}
+            <span className="text-foreground font-medium">
+              support@petfriendly.com
+            </span>
           </p>
         </div>
       </div>
