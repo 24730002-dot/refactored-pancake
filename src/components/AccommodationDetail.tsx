@@ -178,26 +178,6 @@ export function AccommodationDetail({
             목록으로
           </Button>
 
-          <div className="flex items-center gap-2">
-            <ShareButton
-              title={accommodation.name}
-              description={accommodation.description}
-              variant="outline"
-              size="sm"
-            />
-            <FavoriteButton
-              userId={userId}
-              accommodationId={accommodation.id.toString()}
-              accommodationName={accommodation.name}
-              accommodationData={{
-                image: accommodation.imageUrl,
-                location: accommodation.location,
-                rating: accommodation.rating,
-                price:
-                  accommodation.pricePerNight.toLocaleString('ko-KR') + '원',
-                petFriendly: true,
-              }}
-            />
           </div>
         </div>
       </div>
