@@ -642,11 +642,13 @@ export function Dashboard({
           </main>
         )}
 
-        {/* 숙소 섹션 (모바일) */}
+
+
 <section
   id="accommodations-section-mobile"
-  className={`${isDetailView ? 'mt-0' : 'mt-2'} bg-background/95 rounded-t-3xl px-4 pt-6 pb-10`}
+  className={`${isDetailView ? 'mt-0 pt-6 px-0' : 'mt-2 px-4 pt-6'} bg-background/95 rounded-t-3xl pb-10`}
 >
+
 <AnimatePresence mode="wait">
     {completedReservation ? (
       <motion.div
@@ -665,7 +667,7 @@ export function Dashboard({
           onBackToDetail={() => setCompletedReservation(null)}
         />
       </motion.div>
-    ) : selectedAccommodation ? (
+   ) : selectedAccommodation ? (
       <motion.div
         key="detail"
         initial={{ x: 40, opacity: 0 }}
@@ -673,7 +675,8 @@ export function Dashboard({
         exit={{ x: -40, opacity: 0 }}
         transition={{ duration: 0.25 }}
       >
-        <AccommodationDetail
+      
+<AccommodationDetail
           accommodation={selectedAccommodation}
           onBack={() => setSelectedAccommodation(null)}
           isAuthenticated={isAuthenticated}
@@ -700,7 +703,7 @@ export function Dashboard({
     )}
   </AnimatePresence>
 </section>
-      </div>
+      </div>  {/* 👉 이거 추가: md:hidden 닫기 */}
 
       {/* 💻 데스크탑 전용 레이아웃 (md 이상) */}
       <div className="hidden md:block">

@@ -164,11 +164,19 @@ export function AccommodationDetail({
     setCurrentImageIndex((prev) => (prev - 1 + images.length) % images.length);
   };
 
-  return (
-    <div className="relative min-h-screen flex flex-col bg-background">
-      {/* 상단 헤더 (뒤로가기, 공유, 찜) */}
-      <div className="sticky top-0 md:top-[72px] z-20 bg-background/95 backdrop-blur-sm border-b">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+return (
+  <div className="relative min-h-screen flex flex-col bg-background">
+    {/* 🔥 상세보기 상단 헤더 */}
+    {/* 1. Outer Div (Sticky Full-Width) : 화면 전체 폭을 덮고 고정됨 */}
+    <div className="sticky top-0 z-30 bg-background/95 backdrop-blur-md border-b w-full">
+
+      {/* 2. Inner Div (Max-Width Centered) */}
+      <div className="max-w-7xl mx-auto">
+
+        {/* 3. Content Row Div */}
+        <div className="px-4 py-3 flex items-center justify-between sm:px-6 lg:px-8">
+
+          {/* ← 왼쪽: 뒤로가기 버튼 */}
           <Button
             variant="ghost"
             className="flex items-center gap-2"
@@ -178,13 +186,38 @@ export function AccommodationDetail({
             목록으로
           </Button>
 
+          {/* 👉 오른쪽: 공유 + 좋아요 (모바일에서는 숨김) */}
+          <div className="hidden md:flex items-center gap-2">
+            <ShareButton
+              title={accommodation.name}
+              description={accommodation.description}
+              size="icon"
+              variant="ghost"
+            />
+
+            <FavoriteButton
+              userId={userId}
+              accommodationId={accommodation.id.toString()}
+              accommodationName={accommodation.name}
+              accommodationData={{
+                image: accommodation.imageUrl,
+                location: accommodation.location,
+                rating: accommodation.rating,
+                price: accommodation.pricePerNight,
+                petFriendly: true,
+              }}
+            />
           </div>
+
         </div>
       </div>
+    </div>
+
+
 
       {/* 🧱 메인 컨텐츠 – 아래 고정 버튼 높이만큼 패딩 추가 */}
       <div className="flex-1 w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-40 lg:pb-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-32 lg:pb-28">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Main Content */}
             <div className="lg:col-span-2 space-y-6">
@@ -349,9 +382,8 @@ export function AccommodationDetail({
                   </ul>
                 </CardContent>
               </Card>
-
               {/* Contact Info */}
-              <Card className="mb-24 lg:mb-0">
+              <Card className="mb-8 lg:mb-0">
                 <CardHeader>
                   <CardTitle>연락처 정보</CardTitle>
                 </CardHeader>
@@ -370,6 +402,9 @@ export function AccommodationDetail({
                   </div>
                 </CardContent>
               </Card>
+
+              {/* 👇 모바일에서 맨 아래 내용이 고정 버튼에 안 가리도록 여유 공간 추가 */}
+              <div className="h-24 lg:hidden" />
             </div>
 
             {/* Right Column - 데스크탑용 예약 카드 */}
@@ -426,7 +461,7 @@ export function AccommodationDetail({
         </div>
       </div>
 
-      {/* 🟦 모바일 하단 고정 예약 버튼 (가격 표시 없음) */}
+    {/* 🟦 모바일 하단 고정 예약 버튼 (가격 표시 없음) */}
       <div
         className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 backdrop-blur-md lg:hidden"
         style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
@@ -442,7 +477,7 @@ export function AccommodationDetail({
         </div>
       </div>
 
-      {/* Reservation Dialog */}
+     {/* Reservation Dialog */}
       <Dialog
         open={showReservationDialog}
         onOpenChange={setShowReservationDialog}
