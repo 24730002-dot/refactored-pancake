@@ -167,45 +167,44 @@ export function AccommodationDetail({
   return (
     <div className="relative min-h-screen flex flex-col bg-background">
       {/* 상단 헤더 (뒤로가기, 공유, 찜) */}
-      <div className="sticky top-0 z-20 bg-background/95 backdrop-blur-sm border-b border-border">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-4">
-          <div className="flex items-center justify-between">
-            <Button
-              variant="ghost"
+      <div className="sticky top-0 md:top-[72px] z-20 bg-background/95 backdrop-blur-sm border-b">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-3 flex items-center justify-between">
+          <Button
+            variant="ghost"
+            className="flex items-center gap-2"
+            onClick={onBack}
+          >
+            <ArrowLeft className="h-5 w-5" />
+            목록으로
+          </Button>
+
+          <div className="flex items-center gap-2">
+            <ShareButton
+              title={accommodation.name}
+              description={accommodation.description}
+              variant="outline"
               size="sm"
-              onClick={onBack}
-              className="gap-2"
-            >
-              <ArrowLeft className="h-4 w-4" />
-              목록으로
-            </Button>
-            <div className="flex items-center gap-2">
-              <ShareButton
-                title={accommodation.name}
-                description={accommodation.description}
-                variant="outline"
-                size="sm"
-              />
-              <FavoriteButton
-                userId={userId}
-                accommodationId={accommodation.id.toString()}
-                accommodationName={accommodation.name}
-                accommodationData={{
-                  image: accommodation.imageUrl,
-                  location: accommodation.location,
-                  rating: accommodation.rating,
-                  price: accommodation.pricePerNight.toLocaleString('ko-KR') + '원',
-                  petFriendly: true,
-                }}
-              />
-            </div>
+            />
+            <FavoriteButton
+              userId={userId}
+              accommodationId={accommodation.id.toString()}
+              accommodationName={accommodation.name}
+              accommodationData={{
+                image: accommodation.imageUrl,
+                location: accommodation.location,
+                rating: accommodation.rating,
+                price:
+                  accommodation.pricePerNight.toLocaleString('ko-KR') + '원',
+                petFriendly: true,
+              }}
+            />
           </div>
         </div>
       </div>
 
-      {/* 메인 컨텐츠 – 아래 고정 버튼 높이만큼 패딩 */}
+      {/* 🧱 메인 컨텐츠 – 아래 고정 버튼 높이만큼 패딩 추가 */}
       <div className="flex-1 w-full">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-28">
+        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 pt-8 pb-40 lg:pb-28">
           <div className="grid grid-cols-1 lg:grid-cols-3 gap-8">
             {/* Left Column - Main Content */}
             <div className="lg:col-span-2 space-y-6">
@@ -216,7 +215,7 @@ export function AccommodationDetail({
                   alt={`${accommodation.name} - 이미지 ${currentImageIndex + 1}`}
                   className="w-full h-full object-cover"
                 />
-                
+
                 {images.length > 1 && (
                   <>
                     <button
@@ -238,8 +237,8 @@ export function AccommodationDetail({
                           key={index}
                           onClick={() => setCurrentImageIndex(index)}
                           className={`w-2 h-2 rounded-full transition-all ${
-                            index === currentImageIndex 
-                              ? 'bg-primary w-6' 
+                            index === currentImageIndex
+                              ? 'bg-primary w-6'
                               : 'bg-background/60 hover:bg-background/80'
                           }`}
                         />
@@ -268,15 +267,25 @@ export function AccommodationDetail({
                 <h3 className="text-foreground mb-3">반려동물</h3>
                 <div className="flex flex-wrap gap-2">
                   {accommodation.petTypes.map((type, index) => {
-                    const label = 
-                      type === 'all' ? '모든 반려동물' :
-                      type === 'dog' ? '강아지' :
-                      type === 'cat' ? '고양이' :
-                      type === 'bird' ? '조류' :
-                      type === 'small' ? '소형 반려동물' : type;
-                    
+                    const label =
+                      type === 'all'
+                        ? '모든 반려동물'
+                        : type === 'dog'
+                        ? '강아지'
+                        : type === 'cat'
+                        ? '고양이'
+                        : type === 'bird'
+                        ? '조류'
+                        : type === 'small'
+                        ? '소형 반려동물'
+                        : type;
+
                     return (
-                      <Badge key={index} variant="secondary" className="flex items-center gap-2 px-3 py-1">
+                      <Badge
+                        key={index}
+                        variant="secondary"
+                        className="flex items-center gap-2 px-3 py-1"
+                      >
                         {getPetTypeIcon(type)}
                         <span>{label}</span>
                       </Badge>
@@ -308,7 +317,10 @@ export function AccommodationDetail({
                 <CardContent>
                   <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
                     {accommodation.amenities.map((amenity, index) => (
-                      <div key={index} className="flex items-center gap-2 p-3 rounded-lg bg-muted/30">
+                      <div
+                        key={index}
+                        className="flex items-center gap-2 p-3 rounded-lg bg-muted/30"
+                      >
                         {getAmenityIcon(amenity)}
                         <span className="text-sm">{amenity}</span>
                       </div>
@@ -359,101 +371,110 @@ export function AccommodationDetail({
               </Card>
 
               {/* Contact Info */}
-              <Card>
+              <Card className="mb-24 lg:mb-0">
                 <CardHeader>
                   <CardTitle>연락처 정보</CardTitle>
-              </CardHeader>
-              <CardContent className="space-y-3">
-                <div className="flex items-center gap-3">
-                  <Phone className="h-5 w-5 text-muted-foreground" />
-                  <span>{accommodation.phone}</span>
-                </div>
-                <div className="flex items-center gap-3">
-                  <Mail className="h-5 w-5 text-muted-foreground" />
-                  <span>{accommodation.email}</span>
-                </div>
-              </CardContent>
-            </Card>
-          </div>
+                </CardHeader>
+                <CardContent className="space-y-3">
+                  <div className="flex items-center gap-3">
+                    <Phone className="h-5 w-5 text-muted-foreground" />
+                    <span>{accommodation.phone}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <Mail className="h-5 w-5 text-muted-foreground" />
+                    <span>{accommodation.email}</span>
+                  </div>
+                  <div className="flex items-center gap-3">
+                    <MapPin className="h-5 w-5 text-muted-foreground" />
+                    <span>{accommodation.location}</span>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
 
-          {/* Right Column - 데스크탑용 예약 카드 */}
-          <div className="lg:col-span-1 hidden lg:block">
-            <Card className="sticky top-24">
-              <CardHeader>
-                <div className="flex items-baseline justify-between">
-                  <div>
-                    <div className="text-3xl text-primary">
-                      ₩{accommodation.pricePerNight.toLocaleString()}
+            {/* Right Column - 데스크탑용 예약 카드 */}
+            <div className="lg:col-span-1 hidden lg:block">
+              <Card className="sticky top-24">
+                <CardHeader>
+                  <div className="flex items-baseline justify-between">
+                    <div>
+                      <div className="text-3xl text-primary">
+                        ₩{accommodation.pricePerNight.toLocaleString()}
+                      </div>
+                      <div className="text-sm text-muted-foreground">/ 박</div>
                     </div>
-                    <div className="text-sm text-muted-foreground">/ 박</div>
+                    <div className="flex items-center gap-1">
+                      <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
+                      <span className="font-medium">
+                        {accommodation.rating}
+                      </span>
+                    </div>
                   </div>
-                  <div className="flex items-center gap-1">
-                    <Star className="h-4 w-4 fill-yellow-400 text-yellow-400" />
-                    <span className="font-medium">{accommodation.rating}</span>
-                  </div>
-                </div>
-              </CardHeader>
-              <CardContent className="space-y-4">
-                <Button 
-                  onClick={handleReservation}
-                  className="w-full h-12"
-                  size="lg"
-                >
-                  예약하기
-                </Button>
-                
-                <Chat
-                  userId={userId}
-                  accommodationId={accommodation.id.toString()}
-                  accommodationName={accommodation.name}
-                />
-                
-                <div className="text-center text-sm text-muted-foreground">
-                  예약 확정 전까지 요금이 청구되지 않습니다
-                </div>
+                </CardHeader>
+                <CardContent className="space-y-4">
+                  <Button
+                    onClick={handleReservation}
+                    className="w-full h-12"
+                    size="lg"
+                  >
+                    예약하기
+                  </Button>
 
-                <div className="pt-4 border-t space-y-2">
-                  <h4 className="font-medium mb-3">예약 안내</h4>
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <p>• 사전 예약 필수</p>
-                    <p>• 반려동물 최대 {accommodation.maxPets}마리</p>
-                    <p>• 예방접종 증명서 지참</p>
-                    <p>• 취소 정책: 체크인 7일 전까지 전액 환불</p>
+                  <Chat
+                    userId={userId}
+                    accommodationId={accommodation.id.toString()}
+                    accommodationName={accommodation.name}
+                  />
+
+                  <div className="text-center text-sm text-muted-foreground">
+                    예약 확정 전까지 요금이 청구되지 않습니다
                   </div>
-                </div>
-              </CardContent>
-            </Card>
+
+                  <div className="pt-4 border-t space-y-2">
+                    <h4 className="font-medium mb-3">예약 안내</h4>
+                    <div className="space-y-2 text-sm text-muted-foreground">
+                      <p>• 사전 예약 필수</p>
+                      <p>• 반려동물 최대 {accommodation.maxPets}마리</p>
+                      <p>• 예방접종 증명서 지참</p>
+                      <p>• 취소 정책: 체크인 7일 전까지 전액 환불</p>
+                    </div>
+                  </div>
+                </CardContent>
+              </Card>
+            </div>
           </div>
         </div>
       </div>
-    </div>
-    
-    {/* 🟦 모바일 하단 고정 예약 버튼 (가격 표시 없음) */}
-    <div
-      className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 backdrop-blur-md lg:hidden"
-      style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
-    >
-      <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
-        <Button
-          onClick={handleReservation}
-          className="w-full h-11"
-          size="sm"
-        >
-          예약하기
-        </Button>
-      </div>
-    </div>
 
-    {/* Reservation Dialog */}
-    <Dialog open={showReservationDialog} onOpenChange={setShowReservationDialog}>
-      <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
-        <DialogHeader>
-          <DialogTitle>예약하기 - {accommodation.name}</DialogTitle>
-          <DialogDescription>
-            예약 정보를 입력해주세요. 모든 정보는 필수입니다.
-          </DialogDescription>
-        </DialogHeader>
-          
+      {/* 🟦 모바일 하단 고정 예약 버튼 (가격 표시 없음) */}
+      <div
+        className="fixed inset-x-0 bottom-0 z-30 border-t bg-background/95 backdrop-blur-md lg:hidden"
+        style={{ paddingBottom: 'env(safe-area-inset-bottom)' }}
+      >
+        <div className="mx-auto max-w-7xl px-4 sm:px-6 lg:px-8 py-3">
+          <Button
+            onClick={handleReservation}
+            className="w-full h-11"
+            size="sm"
+          >
+            예약하기
+          </Button>
+        </div>
+      </div>
+
+      {/* Reservation Dialog */}
+      <Dialog
+        open={showReservationDialog}
+        onOpenChange={setShowReservationDialog}
+      >
+        <DialogContent className="max-w-2xl max-h-[90vh] overflow-y-auto">
+          <DialogHeader>
+            <DialogTitle>예약하기 - {accommodation.name}</DialogTitle>
+            <DialogDescription>
+              예약 정보를 입력해주세요. 모든 정보는 필수입니다.
+            </DialogDescription>
+          </DialogHeader>
+
           <div className="space-y-6 py-4">
             {/* Date Selection */}
             <div className="grid grid-cols-2 gap-4">
@@ -480,7 +501,7 @@ export function AccommodationDetail({
                   </PopoverContent>
                 </Popover>
               </div>
-              
+
               <div className="space-y-2">
                 <Label>체크아웃 날짜</Label>
                 <Popover>
@@ -498,7 +519,9 @@ export function AccommodationDetail({
                       mode="single"
                       selected={checkOutDate}
                       onSelect={setCheckOutDate}
-                      disabled={(date) => !checkInDate || date <= checkInDate}
+                      disabled={(date) =>
+                        !checkInDate || date <= checkInDate
+                      }
                       initialFocus
                     />
                   </PopoverContent>
@@ -548,7 +571,9 @@ export function AccommodationDetail({
                   min="1"
                   max={accommodation.maxPets}
                   value={numberOfPets}
-                  onChange={(e) => setNumberOfPets(parseInt(e.target.value))}
+                  onChange={(e) =>
+                    setNumberOfPets(parseInt(e.target.value))
+                  }
                 />
                 <p className="text-xs text-muted-foreground">
                   최대 {accommodation.maxPets}마리까지 가능합니다
@@ -556,7 +581,9 @@ export function AccommodationDetail({
               </div>
 
               <div className="space-y-2">
-                <Label htmlFor="specialRequests">특별 요청사항 (선택)</Label>
+                <Label htmlFor="specialRequests">
+                  특별 요청사항 (선택)
+                </Label>
                 <Textarea
                   id="specialRequests"
                   placeholder="숙소에 전달할 특별한 요청사항이 있다면 입력해주세요"
@@ -576,19 +603,28 @@ export function AccommodationDetail({
                 <CardContent className="space-y-2">
                   {(() => {
                     const nights = Math.ceil(
-                      (checkOutDate.getTime() - checkInDate.getTime()) / (1000 * 60 * 60 * 24)
+                      (checkOutDate.getTime() -
+                        checkInDate.getTime()) /
+                        (1000 * 60 * 60 * 24)
                     );
-                    const totalPrice = accommodation.pricePerNight * nights;
-                    
+                    const totalPrice =
+                      accommodation.pricePerNight * nights;
+
                     return (
                       <>
                         <div className="flex justify-between text-sm">
-                          <span>₩{accommodation.pricePerNight.toLocaleString()} x {nights}박</span>
+                          <span>
+                            ₩
+                            {accommodation.pricePerNight.toLocaleString()} x{' '}
+                            {nights}박
+                          </span>
                           <span>₩{totalPrice.toLocaleString()}</span>
                         </div>
                         <div className="border-t pt-2 flex justify-between">
                           <span>총 금액</span>
-                          <span className="text-primary">₩{totalPrice.toLocaleString()}</span>
+                          <span className="text-primary">
+                            ₩{totalPrice.toLocaleString()}
+                          </span>
                         </div>
                       </>
                     );
@@ -606,10 +642,7 @@ export function AccommodationDetail({
               >
                 취소
               </Button>
-              <Button
-                onClick={submitReservation}
-                className="flex-1"
-              >
+              <Button onClick={submitReservation} className="flex-1">
                 예약 확정
               </Button>
             </div>

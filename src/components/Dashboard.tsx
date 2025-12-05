@@ -645,7 +645,7 @@ export function Dashboard({
         {/* 숙소 섹션 (모바일) */}
 <section
   id="accommodations-section-mobile"
-  className="mt-2 bg-background/95 rounded-t-3xl px-4 pt-6 pb-10"
+  className={`${isDetailView ? 'mt-0' : 'mt-2'} bg-background/95 rounded-t-3xl px-4 pt-6 pb-10`}
 >
 <AnimatePresence mode="wait">
     {completedReservation ? (
@@ -892,8 +892,11 @@ export function Dashboard({
           </div>
         )}
 
-        {/* Accommodation Section - 데스크탑 */}
-        <div id="accommodations-section-desktop" className="pt-4 sm:pt-6">
+      {/* Accommodation Section - 데스크탑 */}
+<div
+  id="accommodations-section-desktop"
+  className={isDetailView ? "pt-0" : "pt-0 sm:pt-0"}
+>
   <AnimatePresence mode="wait">
     {completedReservation ? (
       <motion.div
@@ -925,8 +928,10 @@ export function Dashboard({
           onBack={() => setSelectedAccommodation(null)}
           isAuthenticated={isAuthenticated}
           userId={userId}
-          onShowAuth={() => onShowAuth('login')}
-          onReservationComplete={(reservation) => setCompletedReservation(reservation)}
+          onShowAuth={() => onShowAuth("login")}
+          onReservationComplete={(reservation) =>
+            setCompletedReservation(reservation)
+          }
         />
       </motion.div>
     ) : (
@@ -938,8 +943,12 @@ export function Dashboard({
         transition={{ duration: 0.25 }}
       >
         <AccommodationList
-          onViewDetail={(accommodation) => setSelectedAccommodation(accommodation)}
-          onReserve={(accommodation) => setSelectedAccommodation(accommodation)}
+          onViewDetail={(accommodation) =>
+            setSelectedAccommodation(accommodation)
+          }
+          onReserve={(accommodation) =>
+            setSelectedAccommodation(accommodation)
+          }
           userId={userId}
           isAuthenticated={isAuthenticated}
         />
@@ -947,7 +956,8 @@ export function Dashboard({
     )}
   </AnimatePresence>
 </div>
-      </div>
+</div>
+
 
       {/* 공통 모달들 */}
       <LocationSelector
