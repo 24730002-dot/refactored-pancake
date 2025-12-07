@@ -610,7 +610,7 @@ if (filters.location !== 'all') {
                     </div>
                   </div>
 
-                  <div className="pt-2 border-t space-y-2">
+                  <div className="flex gap-2 pt-2 mt-auto pb-8">
                     <div className="flex items-center gap-2 text-sm text-muted-foreground">
                       <Phone className="h-4 w-4" />
                       {accommodation.phone}
