@@ -338,7 +338,8 @@ const formatPhoneNumber = (value: string) => {
       <div className="flex flex-col min-h-screen">
         {/* Back Button */}
 {onBack && (
-  <div className="absolute top-16 left-4 sm:left-8 z-10">
+ <div className="absolute top-20 left-4 sm:left-8 z-10">
+
     <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
       <ArrowLeft className="h-4 w-4" />
       <span className="hidden sm:inline">뒤로가기</span>
