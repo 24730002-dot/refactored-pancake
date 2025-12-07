@@ -1,4 +1,4 @@
-import React, { useEffect, useState } from "react";
+import React, { useEffect, useState, useRef } from "react";
 import { supabase } from "../lib/supabase";
 
 import { Button } from "./ui/button";
@@ -109,6 +109,9 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
   // 새 글 이미지 URL들
 const [newPostImages, setNewPostImages] = useState<string[]>([]);
 const [uploadingImages, setUploadingImages] = useState(false);
+
+// 🔹 파일 인풋 ref
+const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // ------------------------------------------------------
   // 이미지 업로드 (Supabase Storage)
@@ -370,10 +373,17 @@ const createPost = async () => {
   else {
     toast.success("작성 완료!");
     setNewPost({ accommodation_name: "", rating: 5, title: "", content: "" });
-    setNewPostImages([]); // ✅ 이미지 상태도 초기화
+    setNewPostImages([]); 
+
+    // 🔹 파일 인풋도 초기화
+    if (fileInputRef.current) {
+      fileInputRef.current.value = "";
+    }
+
     fetchPosts();
   }
 };
+
 
 
   // ------------------------------------------------------
@@ -541,13 +551,14 @@ const createPost = async () => {
     )}
   </div>
 
-  <Input
-    type="file"
-    accept="image/*"
-    multiple
-    onChange={handleImageUpload}
-    disabled={uploadingImages}
-  />
+<Input
+  type="file"
+  accept="image/*"
+  multiple
+  onChange={handleImageUpload}
+  disabled={uploadingImages}
+  ref={fileInputRef}   // 🔹 이 줄 추가
+/>
 
   {/* 미리보기 */}
   {newPostImages.length > 0 && (
