@@ -621,21 +621,21 @@ if (filters.location !== 'all') {
                     </div>
                   </div>
 
-                  <div className="flex gap-2 pt-2 mt-auto">
-                    <Button
-                      className="flex-1"
-                      onClick={() => onReserve(accommodation)}
-                    >
-                      예약하기
-                    </Button>
-                    <Button
-                      variant="outline"
-                      className="flex-1"
-                      onClick={() => onViewDetail(accommodation)}
-                    >
-                      상세보기
-                    </Button>
-                  </div>
+<div className="flex gap-2 pt-2 mt-auto pb-8">
+  <Button
+    className="flex-1"
+    onClick={() => onReserve(accommodation)}
+  >
+    예약하기
+  </Button>
+  <Button
+    variant="outline"
+    className="flex-1"
+    onClick={() => onViewDetail(accommodation)}
+  >
+    상세보기
+  </Button>
+</div>
                 </CardContent>
               </Card>
             ))
