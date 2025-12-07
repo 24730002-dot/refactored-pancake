@@ -339,6 +339,7 @@ return (
                       </div>
                     ))}
                   </div>
+                  <div className="h-6"></div>  {/* ← 버튼 아래 여백 추가 */}
                 </CardContent>
               </Card>
 
@@ -380,6 +381,7 @@ return (
                       </span>
                     </li>
                   </ul>
+                  <div className="h-6"></div>  {/* ← 버튼 아래 여백 추가 */}
                 </CardContent>
               </Card>
               {/* Contact Info */}
@@ -400,6 +402,7 @@ return (
                     <MapPin className="h-5 w-5 text-muted-foreground" />
                     <span>{accommodation.location}</span>
                   </div>
+                  <div className="h-6"></div>  {/* ← 버튼 아래 여백 추가 */}
                 </CardContent>
               </Card>
 

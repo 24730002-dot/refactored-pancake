@@ -341,6 +341,7 @@ const formatPhoneNumber = (value: string) => {
           <div className="absolute top-8 left-4 sm:left-8 z-10">
             <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
               <ArrowLeft className="h-4 w-4" />
+              <div className="h-6"></div>
               <span className="hidden sm:inline">뒤로가기</span>
             </Button>
           </div>
@@ -588,6 +589,8 @@ const formatPhoneNumber = (value: string) => {
                     >
                       {isLogin ? '회원가입하기' : '로그인하기'}
                     </Button>
+
+                    <div className="h-6"></div>  {/* ← 버튼 아래 여백 추가 */}
                   </div>
                 </div>
               </CardContent>
