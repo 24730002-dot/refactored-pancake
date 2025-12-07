@@ -545,16 +545,18 @@ return (
 <button
   type="button"
   className="
-    w-full py-2 px-3 rounded-md border 
-    bg-white dark:bg-white        /* 다크모드에서도 배경 흰색 유지 */
-    text-sm text-left cursor-pointer 
-    hover:bg-muted
-    text-slate-900                /* 항상 진한 글자색 */
+  w-full py-2 px-3 rounded-md border
+  bg-white
+  text-sm text-left cursor-pointer
+  hover:bg-muted
+  text-black
+  dark:text-black
   "
   onClick={() => fileInputRef.current?.click()}
 >
   📷 사진 선택 (여러 장 가능)
 </button>
+
 
 
   <input
