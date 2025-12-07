@@ -106,6 +106,76 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     content: "",
   });
 
+  // 새 글 이미지 URL들
+const [newPostImages, setNewPostImages] = useState<string[]>([]);
+const [uploadingImages, setUploadingImages] = useState(false);
+
+  // ------------------------------------------------------
+  // 이미지 업로드 (Supabase Storage)
+  // ------------------------------------------------------
+ const handleImageUpload = async (
+  e: React.ChangeEvent<HTMLInputElement>
+) => {
+  const files = e.target.files;
+  if (!files || files.length === 0) return;
+
+  if (!isAuthenticated) {
+    toast.error("로그인 후 이미지를 업로드할 수 있습니다.");
+    onShowAuth("login");
+    return;
+  }
+
+  const { data: userData, error: userError } = await supabase.auth.getUser();
+  const user = userData?.user;
+  if (userError || !user) {
+    toast.error("유저 정보를 불러오지 못했습니다.");
+    console.error(userError);
+    return;
+  }
+
+  setUploadingImages(true);
+  const uploadedUrls: string[] = [];
+
+  try {
+    for (const file of Array.from(files)) {
+      const ext = file.name.split(".").pop();
+      const fileName = `${Date.now()}-${Math.random()
+        .toString(36)
+        .slice(2)}.${ext}`;
+      const filePath = `${user.id}/${fileName}`;
+
+      const { data: uploadData, error: uploadError } = await supabase.storage
+        .from("comm") // ✅ 버킷 이름 맞추기
+        .upload(filePath, file);
+
+      if (uploadError || !uploadData) {
+        console.error("upload error:", uploadError);
+        toast.error("이미지 업로드 중 오류가 발생했어요.");
+        continue;
+      }
+
+      const { data: publicUrlData } = supabase.storage
+        .from("comm") // ✅ 여기도
+        .getPublicUrl(uploadData.path);
+
+      if (publicUrlData?.publicUrl) {
+        uploadedUrls.push(publicUrlData.publicUrl);
+      }
+    }
+
+    if (uploadedUrls.length > 0) {
+      setNewPostImages((prev) => [...prev, ...uploadedUrls]);
+      toast.success("이미지 업로드 완료!");
+    }
+  } finally {
+    setUploadingImages(false);
+    // 일단 이 줄은 빼두자. 파일 이름 사라져서 헷갈림.
+    // e.target.value = "";
+  }
+};
+
+
+
   // Comment
   const [commentInput, setCommentInput] = useState<Record<number, string>>({});
   const [expandedPostId, setExpandedPostId] = useState<number | null>(null);
@@ -275,34 +345,36 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
   // ------------------------------------------------------
   // Create Post
   // ------------------------------------------------------
-  const createPost = async () => {
-    if (!isAuthenticated) return onShowAuth("login");
+const createPost = async () => {
+  if (!isAuthenticated) return onShowAuth("login");
 
-    const { accommodation_name, rating, title, content } = newPost;
-    if (!accommodation_name || !title || !content) {
-      toast.error("모든 필드를 입력해주세요.");
-      return;
-    }
+  const { accommodation_name, rating, title, content } = newPost;
+  if (!accommodation_name || !title || !content) {
+    toast.error("모든 필드를 입력해주세요.");
+    return;
+  }
 
-    const { data } = await supabase.auth.getUser();
-    if (!data.user) return;
+  const { data } = await supabase.auth.getUser();
+  if (!data.user) return;
 
-    const { error } = await supabase.from("community_posts").insert({
-      user_id: data.user.id,
-      accommodation_name,
-      rating,
-      title,
-      content,
-      images: null,
-    });
+  const { error } = await supabase.from("community_posts").insert({
+    user_id: data.user.id,
+    accommodation_name,
+    rating,
+    title,
+    content,
+    images: newPostImages.length > 0 ? newPostImages : null,
+  });
 
-    if (error) toast.error("작성 실패");
-    else {
-      toast.success("작성 완료!");
-      setNewPost({ accommodation_name: "", rating: 5, title: "", content: "" });
-      fetchPosts();
-    }
-  };
+  if (error) toast.error("작성 실패");
+  else {
+    toast.success("작성 완료!");
+    setNewPost({ accommodation_name: "", rating: 5, title: "", content: "" });
+    setNewPostImages([]); // ✅ 이미지 상태도 초기화
+    fetchPosts();
+  }
+};
+
 
   // ------------------------------------------------------
   // Delete Post
@@ -458,6 +530,45 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
                 </div>
               </div>
 
+              {/* 이미지 업로드 */}
+<div className="space-y-2">
+  <div className="flex items-center justify-between">
+    <span className="text-sm font-medium">사진 추가 (선택)</span>
+    {uploadingImages && (
+      <span className="text-xs text-muted-foreground">
+        업로드 중...
+      </span>
+    )}
+  </div>
+
+  <Input
+    type="file"
+    accept="image/*"
+    multiple
+    onChange={handleImageUpload}
+    disabled={uploadingImages}
+  />
+
+  {/* 미리보기 */}
+  {newPostImages.length > 0 && (
+    <div className="flex flex-wrap gap-2 mt-2">
+      {newPostImages.map((url, idx) => (
+        <div
+          key={idx}
+          className="w-20 h-20 rounded-md overflow-hidden border bg-muted"
+        >
+          <img
+            src={url}
+            alt={`업로드 이미지 ${idx + 1}`}
+            className="w-full h-full object-cover"
+          />
+        </div>
+      ))}
+    </div>
+  )}
+</div>
+
+
               {/* 작성 버튼 */}
               <Button className="w-full" onClick={createPost}>
                 <Plus className="h-4 w-4 mr-2" /> 작성하기
@@ -515,6 +626,25 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
               <p className="text-sm text-muted-foreground whitespace-pre-line">
                 {post.content}
               </p>
+
+              {/* 이미지 영역 */}
+{post.images && post.images.length > 0 && (
+  <div className="mt-3 grid grid-cols-3 gap-2">
+    {post.images.map((url, idx) => (
+      <div
+        key={idx}
+        className="w-full h-24 rounded-md overflow-hidden bg-muted"
+      >
+        <img
+          src={url}
+          alt={`후기 이미지 ${idx + 1}`}
+          className="w-full h-full object-cover"
+        />
+      </div>
+    ))}
+  </div>
+)}
+
 
               {/* Rating */}
               <div className="flex gap-1">
