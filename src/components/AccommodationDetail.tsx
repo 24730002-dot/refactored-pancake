@@ -319,7 +319,8 @@ return (
                   <p className="text-muted-foreground leading-relaxed">
                     {accommodation.description}
                   </p>
-                </CardContent>
+                  <div className="h-6"></div>  {/* ← 버튼 아래 여백 추가 */}
+                </CardContent>       
               </Card>
 
               {/* Amenities */}
