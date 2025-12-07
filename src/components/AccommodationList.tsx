@@ -621,7 +621,7 @@ if (filters.location !== 'all') {
                     </div>
                   </div>
 
-<div className="flex gap-2 pt-2 mt-auto pb-8">
+<div className="flex gap-2 pt-2 pb-6">
   <Button
     className="flex-1"
     onClick={() => onReserve(accommodation)}
