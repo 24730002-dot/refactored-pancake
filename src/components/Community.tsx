@@ -110,6 +110,9 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
 const [newPostImages, setNewPostImages] = useState<string[]>([]);
 const [uploadingImages, setUploadingImages] = useState(false);
 
+// 🔹 file input을 강제로 리셋하기 위한 key
+const [fileInputKey, setFileInputKey] = useState(0);   // ⭐ 이 줄 추가
+
 // 🔹 파일 인풋 ref
 const fileInputRef = useRef<HTMLInputElement | null>(null);
 
@@ -369,22 +372,19 @@ const createPost = async () => {
     images: newPostImages.length > 0 ? newPostImages : null,
   });
 
-  if (error) toast.error("작성 실패");
-  else {
-    toast.success("작성 완료!");
-    setNewPost({ accommodation_name: "", rating: 5, title: "", content: "" });
-    setNewPostImages([]); 
+if (error) toast.error("작성 실패");
+else {
+  toast.success("작성 완료!");
+  setNewPost({ accommodation_name: "", rating: 5, title: "", content: "" });
+  setNewPostImages([]);
 
-      // 🔹 file input 완전 새로 만들기 → 값/파일이름 싹 초기화
+  // ⭐ file input을 완전히 새로 렌더 → 파일 이름/값 싹 초기화
   setFileInputKey((prev) => prev + 1);
 
-    // 🔹 파일 인풋도 초기화
-    if (fileInputRef.current) {
-      fileInputRef.current.value = "";
-    }
 
-    fetchPosts();
-  }
+
+  fetchPosts();
+}
 };
 
 
@@ -555,13 +555,13 @@ const createPost = async () => {
   </div>
 
 <Input
-key={fileInputKey}
+  key={fileInputKey}          // ⭐ 이 줄 추가
   type="file"
   accept="image/*"
   multiple
   onChange={handleImageUpload}
   disabled={uploadingImages}
-  ref={fileInputRef}   // 🔹 이 줄 추가
+  ref={fileInputRef}
 />
 
   {/* 미리보기 */}
