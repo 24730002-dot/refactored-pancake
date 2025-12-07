@@ -335,17 +335,16 @@ const formatPhoneNumber = (value: string) => {
       </div>
 
       {/* Right Side - Auth Form */}
-      <div className="flex flex-col min-h-screen">
-        {/* Back Button */}
+<div className="relative flex flex-col min-h-screen pt-8">
 {onBack && (
- <div className="absolute top-20 left-4 sm:left-8 z-10">
-
+  <div className="absolute top-4 left-4 sm:left-8 z-20">
     <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
       <ArrowLeft className="h-4 w-4" />
       <span className="hidden sm:inline">뒤로가기</span>
     </Button>
   </div>
 )}
+
 
 
 
