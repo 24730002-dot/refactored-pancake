@@ -454,12 +454,12 @@ else {
     });
   };
 
-  // ------------------------------------------------------
+   // ------------------------------------------------------
   // Render
   // ------------------------------------------------------
   return (
     <>
-      <div className="max-w-2xl mx-auto px-4 py-8 space-y-6">
+      <div className="max-w-2xl mx-auto px-4 py-10 space-y-8">
         {/* -------------------- 글쓰기 폼 -------------------- */}
         <Card>
           <CardHeader>
@@ -478,10 +478,7 @@ else {
             ) : (
               <>
                 {/* 숙소 선택 */}
-                <Popover
-                  open={isPopoverOpen}
-                  onOpenChange={setIsPopoverOpen}
-                >
+                <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
                   <PopoverTrigger asChild>
                     <Button variant="outline" className="w-full justify-between">
                       {newPost.accommodation_name || "숙소 선택하기"}
@@ -520,9 +517,7 @@ else {
                           ? "fill-yellow-400 text-yellow-400"
                           : "text-gray-300"
                       }`}
-                      onClick={() =>
-                        setNewPost({ ...newPost, rating: n })
-                      }
+                      onClick={() => setNewPost({ ...newPost, rating: n })}
                     />
                   ))}
                 </div>
@@ -545,15 +540,35 @@ else {
                   }
                 />
 
-                {/* 이미지 업로드 */}
-                <Input
-                  key={fileInputKey}
-                  type="file"
-                  accept="image/*"
-                  multiple
-                  onChange={handleImageUpload}
-                  disabled={uploadingImages}
-                />
+{/* 커스텀 파일 업로드 UI */}
+<div>
+  <button
+    type="button"
+    className="w-full py-2 px-3 rounded-md border bg-white text-sm text-left cursor-pointer hover:bg-muted"
+    onClick={() => fileInputRef.current?.click()}
+  >
+    📷 사진 선택 (여러 장 가능)
+  </button>
+
+  <input
+    key={fileInputKey}
+    type="file"
+    accept="image/*"
+    multiple
+    onChange={handleImageUpload}
+    disabled={uploadingImages}
+    ref={fileInputRef}
+    className="hidden"
+  />
+
+  {/* 선택된 파일 표시 */}
+  {newPostImages.length > 0 && (
+    <p className="text-xs text-muted-foreground mt-1">
+      {newPostImages.length}개의 사진 선택됨
+    </p>
+  )}
+</div>
+
 
                 {/* 미리보기 */}
                 {newPostImages.length > 0 && (
@@ -578,61 +593,194 @@ else {
         </Card>
 
         {/* -------------------- 게시글 리스트 -------------------- */}
-        {loading ? (
-          <div className="flex justify-center py-10">
-            <Loader2 className="h-6 w-6 animate-spin" />
+{loading ? (
+  <div className="flex justify-center py-10">
+    <Loader2 className="h-6 w-6 animate-spin" />
+  </div>
+) : (
+  posts.map((post) => {
+    const commentCount = comments[post.id]?.length || 0;
+
+    return (
+      <Card key={post.id} className="shadow-sm rounded-2xl">
+        <CardContent className="p-6 md:p-7 space-y-4 md:space-y-5">
+          {/* Header */}
+          <div className="flex items-center justify-between">
+            <div className="flex items-center gap-3">
+              <Avatar className="h-10 w-10">
+                <AvatarImage src={post.profiles?.profile_photo_url || ""} />
+                <AvatarFallback>
+                  {post.profiles?.username?.[0] || "U"}
+                </AvatarFallback>
+              </Avatar>
+
+              <div>
+                <p className="font-medium text-sm">
+                  {post.profiles?.username || "익명"}
+                </p>
+                <p className="text-xs text-muted-foreground">
+                  {post.accommodation_name} • {formatDate(post.created_at)}
+                </p>
+              </div>
+            </div>
+
+            {/* 글 삭제 버튼 */}
+            {currentUserId === post.user_id && (
+              <button
+                onClick={() => deletePost(post.id)}
+                className="text-red-500 hover:text-red-600"
+              >
+                <Trash2 className="h-5 w-5" />
+              </button>
+            )}
           </div>
-        ) : (
-          posts.map((post) => (
-            <Card key={post.id} className="shadow-sm">
-              <CardContent className="p-6 space-y-5">
-                {/* Header */}
-                <div className="flex items-center gap-3">
-                  <Avatar>
-                    <AvatarImage src={post.profiles?.profile_photo_url || ""} />
+
+          {/* ⭐ 평점 (제목 위로 이동) */}
+          <div className="flex gap-1">
+            {[1, 2, 3, 4, 5].map((n) => (
+              <Star
+                key={n}
+                className={`h-4 w-4 ${
+                  post.rating >= n
+                    ? "fill-yellow-400 text-yellow-400"
+                    : "text-gray-300"
+                }`}
+              />
+            ))}
+          </div>
+
+          {/* 제목 + 내용 */}
+          <h4 className="font-semibold text-base md:text-lg">{post.title}</h4>
+          <p className="text-sm text-muted-foreground whitespace-pre-line">
+            {post.content}
+          </p>
+
+          {/* 이미지 (클릭하면 확대) */}
+          {post.images && post.images.length > 0 && (
+            <div className="mt-2 grid grid-cols-3 gap-2">
+              {post.images.map((url, idx) => (
+                <button
+                  key={idx}
+                  type="button"
+                  className="w-full h-24 rounded-md overflow-hidden bg-muted"
+                  onClick={() => setPreviewImage(url)}
+                >
+                  <img
+                    src={url}
+                    alt={`후기 이미지 ${idx + 1}`}
+                    className="w-full h-full object-cover"
+                  />
+                </button>
+              ))}
+            </div>
+          )}
+
+          {/* 좋아요 + 댓글 버튼 */}
+          <div className="flex gap-6 items-center border-t pt-3">
+            <button
+              className="flex items-center gap-1 text-sm"
+              onClick={() => toggleLike(post.id)}
+            >
+              <Heart
+                className={`h-5 w-5 ${
+                  likes[post.id]
+                    ? "fill-red-500 text-red-500"
+                    : "text-muted-foreground"
+                }`}
+              />
+              {likeCounts[post.id] || 0}
+            </button>
+
+            <button
+              className="flex items-center gap-1 text-sm"
+              onClick={() =>
+                setExpandedPostId(
+                  expandedPostId === post.id ? null : post.id
+                )
+              }
+            >
+              <MessageCircle className="h-5 w-5" />
+              <span>
+                댓글{commentCount > 0 ? ` ${commentCount}` : ""}
+              </span>
+            </button>
+          </div>
+
+          {/* 댓글 영역 */}
+          {expandedPostId === post.id && (
+            <div className="space-y-4 pt-3 bg-muted/20 p-4 rounded-lg">
+              {/* 댓글 리스트 */}
+              {comments[post.id]?.map((c) => (
+                <div
+                  key={c.id}
+                  className="flex items-start gap-3 bg-white p-3 rounded-lg border relative"
+                >
+                  <Avatar className="h-7 w-7">
+                    <AvatarImage src={c.profiles?.profile_photo_url || ""} />
                     <AvatarFallback>
-                      {post.profiles?.username?.[0] || "U"}
+                      {c.profiles?.username?.[0] || "U"}
                     </AvatarFallback>
                   </Avatar>
 
-                  <div>
-                    <p className="font-medium text-sm">
-                      {post.profiles?.username || "익명"}
+                  <div className="flex-1">
+                    <p className="text-sm font-medium">
+                      {c.profiles?.username || "익명"}
                     </p>
-                    <p className="text-xs text-muted-foreground">
-                      {post.accommodation_name}
+                    <p className="text-sm text-muted-foreground whitespace-pre-line">
+                      {c.content}
                     </p>
+                  </div>
+
+                  {/* 댓글 삭제 */}
+                  {currentUserId === c.user_id && (
+                    <button
+                      onClick={() => deleteComment(c.id)}
+                      className="absolute top-2 right-2 text-red-500 hover:text-red-600"
+                    >
+                      <Trash2 className="h-4 w-4" />
+                    </button>
+                  )}
+                </div>
+              ))}
+
+              {/* 댓글 입력 */}
+              {isAuthenticated ? (
+                <div className="mt-2 space-y-2">
+                  <Textarea
+                    className="w-full min-h-[70px] text-sm resize-none"
+                    placeholder="댓글 입력..."
+                    value={commentInput[post.id] || ""}
+                    onChange={(e) =>
+                      setCommentInput({
+                        ...commentInput,
+                        [post.id]: e.target.value,
+                      })
+                    }
+                  />
+                  <div className="flex justify-end">
+                    <Button
+                      size="sm"
+                      className="px-4"
+                      onClick={() => addComment(post.id)}
+                      disabled={addingComment === post.id}
+                    >
+                      등록
+                    </Button>
                   </div>
                 </div>
-
-                {/* 내용 */}
-                <h4 className="font-semibold">{post.title}</h4>
-                <p className="text-sm text-muted-foreground whitespace-pre-line">
-                  {post.content}
+              ) : (
+                <p className="text-sm text-muted-foreground">
+                  로그인 후 댓글 작성 가능
                 </p>
+              )}
+            </div>
+          )}
+        </CardContent>
+      </Card>
+    );
+  })
+)}
 
-                {/* 🔥 이미지 영역 (클릭 확대 가능) */}
-                {post.images?.length > 0 && (
-                  <div className="grid grid-cols-3 gap-2">
-                    {post.images.map((url, idx) => (
-                      <button
-                        key={idx}
-                        type="button"
-                        className="h-24 rounded-md overflow-hidden bg-muted"
-                        onClick={() => setPreviewImage(url)}
-                      >
-                        <img
-                          src={url}
-                          className="w-full h-full object-cover"
-                        />
-                      </button>
-                    ))}
-                  </div>
-                )}
-              </CardContent>
-            </Card>
-          ))
-        )}
       </div>
 
       {/* -------------------- 🔥 이미지 확대 모달 -------------------- */}
