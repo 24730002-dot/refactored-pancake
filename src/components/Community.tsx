@@ -375,6 +375,9 @@ const createPost = async () => {
     setNewPost({ accommodation_name: "", rating: 5, title: "", content: "" });
     setNewPostImages([]); 
 
+      // 🔹 file input 완전 새로 만들기 → 값/파일이름 싹 초기화
+  setFileInputKey((prev) => prev + 1);
+
     // 🔹 파일 인풋도 초기화
     if (fileInputRef.current) {
       fileInputRef.current.value = "";
@@ -552,6 +555,7 @@ const createPost = async () => {
   </div>
 
 <Input
+key={fileInputKey}
   type="file"
   accept="image/*"
   multiple
