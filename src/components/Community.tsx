@@ -542,13 +542,21 @@ return (
 
 {/* 커스텀 파일 업로드 UI */}
 <div>
-  <button
-    type="button"
-    className="w-full py-2 px-3 rounded-md border bg-white text-sm text-left cursor-pointer hover:bg-muted"
-    onClick={() => fileInputRef.current?.click()}
-  >
-    📷 사진 선택 (여러 장 가능)
-  </button>
+<button
+  type="button"
+  className="
+    w-full py-2 px-3 rounded-md border 
+    bg-white 
+    text-sm text-left cursor-pointer 
+    hover:bg-muted
+    text-foreground      /* 일반 모드 텍스트 색 */
+    dark:text-black      /* 다크 모드일 때는 검정 텍스트 */
+  "
+  onClick={() => fileInputRef.current?.click()}
+>
+  📷 사진 선택 (여러 장 가능)
+</button>
+
 
   <input
     key={fileInputKey}
