@@ -546,11 +546,10 @@ return (
   type="button"
   className="
     w-full py-2 px-3 rounded-md border 
-    bg-white 
+    bg-white dark:bg-white        /* 다크모드에서도 배경 흰색 유지 */
     text-sm text-left cursor-pointer 
     hover:bg-muted
-    text-foreground      /* 일반 모드 텍스트 색 */
-    dark:text-black      /* 다크 모드일 때는 검정 텍스트 */
+    text-slate-900                /* 항상 진한 글자색 */
   "
   onClick={() => fileInputRef.current?.click()}
 >
