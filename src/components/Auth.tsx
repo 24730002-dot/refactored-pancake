@@ -264,17 +264,23 @@ const handleSubmit = async (e: React.FormEvent) => {
 
   // 전화번호 자동 하이픈 처리
 const formatPhoneNumber = (value: string) => {
-  const numbers = value.replace(/\D/g, ""); // 숫자만 남기기
+ // 💡 **수정된 부분: 입력값이 비어있으면 즉시 빈 문자열 반환**
+ if (!value) {
+ return "";
+ }
 
-  if (numbers.length < 4) {
-    return numbers;
-  } else if (numbers.length < 7) {
-    return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
-  } else if (numbers.length <= 11) {
-    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
-  } else {
-    return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
-  }
+ const numbers = value.replace(/\D/g, ""); // 숫자만 남기기
+
+ if (numbers.length < 4) {
+ return numbers;
+ } else if (numbers.length < 7) {
+ return `${numbers.slice(0, 3)}-${numbers.slice(3)}`;
+ } else if (numbers.length <= 11) {
+ return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+ } else {
+ // 11자를 초과해도 11자 기준으로 하이픈을 유지
+ return `${numbers.slice(0, 3)}-${numbers.slice(3, 7)}-${numbers.slice(7, 11)}`;
+ }
 };
 
 

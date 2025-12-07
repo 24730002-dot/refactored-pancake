@@ -322,6 +322,28 @@ const [myComments, setMyComments] = useState<any[]>([]);
     fetchFavorites();
   }, [isAuthenticated, favoritesRefresh]);
 
+  // 전화번호 포맷: 010-1234-5678 형식
+const formatPhoneNumber = (value: string): string => {
+  // 숫자만 남기기
+  const digits = value.replace(/\D/g, '');
+
+  // 아무 것도 없으면 빈 문자열
+  if (digits.length === 0) return '';
+
+  // 3자리 이하: 그대로
+  if (digits.length <= 3) {
+    return digits;
+  }
+
+  // 4~7자리: 000-0000
+  if (digits.length <= 7) {
+    return `${digits.slice(0, 3)}-${digits.slice(3)}`;
+  }
+
+  // 8자리 이상: 000-0000-0000 형식으로 자르기 (최대 11자리까지만 사용)
+  return `${digits.slice(0, 3)}-${digits.slice(3, 7)}-${digits.slice(7, 11)}`;
+};
+
 
 const handleDarkModeToggle = async (checked: boolean) => {
   setIsDarkMode(checked);
@@ -1751,15 +1773,18 @@ const handleCancelEdit = () => {
 
                       <div className="space-y-2">
                         <Label htmlFor="phone">전화번호</Label>
-                        <Input
-                          id="phone"
-                          type="tel"
-                          value={phoneNumber}
-                          onChange={(e) => setPhoneNumber(e.target.value)}
-                          disabled={!isEditing}
-                          placeholder="전화번호 입력"
-                          className="bg-background"
-                        />
+<Input
+ id="phone"
+ type="tel"
+ value={phoneNumber}
+ onChange={(e) => 
+ setPhoneNumber(formatPhoneNumber(e.target.value)) // 👈 formatPhoneNumber 적용
+ }
+ disabled={!isEditing}
+ placeholder="전화번호 입력"
+ className="bg-background"
+ maxLength={13} // 👈 안정성을 위해 최대 길이도 추가합니다.
+/>
                       </div>
 
                       {/* 반려동물 정보 */}
