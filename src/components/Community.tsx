@@ -106,15 +106,18 @@ export function Community({ isAuthenticated, onShowAuth }: CommunityProps) {
     content: "",
   });
 
+  // 숙소 선택 Popover 열림/닫힘
+  const [isPopoverOpen, setIsPopoverOpen] = useState(false);
+
   // 새 글 이미지 URL들
-const [newPostImages, setNewPostImages] = useState<string[]>([]);
-const [uploadingImages, setUploadingImages] = useState(false);
+  const [newPostImages, setNewPostImages] = useState<string[]>([]);
+  const [uploadingImages, setUploadingImages] = useState(false);
 
-// 🔹 file input을 강제로 리셋하기 위한 key
-const [fileInputKey, setFileInputKey] = useState(0);   // ⭐ 이 줄 추가
+  // file input 리셋용 key
+  const [fileInputKey, setFileInputKey] = useState(0);
 
-// 🔹 파일 인풋 ref
-const fileInputRef = useRef<HTMLInputElement | null>(null);
+  // 파일 인풋 ref
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   // ------------------------------------------------------
   // 이미지 업로드 (Supabase Storage)
@@ -471,7 +474,8 @@ else {
             <>
   
 {/* 숙소 선택 */}
-<Popover>
+<Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
+
   <PopoverTrigger asChild>
     <Button
       variant="outline"
@@ -487,61 +491,56 @@ else {
     className="p-0 w-[var(--radix-popover-trigger-width)] min-w-0"
   >
     <div className="max-h-60 overflow-y-auto">
-      <div className="px-3 py-2 text-sm text-muted-foreground">
-        숙소 목록
-      </div>
+      <div className="px-3 py-2 text-sm text-muted-foreground">숙소 목록</div>
 
-      {ACC_LIST.map((name) => (
-        <button
-          key={name}
-          className="w-full text-left px-3 py-2 hover:bg-muted text-sm"
-          onClick={() =>
-            setNewPost({ ...newPost, accommodation_name: name })
-          }
-        >
-          {name}
-        </button>
-      ))}
+{ACC_LIST.map((name) => (
+  <button
+    key={name}
+    className="w-full text-left px-3 py-2 hover:bg-muted text-sm"
+    onClick={() => {
+      setNewPost({ ...newPost, accommodation_name: name });
+      setIsPopoverOpen(false);   // 👈 선택 후 팝오버 닫기
+    }}
+  >
+    {name}
+  </button>
+))}
+
     </div>
   </PopoverContent>
 </Popover>
 
+{/* 🔥 평점 — 여기로 이동! */}
+<div className="flex items-center gap-3 mt-2">
+  <span className="text-sm">평점 :</span>
+  <div className="flex gap-1">
+    {[1, 2, 3, 4, 5].map((n) => (
+      <Star
+        key={n}
+        className={`h-5 w-5 cursor-pointer ${
+          newPost.rating >= n
+            ? "fill-yellow-400 text-yellow-400"
+            : "text-gray-300"
+        }`}
+        onClick={() => setNewPost({ ...newPost, rating: n })}
+      />
+    ))}
+  </div>
+</div>
 
-              {/* 제목 */}
-              <Input
-                placeholder="제목"
-                value={newPost.title}
-                onChange={(e) =>
-                  setNewPost({ ...newPost, title: e.target.value })
-                }
-              />
+{/* 제목 */}
+<Input
+  placeholder="제목"
+  value={newPost.title}
+  onChange={(e) => setNewPost({ ...newPost, title: e.target.value })}
+/>
 
-              {/* 내용 */}
-              <Textarea
-                placeholder="내용을 입력하세요"
-                value={newPost.content}
-                onChange={(e) =>
-                  setNewPost({ ...newPost, content: e.target.value })
-                }
-              />
-
-              {/* 평점 */}
-              <div className="flex items-center gap-3">
-                <span className="text-sm">평점 :</span>
-                <div className="flex gap-1">
-                  {[1, 2, 3, 4, 5].map((n) => (
-                    <Star
-                      key={n}
-                      className={`h-5 w-5 cursor-pointer ${
-                        newPost.rating >= n
-                          ? "fill-yellow-400 text-yellow-400"
-                          : "text-gray-300"
-                      }`}
-                      onClick={() => setNewPost({ ...newPost, rating: n })}
-                    />
-                  ))}
-                </div>
-              </div>
+{/* 내용 */}
+<Textarea
+  placeholder="내용을 입력하세요"
+  value={newPost.content}
+  onChange={(e) => setNewPost({ ...newPost, content: e.target.value })}
+/>
 
               {/* 이미지 업로드 */}
 <div className="space-y-2">
