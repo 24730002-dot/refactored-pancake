@@ -337,15 +337,17 @@ const formatPhoneNumber = (value: string) => {
       {/* Right Side - Auth Form */}
       <div className="flex flex-col min-h-screen">
         {/* Back Button */}
-        {onBack && (
-          <div className="absolute top-8 left-4 sm:left-8 z-10">
-            <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
-              <ArrowLeft className="h-4 w-4" />
-              <div className="h-6"></div>
-              <span className="hidden sm:inline">뒤로가기</span>
-            </Button>
-          </div>
-        )}
+{onBack && (
+  <div className="absolute top-14 left-4 sm:left-8 z-10">
+ 
+    {/* top-8 → top-12 로 여백 증가 */}
+    <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
+      <ArrowLeft className="h-4 w-4" />
+      <span className="hidden sm:inline">뒤로가기</span>
+    </Button>
+  </div>
+)}
+
 
         {/* Form Container */}
         <div className="flex-1 flex flex-col items-center justify-center px-4 py-10 lg:py-4">
