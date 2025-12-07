@@ -278,226 +278,270 @@ const formatPhoneNumber = (value: string) => {
 };
 
 
-  return (
-    <div className="relative min-h-screen grid lg:grid-cols-2">
-      {/* Left Side - Branding (Hidden on mobile) */}
-      <div className="hidden lg:flex flex-col justify-center items-center bg-gradient-to-br from-primary/10 via-primary/5 to-background p-12 relative overflow-hidden">
-        {/* Background Pattern */}
-        <div className="absolute inset-0 opacity-5">
-          <div className="absolute top-10 left-10">
-            <PawPrint className="h-20 w-20" />
-          </div>
-          <div className="absolute top-32 right-20">
-            <PawPrint className="h-16 w-16" />
-          </div>
-          <div className="absolute bottom-32 left-32">
-            <PawPrint className="h-24 w-24" />
-          </div>
-          <div className="absolute bottom-10 right-10">
-            <PawPrint className="h-16 w-16" />
-          </div>
-        </div>
+ return (
+  <div className="relative min-h-screen grid lg:grid-cols-2">
+    {/* Left Side - Branding */}
+    <div className="hidden lg:flex flex-col justify-center items-center bg-gradient-to-br from-primary/10 via-primary/5 to-background p-12 relative overflow-hidden">
 
-        {/* Logo */}
-        <div className="mb-8 z-10">
-          <Logo />
+      {/* Background Pattern */}
+      <div className="absolute inset-0 opacity-5">
+        <div className="absolute top-10 left-10">
+          <PawPrint className="h-20 w-20" />
         </div>
-
-        {/* Hero Image */}
-        <div className="w-full max-w-md mb-8 rounded-2xl overflow-hidden shadow-2xl z-10">
-          <ImageWithFallback
-            src="https://images.unsplash.com/photo-1509205477838-a534e43a849f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXBweSUyMGRvZyUyMGNhdCUyMHRvZ2V0aGVyfGVufDF8fHx8MTc2MjUyNjIwNnww&ixlib=rb-4.1.0&q=80&w=1080"
-            alt="Happy pets together"
-            className="w-full h-96 object-cover"
-          />
+        <div className="absolute top-32 right-20">
+          <PawPrint className="h-16 w-16" />
         </div>
-
-        {/* Branding Text */}
-        <div className="text-center space-y-4 z-10 max-w-md">
-          <h1 className="text-4xl text-foreground flex items-center justify-center gap-2">
-            반려동물과 함께하는 여행
-            <Heart className="h-8 w-8 text-red-500 fill-red-500" />
-          </h1>
-          <p className="text-muted-foreground text-lg leading-relaxed">
-            Pet Friendly와 함께 소중한 가족과 특별한 추억을 만들어보세요
-          </p>
-          <div className="flex items-center justify-center gap-4 pt-4">
-            <div className="flex items-center gap-2">
-              <PawPrint className="h-5 w-5 text-primary" />
-              <span className="text-sm text-muted-foreground">전국 15+ 숙소</span>
-            </div>
-            <div className="flex items-center gap-2">
-              <Heart className="h-5 w-5 text-primary" />
-              <span className="text-sm text-muted-foreground">안전한 여행</span>
-            </div>
-          </div>
+        <div className="absolute bottom-32 left-32">
+          <PawPrint className="h-24 w-24" />
+        </div>
+        <div className="absolute bottom-10 right-10">
+          <PawPrint className="h-16 w-16" />
         </div>
       </div>
 
-      {/* Right Side - Auth Form */}
-<div className="relative flex flex-col min-h-screen pt-8">
-{onBack && (
-  <div className="absolute top-4 left-4 sm:left-8 z-20">
-    <Button variant="ghost" size="sm" onClick={onBack} className="gap-2">
-      <ArrowLeft className="h-4 w-4" />
-      <span className="hidden sm:inline">뒤로가기</span>
-    </Button>
-  </div>
-)}
+      {/* Logo */}
+      <div className="mb-8 z-10">
+        <Logo />
+      </div>
 
+      {/* Hero Image */}
+      <div className="w-full max-w-md mb-8 rounded-2xl overflow-hidden shadow-2xl z-10">
+        <ImageWithFallback
+          src="https://images.unsplash.com/photo-1509205477838-a534e43a849f?crop=entropy&cs=tinysrgb&fit=max&fm=jpg&ixid=M3w3Nzg4Nzd8MHwxfHNlYXJjaHwxfHxoYXBweSUyMGRvZyUyMGNhdCUyMHRvZ2V0aGVyfGVufDF8fHx8MTc2MjUyNjIwNnww&ixlib=rb-4.1.0&q=80&w=1080"
+          alt="Happy pets together"
+          className="w-full h-96 object-cover"
+        />
+      </div>
 
+      {/* Branding Text */}
+      <div className="text-center space-y-4 z-10 max-w-md">
+        <h1 className="text-4xl text-foreground flex items-center justify-center gap-2">
+          반려동물과 함께하는 여행
+          <Heart className="h-8 w-8 text-red-500 fill-red-500" />
+        </h1>
+        <p className="text-muted-foreground text-lg leading-relaxed">
+          Pet Friendly와 함께 소중한 가족과 특별한 추억을 만들어보세요
+        </p>
+        <div className="flex items-center justify-center gap-4 pt-4">
+          <div className="flex items-center gap-2">
+            <PawPrint className="h-5 w-5 text-primary" />
+            <span className="text-sm text-muted-foreground">전국 15+ 숙소</span>
+          </div>
+          <div className="flex items-center gap-2">
+            <Heart className="h-5 w-5 text-primary" />
+            <span className="text-sm text-muted-foreground">안전한 여행</span>
+          </div>
+        </div>
+      </div>
+    </div>
 
+    {/* Right Side - Auth Form */}
+    <div className="relative flex flex-col min-h-screen">
+      {/* 🔙 Back 버튼 – 발바닥 아이콘 높이쯤에 위치 */}
 
-        {/* Form Container */}
-        <div className="flex-1 flex flex-col items-center justify-center px-4 py-10 lg:py-4">
-          <div className="w-full max-w-md">
-            <Card className="w-full border-border/50 backdrop-blur-sm bg-background/95">
-              <CardHeader className="space-y-1 text-center pb-6">
-                <div className="flex justify-center mb-2">
-                  <div className="bg-primary/10 rounded-full p-3">
-                    <PawPrint className="h-6 w-6 text-primary" />
-                  </div>
+ {onBack && (
+<button
+ onClick={onBack}
+ className="absolute left-4 sm:left-8 top-10 sm:top-10 z-20 **text-foreground lg:text-white** p-2" 
+>
+ <ArrowLeft className="h-5 w-5" />
+ </button>
+ )}
+     
+
+      {/* Form Container */}
+      <div className="flex-1 flex flex-col items-center justify-center px-4 py-10 lg:py-4">
+        <div className="w-full max-w-md">
+          {/* Card */}
+          <Card className="w-full border-border/50 backdrop-blur-sm bg-background/95">
+            <CardHeader className="space-y-1 text-center pb-6">
+              <div className="flex justify-center mb-2">
+                <div className="bg-primary/10 rounded-full p-3">
+                  <PawPrint className="h-6 w-6 text-primary" />
                 </div>
-                <CardTitle className="text-3xl">
-                  {isLogin ? '로그인' : '회원가입'}
-                </CardTitle>
-                <CardDescription className="text-base">
-                  {isLogin
-                    ? 'Pet Friendly 계정으로 로그인하세요'
-                    : '새로운 계정을 만들어 시작해보세요'}
-                </CardDescription>
-              </CardHeader>
+              </div>
+              <CardTitle className="text-3xl">
+                {isLogin ? "로그인" : "회원가입"}
+              </CardTitle>
+              <CardDescription className="text-base">
+                {isLogin
+                  ? "Pet Friendly 계정으로 로그인하세요"
+                  : "새로운 계정을 만들어 시작해보세요"}
+              </CardDescription>
+            </CardHeader>
 
-              <CardContent>
-                <form onSubmit={handleSubmit} className="space-y-4">
-                  {error && (
-                    <Alert variant="destructive">
-                      <AlertDescription>{error}</AlertDescription>
-                    </Alert>
-                  )}
+            <CardContent>
+              <form onSubmit={handleSubmit} className="space-y-4">
+                {error && (
+                  <Alert variant="destructive">
+                    <AlertDescription>{error}</AlertDescription>
+                  </Alert>
+                )}
 
-                  <div className="space-y-2">
-                    <Label htmlFor="email">이메일</Label>
-                    <Input
-                      id="email"
-                      type="email"
-                      placeholder="example@email.com"
-                      value={email}
-                      onChange={(e) => setEmail(e.target.value)}
-                      required
-                      className="h-11"
-                    />
-                  </div>
+                <div className="space-y-2">
+                  <Label htmlFor="email">이메일</Label>
+                  <Input
+                    id="email"
+                    type="email"
+                    placeholder="example@email.com"
+                    value={email}
+                    onChange={(e) => setEmail(e.target.value)}
+                    required
+                    className="h-11"
+                  />
+                </div>
 
-                  {!isLogin && (
-                    <>
-                      <div className="space-y-2">
-                        <Label htmlFor="username">사용자 이름 (선택)</Label>
-                        <Input
-                          id="username"
-                          type="text"
-                          placeholder="사용자 이름을 입력하세요"
-                          value={username}
-                          onChange={(e) => setUsername(e.target.value)}
-                          className="h-11"
-                        />
-                      </div>
+                {!isLogin && (
+                  <>
+                    <div className="space-y-2">
+                      <Label htmlFor="username">사용자 이름 (선택)</Label>
+                      <Input
+                        id="username"
+                        type="text"
+                        placeholder="사용자 이름을 입력하세요"
+                        value={username}
+                        onChange={(e) => setUsername(e.target.value)}
+                        className="h-11"
+                      />
+                    </div>
 
-                      <div className="space-y-2">
-                        <Label htmlFor="phone">전화번호 (선택)</Label>
-<Input
-  id="phone"
-  type="tel"
-  placeholder="010-0000-0000"
-  value={phoneNumber}
-  onChange={(e) => setPhoneNumber(formatPhoneNumber(e.target.value))}
-  className="h-11"
-/>
-                      </div>
+                    <div className="space-y-2">
+                      <Label htmlFor="phone">전화번호 (선택)</Label>
+                      <Input
+                        id="phone"
+                        type="tel"
+                        placeholder="010-0000-0000"
+                        value={phoneNumber}
+                        onChange={(e) =>
+                          setPhoneNumber(formatPhoneNumber(e.target.value))
+                        }
+                        className="h-11"
+                      />
+                    </div>
 
-                      {/* Profile Photo Upload */}
-                      <div className="space-y-2">
-                        <Label htmlFor="profilePhoto">프로필 사진 (선택)</Label>
+                    {/* Profile Photo Upload */}
+                    <div className="space-y-2">
+                      <Label htmlFor="profilePhoto">프로필 사진 (선택)</Label>
 
-                        {profilePhotoPreview ? (
-                          <div className="flex items-center gap-4 p-3 border border-border rounded-lg bg-muted/30">
-                            <Avatar className="h-16 w-16 border-2 border-primary/20">
-                              <AvatarImage src={profilePhotoPreview} className="object-cover" />
-                              <AvatarFallback className="bg-primary/10">
-                                {username?.charAt(0)?.toUpperCase() ||
-                                  email?.charAt(0)?.toUpperCase() ||
-                                  'U'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1 min-w-0">
-                              <p
-                                className="text-sm font-medium truncate"
-                                title={profilePhoto?.name}
-                              >
-                                {profilePhoto?.name}
-                              </p>
-                              <p className="text-xs text-muted-foreground">
-                                {profilePhoto && `${(profilePhoto.size / 1024).toFixed(1)} KB`}
-                              </p>
-                            </div>
+                      {profilePhotoPreview ? (
+                        <div className="flex items-center gap-4 p-3 border border-border rounded-lg bg-muted/30">
+                          <Avatar className="h-16 w-16 border-2 border-primary/20">
+                            <AvatarImage
+                              src={profilePhotoPreview}
+                              className="object-cover"
+                            />
+                            <AvatarFallback className="bg-primary/10">
+                              {username?.charAt(0)?.toUpperCase() ||
+                                email?.charAt(0)?.toUpperCase() ||
+                                "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1 min-w-0">
+                            <p
+                              className="text-sm font-medium truncate"
+                              title={profilePhoto?.name}
+                            >
+                              {profilePhoto?.name}
+                            </p>
+                            <p className="text-xs text-muted-foreground">
+                              {profilePhoto &&
+                                `${(profilePhoto.size / 1024).toFixed(1)} KB`}
+                            </p>
+                          </div>
+                          <Button
+                            type="button"
+                            variant="ghost"
+                            size="sm"
+                            onClick={removeProfilePhoto}
+                            className="p-1 h-8 w-8 shrink-0 hover:bg-destructive/10 hover:text-destructive"
+                          >
+                            <X className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      ) : (
+                        <div className="flex items-center gap-4">
+                          <Avatar className="h-16 w-16 border-2 border-dashed border-border">
+                            <AvatarFallback className="bg-muted">
+                              {username?.charAt(0)?.toUpperCase() ||
+                                email?.charAt(0)?.toUpperCase() ||
+                                "U"}
+                            </AvatarFallback>
+                          </Avatar>
+                          <div className="flex-1">
+                            <Input
+                              id="profilePhoto"
+                              type="file"
+                              accept="image/*"
+                              onChange={handleProfilePhotoChange}
+                              className="hidden"
+                            />
                             <Button
                               type="button"
-                              variant="ghost"
+                              variant="outline"
                               size="sm"
-                              onClick={removeProfilePhoto}
-                              className="p-1 h-8 w-8 shrink-0 hover:bg-destructive/10 hover:text-destructive"
+                              onClick={() =>
+                                document
+                                  .getElementById("profilePhoto")
+                                  ?.click()
+                              }
+                              className="w-full h-11"
                             >
-                              <X className="h-4 w-4" />
+                              <Upload className="h-4 w-4 mr-2" />
+                              사진 업로드
                             </Button>
+                            <p className="text-xs text-muted-foreground mt-1">
+                              JPG, PNG (최대 5MB)
+                            </p>
                           </div>
-                        ) : (
-                          <div className="flex items-center gap-4">
-                            <Avatar className="h-16 w-16 border-2 border-dashed border-border">
-                              <AvatarFallback className="bg-muted">
-                                {username?.charAt(0)?.toUpperCase() ||
-                                  email?.charAt(0)?.toUpperCase() ||
-                                  'U'}
-                              </AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                              <Input
-                                id="profilePhoto"
-                                type="file"
-                                accept="image/*"
-                                onChange={handleProfilePhotoChange}
-                                className="hidden"
-                              />
-                              <Button
-                                type="button"
-                                variant="outline"
-                                size="sm"
-                                onClick={() =>
-                                  document.getElementById('profilePhoto')?.click()
-                                }
-                                className="w-full h-11"
-                              >
-                                <Upload className="h-4 w-4 mr-2" />
-                                사진 업로드
-                              </Button>
-                              <p className="text-xs text-muted-foreground mt-1">
-                                JPG, PNG (최대 5MB)
-                              </p>
-                            </div>
-                          </div>
-                        )}
-                      </div>
-                    </>
-                  )}
+                        </div>
+                      )}
+                    </div>
+                  </>
+                )}
 
+                <div className="space-y-2">
+                  <Label htmlFor="password">비밀번호</Label>
+                  <div className="relative">
+                    <Input
+                      id="password"
+                      type={showPassword ? "text" : "password"}
+                      placeholder="비밀번호를 입력하세요"
+                      value={password}
+                      onChange={(e) => setPassword(e.target.value)}
+                      required
+                      className="h-11 pr-12"
+                    />
+                    <Button
+                      type="button"
+                      variant="ghost"
+                      size="icon"
+                      className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center hover:bg-transparent"
+                      onClick={() => setShowPassword(!showPassword)}
+                    >
+                      {showPassword ? (
+                        <EyeOff className="h-4 w-4 text-muted-foreground" />
+                      ) : (
+                        <Eye className="h-4 w-4 text-muted-foreground" />
+                      )}
+                    </Button>
+                  </div>
+                  {!isLogin && (
+                    <p className="text-xs text-muted-foreground">
+                      최소 6자 이상의 비밀번호를 입력하세요
+                    </p>
+                  )}
+                </div>
+
+                {!isLogin && (
                   <div className="space-y-2">
-                    <Label htmlFor="password">비밀번호</Label>
+                    <Label htmlFor="confirmPassword">비밀번호 확인</Label>
                     <div className="relative">
                       <Input
-                        id="password"
-                        type={showPassword ? 'text' : 'password'}
-                        placeholder="비밀번호를 입력하세요"
-                        value={password}
-                        onChange={(e) => setPassword(e.target.value)}
+                        id="confirmPassword"
+                        type={showConfirmPassword ? "text" : "password"}
+                        placeholder="비밀번호를 다시 입력하세요"
+                        value={confirmPassword}
+                        onChange={(e) => setConfirmPassword(e.target.value)}
                         required
                         className="h-11 pr-12"
                       />
@@ -506,114 +550,82 @@ const formatPhoneNumber = (value: string) => {
                         variant="ghost"
                         size="icon"
                         className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center hover:bg-transparent"
-                        onClick={() => setShowPassword(!showPassword)}
+                        onClick={() =>
+                          setShowConfirmPassword(!showConfirmPassword)
+                        }
                       >
-                        {showPassword ? (
+                        {showConfirmPassword ? (
                           <EyeOff className="h-4 w-4 text-muted-foreground" />
                         ) : (
                           <Eye className="h-4 w-4 text-muted-foreground" />
                         )}
                       </Button>
                     </div>
-                    {!isLogin && (
-                      <p className="text-xs text-muted-foreground">
-                        최소 6자 이상의 비밀번호를 입력하세요
-                      </p>
-                    )}
                   </div>
+                )}
 
-                  {!isLogin && (
-                    <div className="space-y-2">
-                      <Label htmlFor="confirmPassword">비밀번호 확인</Label>
-                      <div className="relative">
-                        <Input
-                          id="confirmPassword"
-                          type={showConfirmPassword ? 'text' : 'password'}
-                          placeholder="비밀번호를 다시 입력하세요"
-                          value={confirmPassword}
-                          onChange={(e) => setConfirmPassword(e.target.value)}
-                          required
-                          className="h-11 pr-12"
-                        />
-                        <Button
-                          type="button"
-                          variant="ghost"
-                          size="icon"
-                          className="absolute right-2 top-1/2 -translate-y-1/2 h-8 w-8 flex items-center justify-center hover:bg-transparent"
-                          onClick={() =>
-                            setShowConfirmPassword(!showConfirmPassword)
-                          }
-                        >
-                          {showConfirmPassword ? (
-                            <EyeOff className="h-4 w-4 text-muted-foreground" />
-                          ) : (
-                            <Eye className="h-4 w-4 text-muted-foreground" />
-                          )}
-                        </Button>
-                      </div>
-                    </div>
-                  )}
+                <Button
+                  type="submit"
+                  className="w-full h-11 mt-6"
+                  disabled={isLoading}
+                >
+                  {isLoading ? "처리중..." : isLogin ? "로그인" : "회원가입"}
+                </Button>
+              </form>
 
-                  <Button
-                    type="submit"
-                    className="w-full h-11 mt-6"
-                    disabled={isLoading}
-                  >
-                    {isLoading ? '처리중...' : isLogin ? '로그인' : '회원가입'}
-                  </Button>
-                </form>
-
-                {/* 아래 토글 영역 – 간격 넉넉하게 */}
-                <div className="mt-8 pt-4 border-t border-border/60">
-                  <div className="relative">
-                    <div className="absolute inset-0 flex items-center">
-                      <Separator />
-                    </div>
-                    <div className="relative flex justify-center text-xs uppercase">
-                      <span className="bg-background px-2 text-muted-foreground">
-                        또는
-                      </span>
-                    </div>
+              {/* 아래 토글 영역 – 간격 넉넉하게 */}
+              <div className="mt-8 pt-4 border-t border-border/60">
+                <div className="relative">
+                  <div className="absolute inset-0 flex items-center">
+                    <Separator />
                   </div>
-
-                  <div className="mt-6 text-center">
-                    <p className="text-sm text-muted-foreground mb-2">
-                      {isLogin
-                        ? '아직 계정이 없으신가요?'
-                        : '이미 계정이 있으신가요?'}
-                    </p>
-                    <Button
-                      variant="outline"
-                      className="w-full h-11"
-                      onClick={toggleMode}
-                      type="button"
-                    >
-                      {isLogin ? '회원가입하기' : '로그인하기'}
-                    </Button>
-
-                    <div className="h-6"></div>  {/* ← 버튼 아래 여백 추가 */}
+                  <div className="relative flex justify-center text-xs uppercase">
+                    <span className="bg-background px-2 text-muted-foreground">
+                      또는
+                    </span>
                   </div>
                 </div>
-              </CardContent>
-            </Card>
 
-            {/* Footer Note */}
-            <div className="mt-4 text-center px-2">
-              <p className="text-xs text-muted-foreground leading-relaxed">
-                계속 진행하시면 Pet Friendly의{' '}
-                <a href="#" className="underline hover:text-foreground">
-                  이용약관
-                </a>
-                과{' '}
-                <a href="#" className="underline hover:text-foreground">
-                  개인정보처리방침
-                </a>
-                에 동의하게 됩니다.
-              </p>
-            </div>
+                <div className="mt-6 text-center">
+                  <p className="text-sm text-muted-foreground mb-2">
+                    {isLogin
+                      ? "아직 계정이 없으신가요?"
+                      : "이미 계정이 있으신가요?"}
+                  </p>
+                  <Button
+                    variant="outline"
+                    className="w-full h-11"
+                    onClick={toggleMode}
+                    type="button"
+                  >
+                    {isLogin ? "회원가입하기" : "로그인하기"}
+                  </Button>
+
+                  {/* 버튼 아래 여백 */}
+                  <div className="h-6" />
+                </div>
+              </div>
+            </CardContent>
+          </Card>
+
+          {/* Footer Note */}
+          <div className="mt-4 text-center px-2">
+            <p className="text-xs text-muted-foreground leading-relaxed">
+              계속 진행하시면 Pet Friendly의{" "}
+              <a href="#" className="underline hover:text-foreground">
+                이용약관
+              </a>
+              과{" "}
+              <a href="#" className="underline hover:text-foreground">
+                개인정보처리방침
+              </a>
+              에 동의하게 됩니다.
+            </p>
           </div>
         </div>
       </div>
     </div>
-  );
+  </div>
+);
 }
+// 여기까지가 min-h-screen grid 컨테이너 닫는 div
