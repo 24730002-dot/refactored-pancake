@@ -622,12 +622,7 @@ if (filters.location !== 'all') {
                   </div>
 
 <div className="flex gap-2 pt-2 pb-6">
-  <Button
-    className="flex-1"
-    onClick={() => onReserve(accommodation)}
-  >
-    예약하기
-  </Button>
+
   <Button
     variant="outline"
     className="flex-1"
