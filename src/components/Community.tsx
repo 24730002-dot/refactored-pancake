@@ -457,19 +457,19 @@ else {
    // ------------------------------------------------------
   // Render
   // ------------------------------------------------------
-  return (
-    <>
-      <div className="max-w-2xl mx-auto px-4 py-10 space-y-8">
-        {/* -------------------- 글쓰기 폼 -------------------- */}
-        <Card>
-          <CardHeader>
-            <CardTitle>후기 작성</CardTitle>
-            <CardDescription>
-              반려동물과 머문 숙소를 공유해주세요
-            </CardDescription>
-          </CardHeader>
+return (
+  <>
+    <div className="max-w-2xl mx-auto px-4 py-10">
+      {/* -------------------- 글쓰기 폼 -------------------- */}
+      <Card className="mb-8">   {/* 👈 후기 작성 카드 아래 여백 추가 */}
+        <CardHeader>
+          <CardTitle>후기 작성</CardTitle>
+          <CardDescription>
+            반려동물과 머문 숙소를 공유해주세요
+          </CardDescription>
+        </CardHeader>
 
-          <CardContent className="space-y-4">
+         <CardContent className="space-y-4 pb-8">
             {!isAuthenticated ? (
               <div className="p-4 bg-muted rounded-lg text-center">
                 <p className="text-sm mb-3">로그인 후 작성할 수 있습니다.</p>
@@ -570,24 +570,29 @@ else {
 </div>
 
 
-                {/* 미리보기 */}
-                {newPostImages.length > 0 && (
-                  <div className="flex flex-wrap gap-2 mt-2">
-                    {newPostImages.map((url, idx) => (
-                      <img
-                        key={idx}
-                        src={url}
-                        className="w-20 h-20 rounded-md object-cover border"
-                      />
-                    ))}
-                  </div>
-                )}
+   {/* 미리보기 */}
+    {newPostImages.length > 0 && (
+      <div className="flex flex-wrap gap-2 mt-2">
+        {newPostImages.map((url, idx) => (
+          <img
+            key={idx}
+            src={url}
+            className="w-20 h-20 rounded-md object-cover border"
+          />
+        ))}
+      </div>
+    )}
 
-                <Button className="w-full mt-2" onClick={createPost}>
-                  <Plus className="h-4 w-4 mr-2" />
-                  작성하기
-                </Button>
-              </>
+    <Button className="w-full mt-2" onClick={createPost}>
+      <Plus className="h-4 w-4 mr-2" />
+      작성하기
+    </Button>
+
+    
+{/* 🔥 버튼 아래 여백 추가 */}
+<div className="h-4"></div> 
+
+  </>
             )}
           </CardContent>
         </Card>
