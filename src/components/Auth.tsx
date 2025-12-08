@@ -283,12 +283,24 @@ const formatPhoneNumber = (value: string) => {
  }
 };
 
-
- return (
+return (
   <div className="relative min-h-screen grid lg:grid-cols-2">
-    {/* Left Side - Branding */}
-    <div className="hidden lg:flex flex-col justify-center items-center bg-gradient-to-br from-primary/10 via-primary/5 to-background p-12 relative overflow-hidden">
+    {/* 🔙 Back 버튼 - 화면 전체 기준 고정 (iOS Safari safe area 대응) */}
+    {onBack && (
+      <button
+        onClick={onBack}
+        className="fixed z-30 left-4 sm:left-6 lg:left-8 p-2 text-foreground lg:text-white"
+        style={{
+          // iOS Safari notch 있는 기기에서 위쪽 잘리지 않도록
+          top: "calc(env(safe-area-inset-top, 0px) + 1rem)",
+        }}
+      >
+        <ArrowLeft className="h-5 w-5" />
+      </button>
+    )}
 
+    {/* Left Side - Branding (데스크탑에서만 보임) */}
+    <div className="hidden lg:flex flex-col justify-center items-center bg-gradient-to-br from-primary/10 via-primary/5 to-background p-12 relative overflow-hidden">
       {/* Background Pattern */}
       <div className="absolute inset-0 opacity-5">
         <div className="absolute top-10 left-10">
@@ -343,18 +355,6 @@ const formatPhoneNumber = (value: string) => {
 
     {/* Right Side - Auth Form */}
     <div className="relative flex flex-col min-h-screen">
-      {/* 🔙 Back 버튼 – 발바닥 아이콘 높이쯤에 위치 */}
-
- {onBack && (
-<button
- onClick={onBack}
- className="absolute left-8 sm:left-8 top-8 sm:top-8 z-20 **text-foreground lg:text-white** p-2"
->
- <ArrowLeft className="h-5 w-5" />
- </button>
- )}
-     
-
       {/* Form Container */}
       <div className="flex-1 flex flex-col items-center justify-center px-4 py-10 lg:py-4">
         <div className="w-full max-w-md">
@@ -634,4 +634,3 @@ const formatPhoneNumber = (value: string) => {
   </div>
 );
 }
-// 여기까지가 min-h-screen grid 컨테이너 닫는 div
