@@ -459,7 +459,7 @@ else {
   // ------------------------------------------------------
 return (
   <>
-    <div className="max-w-2xl mx-auto px-4 py-10">
+    <div className="max-w-2xl mx-auto px-4 py-14">
       {/* -------------------- 글쓰기 폼 -------------------- */}
       <Card className="mb-8">   {/* 👈 후기 작성 카드 아래 여백 추가 */}
         <CardHeader>
@@ -471,7 +471,7 @@ return (
 
          <CardContent className="space-y-4 pb-8">
             {!isAuthenticated ? (
-              <div className="p-3 bg-muted rounded-lg text-center">
+              <div className="p-4 bg-muted rounded-lg text-center">
                 <p className="text-sm mb-3">로그인 후 작성할 수 있습니다.</p>
                 <Button onClick={() => onShowAuth("login")}>로그인</Button>
               </div>
