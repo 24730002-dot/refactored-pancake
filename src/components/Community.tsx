@@ -469,16 +469,16 @@ return (
           </CardDescription>
         </CardHeader>
 
-         <CardContent className="space-y-4 pb-8">
-{!isAuthenticated ? (
-<div className="px-4 pt-4 pb-6 bg-muted rounded-lg text-center">
-  <p className="text-sm mb-3">로그인 후 작성할 수 있습니다.</p>
-  <Button onClick={() => onShowAuth("login")} className="w-full">
-    로그인
-  </Button>
+<CardContent className="space-y-4 pb-12">
+  {!isAuthenticated ? (
+    <div className="px-4 pt-4 pb-6 bg-muted rounded-lg text-center">
+      <p className="text-sm mb-3">로그인 후 작성할 수 있습니다.</p>
+      <Button onClick={() => onShowAuth("login")} className="w-full">
+        로그인
+      </Button>
+    </div>
+  ) : (
 
-  </div>
-) : (
               <>
                 {/* 숙소 선택 */}
                 <Popover open={isPopoverOpen} onOpenChange={setIsPopoverOpen}>
