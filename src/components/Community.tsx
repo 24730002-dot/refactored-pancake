@@ -471,19 +471,16 @@ return (
         </CardHeader>
 
         {/* 🔥 여기 CardContent에도 overflow-hidden 추가! */}
-        <CardContent className="space-y-4 pb-12 overflow-hidden">
+<CardContent className="space-y-4 pb-12">
+  {!isAuthenticated ? (
+    <div className="px-4 pt-4 pb-4 bg-muted rounded-lg text-center mb-4">
+      <p className="text-sm mb-3">로그인 후 작성할 수 있습니다.</p>
+      <Button onClick={() => onShowAuth("login")} className="w-full">
+        로그인
+      </Button>
+    </div>
+  ) : (
 
-          {!isAuthenticated ? (
-            <div className="px-4 pt-4 pb-6 bg-muted rounded-lg text-center">
-              <p className="text-sm mb-3">로그인 후 작성할 수 있습니다.</p>
-              <Button
-                onClick={() => onShowAuth("login")}
-                className="w-full"
-              >
-                로그인
-              </Button>
-            </div>
-          ) : (
 
               <>
                 {/* 숙소 선택 */}
