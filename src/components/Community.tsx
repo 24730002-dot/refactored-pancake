@@ -461,7 +461,8 @@ return (
   <>
     <div className="max-w-2xl mx-auto px-4 py-14">
       {/* -------------------- 글쓰기 폼 -------------------- */}
-      <Card className="mb-8">   {/* 👈 후기 작성 카드 아래 여백 추가 */}
+      <Card className="mb-8 overflow-hidden">
+
         <CardHeader>
           <CardTitle>후기 작성</CardTitle>
           <CardDescription>
@@ -469,15 +470,20 @@ return (
           </CardDescription>
         </CardHeader>
 
-<CardContent className="space-y-4 pb-12">
-  {!isAuthenticated ? (
-    <div className="px-4 pt-4 pb-6 bg-muted rounded-lg text-center">
-      <p className="text-sm mb-3">로그인 후 작성할 수 있습니다.</p>
-      <Button onClick={() => onShowAuth("login")} className="w-full">
-        로그인
-      </Button>
-    </div>
-  ) : (
+        {/* 🔥 여기 CardContent에도 overflow-hidden 추가! */}
+        <CardContent className="space-y-4 pb-12 overflow-hidden">
+
+          {!isAuthenticated ? (
+            <div className="px-4 pt-4 pb-6 bg-muted rounded-lg text-center">
+              <p className="text-sm mb-3">로그인 후 작성할 수 있습니다.</p>
+              <Button
+                onClick={() => onShowAuth("login")}
+                className="w-full"
+              >
+                로그인
+              </Button>
+            </div>
+          ) : (
 
               <>
                 {/* 숙소 선택 */}
