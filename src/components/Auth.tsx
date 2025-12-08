@@ -401,7 +401,7 @@ const formatPhoneNumber = (value: string) => {
                 {!isLogin && (
                   <>
                     <div className="space-y-2">
-                      <Label htmlFor="username">사용자 이름 (선택)</Label>
+                      <Label htmlFor="username">사용자 이름 </Label>
                       <Input
                         id="username"
                         type="text"
@@ -413,7 +413,7 @@ const formatPhoneNumber = (value: string) => {
                     </div>
 
                     <div className="space-y-2">
-                      <Label htmlFor="phone">전화번호 (선택)</Label>
+                      <Label htmlFor="phone">전화번호 </Label>
                       <Input
                         id="phone"
                         type="tel"
