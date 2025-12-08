@@ -474,6 +474,8 @@ return (
               <div className="p-4 bg-muted rounded-lg text-center">
                 <p className="text-sm mb-3">로그인 후 작성할 수 있습니다.</p>
                 <Button onClick={() => onShowAuth("login")}>로그인</Button>
+                <div className="h-4"></div>
+
               </div>
             ) : (
               <>
