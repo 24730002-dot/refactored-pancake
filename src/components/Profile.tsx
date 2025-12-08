@@ -615,19 +615,20 @@ if (isAuthenticated) {
       }
     }
 
-    const { error } = await supabase
-      .from('profiles')
-      .upsert({
-        id: userProfile.id,
-        username: username || null,
-        phone: phoneNumber || null,
-        email,
-        location: location || null,
-        profile_photo_url: profilePhotoUrl || null,
-        pet_name: petName || null,   // 🔥 추가
-        pet_type: petType || null,   // 🔥 추가
-        updated_at: new Date().toISOString(),
-      });
+const { error } = await supabase
+  .from('profiles')
+  .upsert({
+    id: userProfile.id,
+    username: username || null,
+    phone: phoneNumber || null,
+    // email은 auth.users 에서만 관리 → 프로필에서 건드리지 않음
+    location: location || null,
+    profile_photo_url: profilePhotoUrl || null,
+    pet_name: petName || null,
+    pet_type: petType || null,
+    updated_at: new Date().toISOString(),
+  });
+
 
     if (error) throw error;
 
@@ -635,12 +636,13 @@ setUserProfile({
   ...userProfile,
   username,
   phone: phoneNumber,
-  email,
+  // email 은 auth.users 기준으로 유지
   location,
   profile_photo_url: profilePhotoUrl,
-  pet_name: petName,   // 🔥 추가
-  pet_type: petType,   // 🔥 추가
+  pet_name: petName,
+  pet_type: petType,
 });
+
 
     setCurrentProfilePhotoUrl(profilePhotoUrl || '');
     setProfilePhoto(null);
@@ -1747,15 +1749,17 @@ const handleCancelEdit = () => {
                     {/* 프로필 폼 */}
                     <div className="space-y-4">
                       <div className="space-y-2">
-                        <Label htmlFor="email">이메일</Label>
-                        <Input
-                          id="email"
-                          type="email"
-                          value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          disabled={!isEditing}
-                          className="bg-background"
-                        />
+<Label htmlFor="email">이메일</Label>
+<Input
+  id="email"
+  type="email"
+  value={email}
+  readOnly
+  disabled
+  className="bg-background cursor-not-allowed text-muted-foreground"
+/>
+
+
                       </div>
 
                       <div className="space-y-2">
