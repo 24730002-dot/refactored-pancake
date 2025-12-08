@@ -349,7 +349,7 @@ const formatPhoneNumber = (value: string) => {
  {onBack && (
 <button
  onClick={onBack}
- className="absolute left-8 sm:left-8 top-16 sm:top-8 z-20 **text-foreground lg:text-white** p-2"
+ className="absolute left-8 sm:left-8 top-2 sm:top-8 z-20 **text-foreground lg:text-white** p-2"
 >
  <ArrowLeft className="h-5 w-5" />
  </button>
