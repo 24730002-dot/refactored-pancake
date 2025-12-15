@@ -14,12 +14,15 @@ import {
 } from 'lucide-react';
 
 /* --- Accommodation 더미 데이터 (생략 없이 네가 올린 그대로) --- */
+export type PetSize = "small" | "medium" | "large";
+
 interface Accommodation {
   id: number;
   name: string;
   location: string;
   description: string;
-  petTypes: ('dog' | 'cat' | 'bird' | 'small' | 'all')[];
+  petTypes: ("dog" | "cat" | "bird" | "small" | "all")[];
+  petSize: PetSize;
   amenities: string[];
   pricePerNight: number;
   rating: number;
@@ -29,10 +32,17 @@ interface Accommodation {
   email: string;
 }
 
+
 /* ------------------------------------------------------
    Accommodation 더미 데이터 (15개)
 ------------------------------------------------------ */
 
+
+export const petSizeLabel = {
+  small: "소형 (7kg 이하)",
+  medium: "중형 (7–15kg)",
+  large: "대형 (15kg 이상)",
+} as const;
 
 export const accommodations: Accommodation[] = [
   {
@@ -42,6 +52,7 @@ export const accommodations: Accommodation[] = [
     description:
       "넓은 마당과 함께하는 프라이빗 숙소입니다. 반려견이 자유롭게 뛰어놀 수 있는 공간과 함께 편안한 휴식을 제공합니다. 제주도의 아름다운 자연을 만끽하며 특별한 시간을 보내세요.",
     petTypes: ["dog", "cat"],
+    petSize: "medium", // ✅ 추가
     amenities: [
       "WiFi",
       "전용 정원",
@@ -66,6 +77,7 @@ export const accommodations: Accommodation[] = [
     description:
       "럭셔리한 인테리어와 함께하는 프리미엄 반려동물 숙소입니다. 대형견도 환영하며, 전문 펫시터 서비스도 이용 가능합니다.",
     petTypes: ["dog"],
+    petSize: "large", // ✅ 추가
     amenities: [
       "WiFi",
       "오션뷰",
@@ -90,6 +102,7 @@ export const accommodations: Accommodation[] = [
     description:
       "고양이 친화적인 공간 디자인으로 꾸며진 도심 속 휴식처입니다.",
     petTypes: ["cat"],
+    petSize: "small", // ✅ 추가
     amenities: ["WiFi", "캣타워", "스크래처", "무료 주차", "조용한 환경"],
     pricePerNight: 120000,
     rating: 4.8,
@@ -107,6 +120,7 @@ export const accommodations: Accommodation[] = [
     description:
       "숲 속에 위치한 아늑한 펫 코티지입니다. 모든 종류의 반려동물을 환영합니다.",
     petTypes: ["all"],
+    petSize: "large", // ✅ 추가
     amenities: [
       "WiFi",
       "숲길 산책로",
@@ -131,6 +145,7 @@ export const accommodations: Accommodation[] = [
     description:
       "조용하고 채광이 좋은 조류 친화적 숙소입니다. 새들이 편안하게 지낼 수 있도록 설계되었습니다.",
     petTypes: ["bird"],
+    petSize: "small", // ✅ 추가
     amenities: ["WiFi", "조용한 환경", "우수한 환기", "자연광", "무료 주차"],
     pricePerNight: 90000,
     rating: 4.6,
@@ -148,6 +163,7 @@ export const accommodations: Accommodation[] = [
     description:
       "소형 반려동물을 위한 안전한 정원과 실내놀이 공간이 있는 숙소입니다.",
     petTypes: ["small"],
+    petSize: "small", // ✅ 추가
     amenities: ["WiFi", "안전한 정원", "실내 놀이공간", "무료 주차"],
     pricePerNight: 100000,
     rating: 4.8,
@@ -165,6 +181,7 @@ export const accommodations: Accommodation[] = [
     description:
       "해변과 인접한 프리미엄 펫 리조트입니다. 반려동물과 함께 바다를 즐길 수 있습니다.",
     petTypes: ["dog", "cat"],
+    petSize: "large", // ✅ 추가
     amenities: ["WiFi", "전용 비치", "펫 수영장", "무료 주차"],
     pricePerNight: 280000,
     rating: 4.9,
@@ -182,6 +199,7 @@ export const accommodations: Accommodation[] = [
     description:
       "센트럴파크와 가까운 현대식 도심형 펫 호텔입니다.",
     petTypes: ["dog", "cat", "small"],
+    petSize: "small", // ✅ 추가
     amenities: ["WiFi", "공원 인접", "펫 스파", "무료 주차"],
     pricePerNight: 160000,
     rating: 4.7,
@@ -199,6 +217,7 @@ export const accommodations: Accommodation[] = [
     description:
       "반려견과 함께 산 속 자연을 즐길 수 있는 힐링 펜션입니다.",
     petTypes: ["dog", "cat"],
+    petSize: "medium", // ✅ 추가
     amenities: ["WiFi", "등산로", "마당", "무료 주차"],
     pricePerNight: 130000,
     rating: 4.6,
@@ -216,6 +235,7 @@ export const accommodations: Accommodation[] = [
     description:
       "한옥 감성과 반려동물 친화적 환경이 조화를 이룬 숙소입니다.",
     petTypes: ["dog", "cat", "small"],
+    petSize: "small", // ✅ 추가
     amenities: ["WiFi", "전통 한옥", "넓은 마당", "무료 주차"],
     pricePerNight: 140000,
     rating: 4.8,
@@ -233,6 +253,7 @@ export const accommodations: Accommodation[] = [
     description:
       "바다가 한눈에 보이는 오션뷰 펫 프렌들리 빌라입니다.",
     petTypes: ["dog", "cat"],
+    petSize: "medium", // ✅ 추가
     amenities: [
       "WiFi",
       "오션뷰 테라스",
@@ -256,6 +277,7 @@ export const accommodations: Accommodation[] = [
     description:
       "경주의 주요 관광지와 가까운 반려동물 친화적 숙소입니다.",
     petTypes: ["dog", "cat", "small"],
+    petSize: "small", // ✅ 추가
     amenities: ["WiFi", "정원", "관광지 인접", "무료 주차"],
     pricePerNight: 110000,
     rating: 4.7,
@@ -273,6 +295,7 @@ export const accommodations: Accommodation[] = [
     description:
       "설악산 자락에 위치한 반려동물 동반 캠핑장입니다.",
     petTypes: ["all"],
+    petSize: "medium", // ✅ 추가
     amenities: ["WiFi", "캠핑 시설", "계곡", "무료 주차"],
     pricePerNight: 80000,
     rating: 4.5,
@@ -290,6 +313,7 @@ export const accommodations: Accommodation[] = [
     description:
       "1층은 펫 카페, 2층은 숙소로 운영되는 독특한 구조의 펫 스테이입니다.",
     petTypes: ["dog", "cat", "bird", "small"],
+    petSize: "small", // ✅ 추가
     amenities: ["WiFi", "펫 카페", "관광지 인접", "무료 주차"],
     pricePerNight: 120000,
     rating: 4.6,
@@ -307,6 +331,7 @@ export const accommodations: Accommodation[] = [
     description:
       "죽녹원 인근에서 자연을 즐길 수 있는 아늑한 펫 스테이입니다.",
     petTypes: ["dog", "cat", "small"],
+    petSize: "small", // ✅ 추가
     amenities: ["WiFi", "대나무숲 인접", "정원", "무료 주차"],
     pricePerNight: 95000,
     rating: 4.7,
@@ -343,6 +368,25 @@ export function AccommodationList({
     petSize: 'all',
     sortBy: 'recommended',
   });
+
+    // ✅ 여기 (useState들 아래여도 됨)
+  const getPetTypeIcon = (type: Accommodation["petTypes"][number]) => {
+    switch (type) {
+      case "dog":
+        return <Dog className="h-4 w-4" />;
+      case "cat":
+        return <Cat className="h-4 w-4" />;
+      case "bird":
+        return <Bird className="h-4 w-4" />;
+      case "small":
+        return <Rabbit className="h-4 w-4" />;
+      case "all":
+      default:
+        return <Home className="h-4 w-4" />;
+    }
+  };
+
+
 const [filtersOpen, setFiltersOpen] = useState(false);
   // 필터 + 정렬
   const filteredAccommodations = accommodations
@@ -375,49 +419,35 @@ if (filters.location !== 'all') {
         return false;
       }
 
-      // 평점
-      if (accommodation.rating < filters.minRating) return false;
+       // 평점
+  if (accommodation.rating < filters.minRating) return false;
 
-      // petSize는 지금은 실제 로직 없이 패스
-      return true;
-    })
-    .sort((a, b) => {
-      switch (filters.sortBy) {
-        case 'price_low':
-          return a.pricePerNight - b.pricePerNight;
-        case 'price_high':
-          return b.pricePerNight - a.pricePerNight;
-        case 'rating':
-          return b.rating - a.rating;
-        case 'reviews':
-          return b.rating - a.rating; // mock
-        case 'recommended':
-        default:
-          return b.rating - a.rating;
-      }
-    });
+  // ✅ 반려동물 크기 (여기 추가)
+  if (
+    filters.petSize !== "all" &&
+    accommodation.petSize !== filters.petSize
+  ) {
+    return false;
+  }
 
-  const getPetTypeIcon = (petType: string) => {
-    switch (petType) {
-      case 'dog':
-        return <Dog className="h-4 w-4" />;
-      case 'cat':
-        return <Cat className="h-4 w-4" />;
-      case 'bird':
-        return <Bird className="h-4 w-4" />;
-      case 'small':
-        return <Rabbit className="h-4 w-4" />;
-      case 'all':
-        return (
-          <div className="flex gap-1">
-            <Dog className="h-4 w-4" />
-            <Cat className="h-4 w-4" />
-          </div>
-        );
-      default:
-        return null;
-    }
-  };
+  // ✅ 모든 조건 통과
+  return true;
+})
+.sort((a, b) => {
+  switch (filters.sortBy) {
+    case "price_low":
+      return a.pricePerNight - b.pricePerNight;
+    case "price_high":
+      return b.pricePerNight - a.pricePerNight;
+    case "rating":
+      return b.rating - a.rating;
+    case "reviews":
+      return b.rating - a.rating; // mock
+    case "recommended":
+    default:
+      return b.rating - a.rating;
+  }
+});
 
   const getAmenityIcon = (amenity: string) => {
     if (amenity.includes('WiFi')) return <Wifi className="h-4 w-4" />;
@@ -571,6 +601,7 @@ if (filters.location !== 'all') {
                           ? "조류"
                           : "소형 반려동물";
 
+                          
                       return (
                         <Badge
                           key={index}
@@ -663,7 +694,7 @@ if (filters.location !== 'all') {
     </div>
 
     {/* ==================== New Corporate Footer ==================== */}
-    <footer className="bg-[#111] text-black-300 mt-20">
+    <footer className="bg-[#111] text-gray-300 mt-20">
       <div className="max-w-7xl mx-auto px-6 py-12">
         <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-10">
 
